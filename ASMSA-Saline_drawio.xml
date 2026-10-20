@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:148.0) Gecko/20100101 Firefox/148.0">
+  <diagram name="Pagina-1" id="fJi4ycSMJlPodj3w0HGq">
+    <mxGraphModel dx="1373" dy="677" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="dnqWYTOoeZH9QZk5Y2u3-3" edge="1" parent="1" source="dnqWYTOoeZH9QZk5Y2u3-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontFamily=Montserrat;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;labelBackgroundColor=none;fillColor=#ffe6cc;strokeColor=#d79b00;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="dnqWYTOoeZH9QZk5Y2u3-2" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dnqWYTOoeZH9QZk5Y2u3-5" edge="1" parent="1" source="dnqWYTOoeZH9QZk5Y2u3-1" style="edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#FF6666;align=center;verticalAlign=middle;fontFamily=Montserrat;fontSize=11;fontColor=default;labelBackgroundColor=none;endArrow=none;endFill=0;startArrow=block;startFill=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;dashed=1;dashPattern=8 8;" target="dnqWYTOoeZH9QZk5Y2u3-4" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dnqWYTOoeZH9QZk5Y2u3-6" connectable="0" parent="dnqWYTOoeZH9QZk5Y2u3-5" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontFamily=Montserrat;fontSize=11;fontColor=default;labelBackgroundColor=default;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;" value="CONTROLLO CONTABILE" vertex="1">
+          <mxGeometry relative="1" x="-0.2" y="-4" as="geometry">
+            <mxPoint x="12" y="-4" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dnqWYTOoeZH9QZk5Y2u3-8" edge="1" parent="1" source="dnqWYTOoeZH9QZk5Y2u3-1" style="edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d79b00;align=center;verticalAlign=middle;fontFamily=Montserrat;fontSize=11;fontColor=default;labelBackgroundColor=none;endArrow=block;endFill=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;fillColor=#ffe6cc;" target="dnqWYTOoeZH9QZk5Y2u3-7" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dnqWYTOoeZH9QZk5Y2u3-1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontFamily=Montserrat;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;fontSize=14;labelBackgroundColor=none;verticalAlign=middle;" value="&lt;p&gt;&lt;font&gt;&lt;b&gt;&lt;font&gt;PROCURATORE REALE&lt;/font&gt;&lt;/b&gt;&lt;/font&gt;&lt;/p&gt;" vertex="1">
+          <mxGeometry height="50" width="160" x="340" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="dnqWYTOoeZH9QZk5Y2u3-2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontFamily=Montserrat;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;fontSize=10;labelBackgroundColor=none;verticalAlign=middle;" value="&lt;p&gt;&lt;font style=&quot;font-size: 12px;&quot;&gt;SCRIBA /NOTAIO DELLA PROCURAZIONE&lt;/font&gt;&lt;/p&gt;" vertex="1">
+          <mxGeometry height="60" width="140" x="140" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="dnqWYTOoeZH9QZk5Y2u3-4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontFamily=Montserrat;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;verticalAlign=top;" value="&lt;p&gt;&lt;font style=&quot;font-size: 13px;&quot;&gt;MAESTRO RAZIONALE&lt;/font&gt;&lt;/p&gt;" vertex="1">
+          <mxGeometry height="60" width="140" x="710" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="dnqWYTOoeZH9QZk5Y2u3-10" edge="1" parent="1" source="dnqWYTOoeZH9QZk5Y2u3-7" style="edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#82b366;align=center;verticalAlign=middle;fontFamily=Montserrat;fontSize=11;fontColor=default;labelBackgroundColor=none;endArrow=block;endFill=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;fillColor=#d5e8d4;" target="dnqWYTOoeZH9QZk5Y2u3-9" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dnqWYTOoeZH9QZk5Y2u3-7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontFamily=Montserrat;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;labelBackgroundColor=none;verticalAlign=middle;" value="&lt;p&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;Luogotenente del PROCURATORE REALE&lt;/font&gt;&lt;/p&gt;" vertex="1">
+          <mxGeometry height="50" width="186.25" x="326.88" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="dnqWYTOoeZH9QZk5Y2u3-12" edge="1" parent="1" source="dnqWYTOoeZH9QZk5Y2u3-9" style="edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#b85450;align=center;verticalAlign=middle;fontFamily=Montserrat;fontSize=11;fontColor=default;labelBackgroundColor=none;endArrow=block;endFill=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;fillColor=#f8cecc;" target="dnqWYTOoeZH9QZk5Y2u3-11" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dnqWYTOoeZH9QZk5Y2u3-9" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontFamily=Montserrat;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;labelBackgroundColor=none;verticalAlign=middle;" value="&lt;p&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;Saliniere Maggiore&lt;/font&gt;&lt;/p&gt;" vertex="1">
+          <mxGeometry height="46" width="105" x="367.5" y="404" as="geometry" />
+        </mxCell>
+        <mxCell id="dnqWYTOoeZH9QZk5Y2u3-14" edge="1" parent="1" source="dnqWYTOoeZH9QZk5Y2u3-11" style="edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Montserrat;fontSize=11;fontColor=default;labelBackgroundColor=none;endArrow=block;endFill=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;" target="dnqWYTOoeZH9QZk5Y2u3-13" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dnqWYTOoeZH9QZk5Y2u3-15" edge="1" parent="1" source="dnqWYTOoeZH9QZk5Y2u3-11" style="edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d6b656;align=center;verticalAlign=middle;fontFamily=Montserrat;fontSize=11;fontColor=default;labelBackgroundColor=none;endArrow=block;endFill=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;strokeWidth=0.7874;fillColor=#fff2cc;" target="dnqWYTOoeZH9QZk5Y2u3-13" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dnqWYTOoeZH9QZk5Y2u3-17" edge="1" parent="1" source="dnqWYTOoeZH9QZk5Y2u3-11" style="edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#9673a6;align=center;verticalAlign=middle;fontFamily=Montserrat;fontSize=11;fontColor=default;labelBackgroundColor=none;endArrow=block;endFill=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;fillColor=#e1d5e7;" target="dnqWYTOoeZH9QZk5Y2u3-16" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dnqWYTOoeZH9QZk5Y2u3-26" edge="1" parent="1" source="dnqWYTOoeZH9QZk5Y2u3-11" style="edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6F0000;align=center;verticalAlign=middle;fontFamily=Montserrat;fontSize=11;fontColor=default;labelBackgroundColor=none;endArrow=block;endFill=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;fillColor=#a20025;" target="dnqWYTOoeZH9QZk5Y2u3-25" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dnqWYTOoeZH9QZk5Y2u3-11" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontFamily=Montserrat;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;labelBackgroundColor=none;verticalAlign=middle;" value="&lt;p&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;Salinieri minori&lt;/font&gt;&lt;/p&gt;" vertex="1">
+          <mxGeometry height="30" width="125" x="357.5" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="dnqWYTOoeZH9QZk5Y2u3-21" edge="1" parent="1" source="dnqWYTOoeZH9QZk5Y2u3-13" style="edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d6b656;align=center;verticalAlign=middle;fontFamily=Montserrat;fontSize=11;fontColor=default;labelBackgroundColor=none;endArrow=block;endFill=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;fillColor=#fff2cc;" target="dnqWYTOoeZH9QZk5Y2u3-20" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dnqWYTOoeZH9QZk5Y2u3-13" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontFamily=Montserrat;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;labelBackgroundColor=none;verticalAlign=middle;" value="&lt;p&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;Maiori de &lt;i&gt;Querquidors&lt;/i&gt; / Stimatori&lt;/font&gt;&lt;/p&gt;" vertex="1">
+          <mxGeometry height="40" width="235" x="70" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="dnqWYTOoeZH9QZk5Y2u3-19" edge="1" parent="1" source="dnqWYTOoeZH9QZk5Y2u3-16" style="edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#9673a6;align=center;verticalAlign=middle;fontFamily=Montserrat;fontSize=11;fontColor=default;labelBackgroundColor=none;endArrow=block;endFill=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;fillColor=#e1d5e7;" target="dnqWYTOoeZH9QZk5Y2u3-18" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dnqWYTOoeZH9QZk5Y2u3-16" parent="1" style="rounded=1;html=1;fillColor=#1ba1e2;strokeColor=#006EAF;fontFamily=Montserrat;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;fontSize=11;labelBackgroundColor=none;verticalAlign=middle;fontColor=#ffffff;" value="&lt;p&gt;&lt;font style=&quot;font-size: 12px;&quot;&gt;Maiori Guardie&lt;/font&gt;&lt;/p&gt;" vertex="1">
+          <mxGeometry height="30" width="100" x="640" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="dnqWYTOoeZH9QZk5Y2u3-27" edge="1" parent="1" source="dnqWYTOoeZH9QZk5Y2u3-18" style="edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Montserrat;fontSize=11;fontColor=default;labelBackgroundColor=none;endArrow=none;endFill=0;dashed=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;" target="dnqWYTOoeZH9QZk5Y2u3-25">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dnqWYTOoeZH9QZk5Y2u3-18" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;strokeColor=#006EAF;fontFamily=Montserrat;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;fontSize=11;labelBackgroundColor=none;fontColor=#ffffff;" value="Guardie" vertex="1">
+          <mxGeometry height="30" width="100" x="640" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="dnqWYTOoeZH9QZk5Y2u3-20" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontFamily=Montserrat;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;labelBackgroundColor=none;" value="Stimatori" vertex="1">
+          <mxGeometry height="40" width="140" x="117.5" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="dnqWYTOoeZH9QZk5Y2u3-25" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#a20025;strokeColor=#6F0000;fontFamily=Montserrat;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;labelBackgroundColor=none;fontColor=#ffffff;fontStyle=1" value="Vassalli Comandati" vertex="1">
+          <mxGeometry height="20" width="130" x="355" y="740" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

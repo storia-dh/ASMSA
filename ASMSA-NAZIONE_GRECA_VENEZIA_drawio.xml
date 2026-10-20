@@ -1,0 +1,114 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:148.0) Gecko/20100101 Firefox/148.0">
+  <diagram name="Pagina-1" id="fJi4ycSMJlPodj3w0HGq">
+    <mxGraphModel dx="589" dy="290" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="dnqWYTOoeZH9QZk5Y2u3-8" edge="1" parent="1" source="dnqWYTOoeZH9QZk5Y2u3-1" style="edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d79b00;align=center;verticalAlign=middle;fontFamily=Montserrat;fontSize=11;fontColor=default;labelBackgroundColor=none;endArrow=block;endFill=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;fillColor=#ffe6cc;" target="dnqWYTOoeZH9QZk5Y2u3-7" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Y2UUmjbtdfs_z9O4oWHy-1" connectable="0" parent="dnqWYTOoeZH9QZk5Y2u3-8" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];rounded=1;fontFamily=Montserrat;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;fontSize=11;fontColor=default;labelBackgroundColor=default;fillColor=none;gradientColor=none;" value="ELEGGE" vertex="1">
+          <mxGeometry relative="1" x="-0.0862" y="1" as="geometry">
+            <mxPoint x="29" y="23" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Y2UUmjbtdfs_z9O4oWHy-16" edge="1" parent="1" source="dnqWYTOoeZH9QZk5Y2u3-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;strokeColor=#d79b00;align=center;verticalAlign=middle;fontFamily=Montserrat;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;fontSize=11;fontColor=default;labelBackgroundColor=none;endArrow=block;endFill=1;fillColor=#ffe6cc;" target="Y2UUmjbtdfs_z9O4oWHy-15">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="462" y="390" />
+              <mxPoint x="180" y="390" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Y2UUmjbtdfs_z9O4oWHy-34" edge="1" parent="1" source="dnqWYTOoeZH9QZk5Y2u3-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;align=center;verticalAlign=middle;fontFamily=Montserrat;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;fontSize=11;fontColor=default;labelBackgroundColor=none;resizable=0;fillColor=#ffe6cc;gradientColor=none;strokeColor=#d79b00;endArrow=block;endFill=1;curved=1;" target="Y2UUmjbtdfs_z9O4oWHy-28">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dnqWYTOoeZH9QZk5Y2u3-1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=none;fontFamily=Montserrat;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;fontSize=14;labelBackgroundColor=none;verticalAlign=middle;fontStyle=1" value="CAPITOLO GENERALE" vertex="1">
+          <mxGeometry height="50" width="160" x="382" y="473" as="geometry" />
+        </mxCell>
+        <mxCell id="Y2UUmjbtdfs_z9O4oWHy-20" edge="1" parent="1" source="dnqWYTOoeZH9QZk5Y2u3-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;strokeColor=#6c8ebf;align=center;verticalAlign=middle;fontFamily=Montserrat;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;fontSize=11;fontColor=default;labelBackgroundColor=none;endArrow=block;endFill=1;fillColor=#dae8fc;" target="dnqWYTOoeZH9QZk5Y2u3-9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Y2UUmjbtdfs_z9O4oWHy-21" connectable="0" parent="Y2UUmjbtdfs_z9O4oWHy-20" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];rounded=1;fontFamily=Montserrat;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;fontSize=11;fontColor=default;labelBackgroundColor=default;fillColor=none;gradientColor=none;" value="composta da" vertex="1">
+          <mxGeometry relative="1" x="-0.2025" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dnqWYTOoeZH9QZk5Y2u3-7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontFamily=Montserrat;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;labelBackgroundColor=none;verticalAlign=middle;fontStyle=1;fontSize=15;" value="BANCA" vertex="1">
+          <mxGeometry height="30" width="103.13" x="410.44" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="dnqWYTOoeZH9QZk5Y2u3-9" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=none;fontFamily=Montserrat;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;labelBackgroundColor=none;verticalAlign=middle;" value="&lt;div&gt;&lt;b&gt;Gastaldo&lt;/b&gt;&amp;nbsp;&lt;/div&gt;&lt;div&gt;(o guardiano grande)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="50" width="139.87" x="392.07" y="172" as="geometry" />
+        </mxCell>
+        <mxCell id="Y2UUmjbtdfs_z9O4oWHy-7" edge="1" parent="1" source="Y2UUmjbtdfs_z9O4oWHy-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 8;strokeColor=#FF6666;align=center;verticalAlign=middle;fontFamily=Montserrat;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;fontSize=11;fontColor=default;labelBackgroundColor=none;startArrow=none;startFill=0;endArrow=none;endFill=0;curved=1;" target="dnqWYTOoeZH9QZk5Y2u3-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Y2UUmjbtdfs_z9O4oWHy-4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Montserrat;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;fontSize=11;labelBackgroundColor=default;verticalAlign=middle;strokeColor=none;fillColor=none;align=center;fontColor=default;resizable=0;gradientColor=none;" value="Riunione di tutti i confratelli" vertex="1">
+          <mxGeometry height="35" width="130" x="662" y="523" as="geometry" />
+        </mxCell>
+        <mxCell id="y4uUnUy4UuyCGY62qnFa-4" edge="1" parent="1" source="Y2UUmjbtdfs_z9O4oWHy-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" target="y4uUnUy4UuyCGY62qnFa-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Y2UUmjbtdfs_z9O4oWHy-11" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=none;fontFamily=Montserrat;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;fontSize=13;labelBackgroundColor=none;verticalAlign=middle;fontStyle=1" value="CAPITOLO dei QUARANTA e Giunta" vertex="1">
+          <mxGeometry height="56.5" width="150" x="700" y="260.25" as="geometry" />
+        </mxCell>
+        <mxCell id="Y2UUmjbtdfs_z9O4oWHy-12" edge="1" parent="1" source="dnqWYTOoeZH9QZk5Y2u3-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;strokeColor=#d79b00;align=center;verticalAlign=middle;fontFamily=Montserrat;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;fontSize=11;fontColor=default;labelBackgroundColor=none;endArrow=block;endFill=1;fillColor=#ffe6cc;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" target="Y2UUmjbtdfs_z9O4oWHy-11">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="462" y="383.25" />
+              <mxPoint x="775" y="383.25" />
+            </Array>
+            <mxPoint x="462" y="486.25" as="sourcePoint" />
+            <mxPoint x="775" y="330" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Y2UUmjbtdfs_z9O4oWHy-13" connectable="0" parent="Y2UUmjbtdfs_z9O4oWHy-12" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&amp;nbsp; DAL 1563&amp;nbsp;&amp;nbsp;" vertex="1">
+          <mxGeometry relative="1" x="-0.0787" y="-2" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Y2UUmjbtdfs_z9O4oWHy-15" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=none;fontFamily=Montserrat;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;fontSize=14;labelBackgroundColor=none;verticalAlign=middle;fontStyle=1" value="Arcivescovi" vertex="1">
+          <mxGeometry height="27" width="80" x="140" y="301.5" as="geometry" />
+        </mxCell>
+        <mxCell id="Y2UUmjbtdfs_z9O4oWHy-18" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontFamily=Montserrat;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;fontSize=11;fontColor=default;labelBackgroundColor=none;resizable=0;" value="&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;&lt;br&gt;&lt;/h1&gt;&lt;ul&gt;&lt;li&gt;Consiglio ristretto che governa la &quot;nazione&quot;&lt;/li&gt;&lt;li&gt;potere esecutivo&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;br&gt;&lt;br&gt;&lt;/p&gt;" vertex="1">
+          <mxGeometry height="40" width="170" x="500" y="295" as="geometry" />
+        </mxCell>
+        <mxCell id="Y2UUmjbtdfs_z9O4oWHy-25" edge="1" parent="1" source="Y2UUmjbtdfs_z9O4oWHy-22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;endArrow=none;endFill=0;dashed=1;" target="dnqWYTOoeZH9QZk5Y2u3-9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Y2UUmjbtdfs_z9O4oWHy-22" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=none;fontFamily=Montserrat;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;labelBackgroundColor=none;verticalAlign=middle;fontStyle=0" value="&lt;span&gt;Vicario&lt;/span&gt;" vertex="1">
+          <mxGeometry height="20" width="67.5" x="585" y="187" as="geometry" />
+        </mxCell>
+        <mxCell id="Y2UUmjbtdfs_z9O4oWHy-24" edge="1" parent="1" source="Y2UUmjbtdfs_z9O4oWHy-23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;endArrow=none;endFill=0;dashed=1;" target="dnqWYTOoeZH9QZk5Y2u3-9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Y2UUmjbtdfs_z9O4oWHy-23" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=none;fontFamily=Montserrat;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;labelBackgroundColor=none;verticalAlign=middle;fontStyle=0" value="&lt;span&gt;Scrivano&lt;/span&gt;" vertex="1">
+          <mxGeometry height="20" width="67.5" x="290" y="187" as="geometry" />
+        </mxCell>
+        <mxCell id="y4uUnUy4UuyCGY62qnFa-1" edge="1" parent="1" source="y4uUnUy4UuyCGY62qnFa-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;endArrow=block;endFill=1;" target="y4uUnUy4UuyCGY62qnFa-2" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1020" y="300.25" as="sourcePoint" />
+            <mxPoint x="1045" y="414" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Y2UUmjbtdfs_z9O4oWHy-27" parent="1" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;align=center;fontColor=#004C99;" value="&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;Scuola di San Nicolò&lt;/h1&gt;&lt;p&gt;della Nazion greca di &lt;b&gt;Venezia&lt;/b&gt;&lt;/p&gt;" vertex="1">
+          <mxGeometry height="80" width="369.25" x="280" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="Y2UUmjbtdfs_z9O4oWHy-28" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontFamily=Montserrat;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;fontSize=11;fontColor=default;labelBackgroundColor=none;resizable=0;" value="&lt;div&gt;dal 1572 il corpo dei votanti viene diviso per &quot;patrie&quot;&amp;nbsp;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="40" width="170" x="662" y="414" as="geometry" />
+        </mxCell>
+        <mxCell id="Y2UUmjbtdfs_z9O4oWHy-33" edge="1" parent="1" source="y4uUnUy4UuyCGY62qnFa-2" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d79b00;align=center;verticalAlign=middle;fontFamily=Montserrat;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DMontserrat;fontSize=11;fontColor=default;labelBackgroundColor=none;endArrow=none;endFill=0;fillColor=#ffe6cc;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" target="Y2UUmjbtdfs_z9O4oWHy-28">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="960" y="434" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="y4uUnUy4UuyCGY62qnFa-2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;strokeColor=none;" value="&lt;ol&gt;&lt;li&gt;&lt;span&gt;Cipro&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span&gt;Corfù&lt;/span&gt;&lt;/li&gt;&lt;li&gt;Creta e Arcipelago delle Cicladi&lt;/li&gt;&lt;li&gt;&lt;span&gt;Grecia superiore&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span&gt;Napoli di Malvasia&amp;nbsp; e Malvasia&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span&gt;Zante e Cefalonia&lt;/span&gt;&lt;/li&gt;&lt;/ol&gt;" vertex="1">
+          <mxGeometry height="119.5" width="220" x="940" y="403.5" as="geometry" />
+        </mxCell>
+        <mxCell id="y4uUnUy4UuyCGY62qnFa-3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;strokeColor=none;" value="&lt;div&gt;&lt;ul&gt;&lt;li&gt;&lt;div&gt;elegge cappellani e altri salarati&amp;nbsp; (tranne vescovi)&lt;/div&gt;&lt;/li&gt;&lt;li&gt;&lt;div&gt;delibera e fa leggi, ordini su ogni aspetto relativo al culto, educazione, beneficienza&lt;/div&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="80" width="230" x="935" y="248.5" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

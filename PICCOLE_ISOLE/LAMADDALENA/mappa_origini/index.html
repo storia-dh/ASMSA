@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mappa dei luoghi</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+  html, body { height: 100%; margin: 0; font-family: system-ui, sans-serif; }
+  #map { height: 100%; width: 100%; }
+  #controlli {
+    position: absolute; top: 10px; right: 10px; z-index: 1000;
+    background: #fff; padding: 8px; border-radius: 6px;
+    box-shadow: 0 1px 5px rgba(0,0,0,.4); font-size: 13px;
+    display: flex; flex-direction: column; gap: 6px; max-width: calc(100% - 70px);
+  }
+  #controlli input, #controlli select { width: 100%; box-sizing: border-box; padding: 4px; font-size: 13px; }
+  #stato {
+    position: absolute; bottom: 8px; left: 8px; z-index: 1000;
+    background: rgba(255,255,255,.9); padding: 3px 8px; border-radius: 4px; font-size: 12px;
+  }
+  .elenco { max-height: 160px; overflow-y: auto; margin: 6px 0 0; padding-left: 16px; font-size: 12px; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="controlli">
+  <input id="cerca" type="search" placeholder="Cerca per nome…" autocomplete="off">
+  <select id="tipo"><option value="">Tutti i tipi</option></select>
+</div>
+<div id="stato">Caricamento…</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script>
+// === CONFIGURAZIONE ===
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSAP6CVHdSnwTtoXXL9ooLua0_ndMOTw7bqggnAYeNgaZ-Ui6ilziLl78ml3fKi9YJSyIHmymVHSluY/pub?gid=787359485&single=true&output=csv";
+const REFRESH_MS = 5 * 60 * 1000;
+const RAGGIO_BASE = 6;      // raggio con 1 ricorrenza
+const RAGGIO_CRESCITA = 4;  // quanto cresce con le ricorrenze
+const RAGGIO_MAX = 34;
+// ======================
+
+const map = L.map("map").setView([41.5, 9.5], 6);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 18,
+  attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a>"
+}).addTo(map);
+
+const layer = L.layerGroup().addTo(map);
+const selTipo = document.getElementById("tipo");
+const inputCerca = document.getElementById("cerca");
+const stato = document.getElementById("stato");
+let righe = [];
+
+const colori = ["#e6194b","#3cb44b","#4363d8","#f58231","#911eb4","#008080","#9a6324","#800000","#808000","#000075"];
+const colorePerTipo = {};
+function colore(t) {
+  if (!(t in colorePerTipo)) colorePerTipo[t] = colori[Object.keys(colorePerTipo).length % colori.length];
+  return colorePerTipo[t];
+}
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const norm = s => String(s ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+const num = v => parseFloat(String(v).replace(",", "."));
+
+function raggio(n) {
+  return Math.min(RAGGIO_MAX, RAGGIO_BASE + RAGGIO_CRESCITA * Math.sqrt(n - 1));
+}
+
+function disegna(zoom) {
+  layer.clearLayers();
+  const q = norm(inputCerca.value);
+  const tipo = selTipo.value;
+  const gruppi = new Map();
+  let senzaCoord = 0;
+
+  righe.forEach(r => {
+    const lat = num(r.Latitudine), lng = num(r.Longitudine);
+    if (isNaN(lat) || isNaN(lng)) { senzaCoord++; return; }
+    if (tipo && r.Tipo !== tipo) return;
+    if (q && !norm(r.Nome).includes(q)) return;
+    const key = norm(r.Nome) + "|" + lat.toFixed(5) + "|" + lng.toFixed(5);
+    if (!gruppi.has(key)) gruppi.set(key, { lat, lng, nome: r.Nome, tipo: r.Tipo, voci: [] });
+    gruppi.get(key).voci.push(r);
+  });
+
+  const punti = [], marker = [];
+  // i più piccoli sopra, così restano cliccabili
+  [...gruppi.values()].sort((a, b) => b.voci.length - a.voci.length).forEach(g => {
+    const n = g.voci.length;
+    const elenco = g.voci.map(v => {
+      const parti = [v.Luogo, v.Titolo, v.Codice, v.Delimitato_da, v.Data].filter(Boolean).map(esc);
+      return parti.length ? `<li>${parti.join(" · ")}</li>` : "";
+    }).join("");
+    const html = `<strong>${esc(g.nome)}</strong><br><em>${esc(g.tipo)}</em>` +
+      `<br>${n} ${n === 1 ? "ricorrenza" : "ricorrenze"}` +
+      (elenco ? `<ul class="elenco">${elenco}</ul>` : "");
+    const m = L.circleMarker([g.lat, g.lng], {
+      radius: raggio(n), color: "#fff", weight: 1.5, fillColor: colore(g.tipo), fillOpacity: 0.8
+    }).bindPopup(html, { maxWidth: 300 }).bindTooltip(`${g.nome} (${n})`).addTo(layer);
+    marker.push(m); punti.push([g.lat, g.lng]);
+  });
+
+  const tot = punti.length;
+  stato.textContent = `${tot} luoghi sulla mappa` + (senzaCoord ? ` (${senzaCoord} righe senza coordinate)` : "");
+
+  if (zoom && tot) {
+    if (tot === 1) { map.setView(punti[0], 10); marker[0].openPopup(); }
+    else map.fitBounds(punti, { padding: [40, 40], maxZoom: 10 });
+  }
+}
+
+function aggiornaSelect() {
+  const corrente = selTipo.value;
+  const tipi = [...new Set(righe.map(r => r.Tipo).filter(Boolean))].sort();
+  selTipo.innerHTML = '<option value="">Tutti i tipi</option>' +
+    tipi.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join("");
+  if (tipi.includes(corrente)) selTipo.value = corrente;
+}
+
+function carica(primaVolta) {
+  Papa.parse(CSV_URL + "&t=" + Date.now(), {
+    download: true, header: true, skipEmptyLines: true,
+    complete: res => {
+      righe = res.data;
+      aggiornaSelect();
+      disegna(primaVolta);
+    },
+    error: () => { stato.textContent = "Errore nel caricamento dei dati"; }
+  });
+}
+
+let timer;
+inputCerca.addEventListener("input", () => {
+  clearTimeout(timer);
+  timer = setTimeout(() => disegna(true), 250);
+});
+selTipo.addEventListener("change", () => disegna(true));
+
+carica(true);
+// il refresh periodico non muove la vista e non chiude i popup se si sta cercando
+setInterval(() => { if (!map.hasLayer || !document.querySelector(".leaflet-popup")) carica(false); }, REFRESH_MS);
+</script>
+</body>
+</html>

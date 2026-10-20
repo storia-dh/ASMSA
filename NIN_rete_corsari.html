@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rete di relazioni</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/10.1.0/standalone/umd/vis-network.min.js"></script>
+
+<style>
+:root{
+  --paper: #EFEAE1;
+  --paper-alt: #F8F5EE;
+  --ink: #221F1A;
+  --ink-soft: #5A5546;
+  --accent: #2E3A55;
+  --accent-warm: #A97F2E;
+  --gruppo: #4B6B58;
+  --altro: #8A8578;
+  --line: #D8D0BC;
+  --danger: #8B3A3A;
+  --radius: 4px;
+}
+*{ box-sizing: border-box; }
+body{
+  margin:0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Inter', -apple-system, sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+h1,h2,h3{ font-family:'Fraunces', Georgia, serif; margin:0; }
+button{ font-family: inherit; }
+:focus-visible{ outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- Masthead ---------- */
+.masthead{ padding: 40px 28px 22px; border-bottom: 1px solid var(--line); }
+.masthead h1{
+  font-size: clamp(1.7rem, 3vw, 2.3rem);
+  font-weight: 600; font-style: italic; letter-spacing: -0.01em; max-width: 20ch;
+}
+.masthead .intro{ margin-top: 12px; max-width: 70ch; font-size: 1rem; color: var(--ink-soft); }
+.masthead .intro p{ margin: 0; }
+
+/* ---------- Toolbar ---------- */
+.toolbar{
+  padding: 14px 28px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  border-bottom: 1px solid var(--line); background: var(--paper-alt);
+}
+.toolbar input[type="search"]{
+  flex: 1 1 220px; max-width: 320px; padding: 8px 12px;
+  border: 1px solid var(--line); border-radius: var(--radius); font-size: 0.9rem; background:#fff;
+}
+.toolbar button.tool{
+  border:1px solid var(--line); background:#fff; color: var(--ink-soft);
+  padding: 7px 13px; border-radius: var(--radius); font-size:0.85rem; cursor:pointer;
+}
+.toolbar button.tool.active{ background: var(--ink); color: var(--paper-alt); border-color: var(--ink); }
+.legend{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; width:100%; margin-top:6px; }
+.legend .item{ display:flex; align-items:center; gap:6px; font-size:0.8rem; color: var(--ink-soft); }
+.legend .dot{ width:10px; height:10px; border-radius:50%; display:inline-block; }
+.count{ width:100%; font-size:0.78rem; color: var(--ink-soft); font-style: italic; margin-top: 2px; }
+
+/* ---------- Area grafo ---------- */
+.stage{ position: relative; height: 78vh; min-height: 480px; }
+#network{ width:100%; height:100%; background: var(--paper); }
+.state{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color: var(--ink-soft); }
+.state.error{ color: var(--danger); flex-direction:column; text-align:center; padding: 20px; }
+
+/* ---------- Pannello laterale ---------- */
+.panel{
+  position:absolute; top:0; right:-360px; width:340px; height:100%;
+  background: var(--paper-alt); border-left: 1px solid var(--line);
+  box-shadow: -6px 0 18px rgba(20,18,14,0.08);
+  transition: right .28s ease; overflow-y:auto; padding: 22px 22px 30px;
+}
+.panel.open{ right:0; }
+.panel .close{
+  position:absolute; top:14px; right:14px; background:none; border:none;
+  font-size:1.3rem; color: var(--ink-soft); cursor:pointer; line-height:1;
+}
+.panel .kind{ font-size:0.72rem; text-transform:none; font-style:italic; color: var(--accent-warm); }
+.panel h3{ font-size:1.25rem; font-weight:600; margin-top:6px; line-height:1.3; }
+.panel dl{ margin-top:16px; }
+.panel dt{ font-size:0.72rem; color: var(--ink-soft); font-style:italic; margin-top:10px; }
+.panel dd{ margin:2px 0 0; font-size:0.92rem; }
+.panel .neighbors{ margin-top:18px; }
+.panel .neighbors h4{ font-size:0.85rem; font-weight:600; margin-bottom:8px; }
+.panel .neighbors button{
+  display:block; width:100%; text-align:left; background:#fff; border:1px solid var(--line);
+  border-radius: var(--radius); padding: 8px 10px; margin-bottom:6px; font-size:0.85rem; cursor:pointer; color: var(--ink);
+}
+.panel .neighbors button:hover{ border-color: var(--accent); }
+.panel .neighbors .rel{ font-size:0.72rem; color: var(--ink-soft); font-style:italic; }
+</style>
+</head>
+<body>
+
+<!-- =====================================================================
+     TESTO DI APERTURA — sostituisci titolo e paragrafo con il tuo testo
+     ===================================================================== -->
+<header class="masthead">
+  <h1 id="rete-titolo">Arcipelago Corsaro</h1>
+  <div class="intro" id="rete-intro">
+    <p>Il grafico mostra le reti di circolazione e redistribuzione della ricchezza che collegavano la produzione rurale e il corso marittimo nello spazio sardo-maltese del XVIII secolo</p>
+  </div>
+</header>
+
+<div class="toolbar">
+  <input type="search" id="search" placeholder="Cerca un nome…" aria-label="Cerca nella rete">
+  <button class="tool active" id="physicsToggle">Fisica: on</button>
+  <button class="tool" id="resetView">Adatta alla vista</button>
+  <div class="legend" id="legend"></div>
+  <div class="count" id="count"></div>
+</div>
+
+<div class="stage">
+  <div id="network"></div>
+  <div class="state" id="loading">Caricamento della rete…</div>
+  <aside class="panel" id="panel">
+    <button class="close" id="panelClose" aria-label="Chiudi">&times;</button>
+    <div id="panelBody"></div>
+  </aside>
+</div>
+
+<script>
+/* =====================================================================
+   CONFIGURAZIONE — modifica solo questa parte
+   ===================================================================== */
+const CONFIG = {
+  // URL del foglio originale. Il codice usa Google Visualization in modalità
+  // JSONP: funziona da GitHub Pages senza proxy, workflow o blocchi CORS.
+  nodiUrl: "https://docs.google.com/spreadsheets/d/1fALYR2tXJE15oPeTBnXbUVy00ouHE_bFzp67S2gosjY/edit?gid=378951882",
+  connessioniUrl: "https://docs.google.com/spreadsheets/d/1fALYR2tXJE15oPeTBnXbUVy00ouHE_bFzp67S2gosjY/edit?gid=434015411",
+
+  columnsNodi: {
+    id:               ["id"],
+    nome:             ["nome", "name", "label", "etichetta"],
+    eta:              ["eta", "età", "age"],
+    professione:      ["professione", "profession"],
+    nazionalita:      ["nazionalita", "nazionalità", "nationality"],
+    residenza:        ["residenza", "luogo", "location"],
+    anno:             ["anno", "year"],
+    fonti:            ["fonti", "fonte", "source", "sources"],
+    tipo:             ["tipo", "type"],
+    altreQualifiche:  ["altre qualifiche", "qualifiche", "altre qualifica"],
+    note:             ["note", "nota", "notes"]
+  },
+  columnsConnessioni: {
+    from:  ["id a", "ida", "source", "from", "origine"],
+    to:    ["id b", "idb", "target", "to", "destinazione"],
+    tipo:  ["tipo", "type", "relazione"],
+    anno:  ["anno", "year"],
+    fonti: ["fonti", "fonte", "source"]
+  }
+};
+
+// ---------------------------------------------------------------------
+// ICONE — ognuna può essere sostituita con un URL personalizzato al posto
+// della stringa SVG: basta scrivere icon: 'https://tuosito.it/icona.png'
+// (funziona anche con .svg). Il codice riconosce da solo se è un URL o
+// un disegno SVG incorporato.
+// ---------------------------------------------------------------------
+function resolveIcon(icon){
+  if (!icon) return "";
+  if (icon.startsWith("http") || icon.startsWith("data:")) return icon;
+  return svgToDataUri(icon);
+}
+function svgToDataUri(svg){ return "data:image/svg+xml," + encodeURIComponent(svg); }
+
+// --- Icone di default per categoria (usate quando il "tipo" del nodo non
+//     corrisponde a nessun ruolo specifico elencato più sotto in ROLE_ICONS) ---
+const ICON_CORSARO = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
+  <circle cx="50" cy="38" r="15" fill="#221F1A"/>
+  <path d="M35 30 Q50 20 65 30 L65 34 Q50 26 35 34 Z" fill="#8B3A3A"/>
+  <path d="M22 86 C22 62 78 62 78 86 Z" fill="#221F1A"/>
+</svg>`;
+const ICON_IMBARCAZIONE = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
+  <path d="M18 68 L82 68 L70 84 L30 84 Z" fill="#1E4E79"/>
+  <rect x="47" y="20" width="4" height="48" fill="#1E4E79"/>
+  <path d="M51 24 L74 62 L51 62 Z" fill="#1E4E79"/>
+</svg>`;
+const ICON_GRUPPO = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
+  <circle cx="36" cy="42" r="11" fill="#221F1A"/>
+  <circle cx="64" cy="42" r="11" fill="#221F1A"/>
+  <circle cx="50" cy="62" r="11" fill="#221F1A"/>
+</svg>`;
+const ICON_PRIGIONIERO = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
+  <ellipse cx="38" cy="50" rx="16" ry="11" fill="none" stroke="#221F1A" stroke-width="7" transform="rotate(-20 38 50)"/>
+  <ellipse cx="62" cy="50" rx="16" ry="11" fill="none" stroke="#221F1A" stroke-width="7" transform="rotate(20 62 50)"/>
+</svg>`;
+const ICON_ALTRO = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
+  <path d="M50 18 L68 50 L50 82 L32 50 Z" fill="#221F1A"/>
+</svg>`;
+
+// --- Icone per ruolo specifico, lette dalla colonna "Tipo" del foglio nodi.
+//     "test" cerca una parola chiave nel testo (senza distinguere maiuscole/minuscole
+//     o accenti): se combacia, quell'icona sostituisce quella di default della categoria.
+//     Aggiungi nuove voci in qualsiasi punto dell'elenco: la prima che combacia vince.
+const ROLE_ICONS = [
+  { test: t => t.includes("armator"), label: "Armatore", icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
+      <path d="M22 45 Q50 25 78 45" fill="none" stroke="#221F1A" stroke-width="6"/>
+      <rect x="22" y="45" width="56" height="30" rx="4" fill="#221F1A"/>
+      <rect x="46" y="55" width="8" height="10" fill="#F8F5EE"/>
+    </svg>` },
+  { test: t => t.includes("capitano"), label: "Capitano", icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
+      <circle cx="50" cy="28" r="7" fill="none" stroke="#221F1A" stroke-width="5"/>
+      <line x1="50" y1="35" x2="50" y2="78" stroke="#221F1A" stroke-width="6"/>
+      <line x1="30" y1="45" x2="70" y2="45" stroke="#221F1A" stroke-width="6"/>
+      <path d="M30 65 Q30 82 50 82 Q70 82 70 65" fill="none" stroke="#221F1A" stroke-width="6"/>
+    </svg>` },
+  { test: t => t.includes("patrone"), label: "Patrone", icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
+      <circle cx="50" cy="50" r="26" fill="none" stroke="#221F1A" stroke-width="6"/>
+      <circle cx="50" cy="50" r="6" fill="#221F1A"/>
+      <line x1="50" y1="14" x2="50" y2="86" stroke="#221F1A" stroke-width="5"/>
+      <line x1="14" y1="50" x2="86" y2="50" stroke="#221F1A" stroke-width="5"/>
+      <line x1="24" y1="24" x2="76" y2="76" stroke="#221F1A" stroke-width="5"/>
+      <line x1="76" y1="24" x2="24" y2="76" stroke="#221F1A" stroke-width="5"/>
+    </svg>` },
+  { test: t => t.includes("nocchiero") || t.includes("piloto") || t.includes("pilota"), label: "Nocchiero / pilota", icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
+      <circle cx="50" cy="50" r="30" fill="none" stroke="#221F1A" stroke-width="5"/>
+      <path d="M50 30 L58 50 L50 70 L42 50 Z" fill="#221F1A"/>
+    </svg>` },
+  { test: t => t.includes("tenente"), label: "Tenente", icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
+      <path d="M25 40 L50 60 L75 40" fill="none" stroke="#221F1A" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M25 60 L50 80 L75 60" fill="none" stroke="#221F1A" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>` },
+  { test: t => t.includes("soldato") || t.includes("sergente") || t.includes("guardiano") || t.includes("sacra religione"), label: "Militare", icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
+      <path d="M50 18 L78 30 L78 52 Q78 76 50 86 Q22 76 22 52 L22 30 Z" fill="#221F1A"/>
+    </svg>` },
+  { test: t => t.includes("chirurgo"), label: "Chirurgo", icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
+      <rect x="42" y="22" width="16" height="56" fill="#8B3A3A"/>
+      <rect x="22" y="42" width="56" height="16" fill="#8B3A3A"/>
+    </svg>` },
+  { test: t => t.includes("sacerdote") || t.includes("prete") || t.includes("cappellano"), label: "Sacerdote", icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
+      <rect x="45" y="16" width="10" height="66" fill="#221F1A"/>
+      <rect x="26" y="34" width="48" height="10" fill="#221F1A"/>
+    </svg>` },
+  { test: t => t.includes("contadin") || t.includes("massaio"), label: "Contadino", icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
+      <line x1="50" y1="82" x2="50" y2="20" stroke="#221F1A" stroke-width="4"/>
+      <ellipse cx="40" cy="30" rx="6" ry="10" fill="#221F1A" transform="rotate(-25 40 30)"/>
+      <ellipse cx="60" cy="30" rx="6" ry="10" fill="#221F1A" transform="rotate(25 60 30)"/>
+      <ellipse cx="38" cy="46" rx="6" ry="10" fill="#221F1A" transform="rotate(-25 38 46)"/>
+      <ellipse cx="62" cy="46" rx="6" ry="10" fill="#221F1A" transform="rotate(25 62 46)"/>
+    </svg>` },
+  { test: t => t.includes("mercante"), label: "Mercante", icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
+      <line x1="50" y1="20" x2="50" y2="70" stroke="#221F1A" stroke-width="5"/>
+      <line x1="25" y1="35" x2="75" y2="35" stroke="#221F1A" stroke-width="5"/>
+      <circle cx="25" cy="50" r="10" fill="none" stroke="#221F1A" stroke-width="4"/>
+      <circle cx="75" cy="50" r="10" fill="none" stroke="#221F1A" stroke-width="4"/>
+      <line x1="50" y1="70" x2="35" y2="82" stroke="#221F1A" stroke-width="5"/>
+      <line x1="50" y1="70" x2="65" y2="82" stroke="#221F1A" stroke-width="5"/>
+    </svg>` },
+  { test: t => t.includes("scrivano") || t.includes("console") || t.includes("procuratore"), label: "Scrivano / console / procuratore", icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
+      <path d="M28 78 L64 22 Q72 14 80 22 Q88 30 80 38 L36 74 Z" fill="#221F1A"/>
+      <line x1="24" y1="82" x2="34" y2="72" stroke="#221F1A" stroke-width="5"/>
+    </svg>` },
+  { test: t => t.includes("ascia"), label: "Maestro d'ascia", icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
+      <line x1="55" y1="20" x2="30" y2="85" stroke="#221F1A" stroke-width="6" stroke-linecap="round"/>
+      <path d="M55 18 L82 30 L70 50 L45 38 Z" fill="#221F1A"/>
+    </svg>` },
+  { test: t => t.includes("taverniere"), label: "Taverniere", icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
+      <rect x="32" y="34" width="30" height="46" rx="4" fill="#221F1A"/>
+      <path d="M62 42 Q80 42 80 58 Q80 74 62 70" fill="none" stroke="#221F1A" stroke-width="6"/>
+    </svg>` },
+  { test: t => t.includes("catturato"), label: "Catturato", icon: ICON_PRIGIONIERO }
+];
+
+// --- Icone per tipo di collegamento, disegnate al centro della linea.
+//     La chiave deve corrispondere (senza distinzione maiuscole/minuscole e
+//     accenti) al valore della colonna "tipo" nel foglio connessioni.
+const EDGE_ICONS = {
+  "attacco": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <line x1="18" y1="82" x2="70" y2="20" stroke="#8B3A3A" stroke-width="8" stroke-linecap="round"/>
+    <path d="M64 14 Q82 20 76 38" fill="none" stroke="#8B3A3A" stroke-width="8" stroke-linecap="round"/>
+    <line x1="18" y1="82" x2="28" y2="92" stroke="#5c2626" stroke-width="8" stroke-linecap="round"/>
+    <line x1="10" y1="76" x2="24" y2="68" stroke="#5c2626" stroke-width="6" stroke-linecap="round"/>
+  </svg>`,
+  "prestito": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="40" fill="#A97F2E" stroke="#6b5320" stroke-width="5"/>
+    <circle cx="50" cy="50" r="24" fill="none" stroke="#F8F5EE" stroke-width="4"/>
+  </svg>`,
+  "consegna patente": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <rect x="14" y="26" width="72" height="48" rx="3" fill="#F8F5EE" stroke="#221F1A" stroke-width="5"/>
+    <path d="M14 28 L50 56 L86 28" fill="none" stroke="#221F1A" stroke-width="5"/>
+  </svg>`,
+  "catturato": ICON_PRIGIONIERO,
+  "corso": ICON_CORSARO,
+  "miniere": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <line x1="28" y1="90" x2="68" y2="18" stroke="#5A5546" stroke-width="7" stroke-linecap="round"/>
+    <path d="M58 12 L88 26 L72 44 L48 28 Z" fill="#5A5546"/>
+  </svg>`,
+  "procura": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <rect x="8" y="42" width="38" height="17" rx="8.5" fill="#2E3A55" transform="rotate(-10 27 50)"/>
+    <rect x="54" y="42" width="38" height="17" rx="8.5" fill="#2E3A55" transform="rotate(10 73 50)"/>
+    <circle cx="50" cy="50" r="11" fill="#2E3A55"/>
+  </svg>`
+};
+
+// Etichette e icona di default per le categorie dedotte dal prefisso dell'id
+// (crs_ persona/corsaro, bst_ imbarcazione, nin_ gruppo, slv_ prigioniero/schiavo).
+// Il colore del bordo dei nodi resta legato alla nazionalità (vedi PALETTE più sotto).
+CONFIG.categorie = {
+  persona:       { match: p => p.startsWith("crs"), label: "Persona (corsaro)", icon: ICON_CORSARO },
+  imbarcazione:  { match: p => p.startsWith("bst"), label: "Imbarcazione",      icon: ICON_IMBARCAZIONE },
+  gruppo:        { match: p => p.startsWith("nin"), label: "Gruppo",            icon: ICON_GRUPPO },
+  prigioniero:   { match: p => p.startsWith("slv"), label: "Catturato/schiavo", icon: ICON_PRIGIONIERO },
+  altro:         { match: () => true,               label: "Altro",            icon: ICON_ALTRO }
+};
+
+// Restituisce l'icona giusta per un nodo: se la colonna "Tipo" corrisponde a un
+// ruolo specifico (vedi ROLE_ICONS) usa quella, altrimenti l'icona di default
+// della categoria. Le imbarcazioni non passano da qui: la colonna "Tipo" per
+// loro indica il tipo di nave, non un ruolo, quindi mantengono sempre l'icona nave.
+function getNodeIcon(n, cat){
+  if (cat !== "imbarcazione" && n.tipo){
+    const t = normalizeHeader(n.tipo);
+    const rule = ROLE_ICONS.find(r => r.test(t));
+    if (rule) return { icon: rule.icon, label: rule.label };
+  }
+  return { icon: CONFIG.categorie[cat].icon, label: CONFIG.categorie[cat].label };
+}
+
+// Tavolozza usata per colorare dinamicamente nazionalità (nodi) e tipo di legame (linee).
+// Se i valori distinti superano la lunghezza dell'array, i colori si ripetono ciclicamente.
+const PALETTE = ["#2E3A55","#A97F2E","#4B6B58","#8B3A3A","#5B4B8A","#3E7C8C","#B5652D","#6B5B3E","#7A4B6B","#3F6B3F"];
+const NEUTRAL_COLOR = "#B9B2A0";
+function buildColorMap(values){
+  // Raggruppa i valori ignorando maiuscole/minuscole e accenti (es. "Sardo" e "sardo" diventano un'unica voce).
+  const canonical = {};   // chiave normalizzata -> etichetta da mostrare (la prima incontrata)
+  const order = [];
+  values.forEach(v => {
+    if (!v) return;
+    const key = normalizeHeader(v);
+    if (!(key in canonical)){ canonical[key] = v.trim(); order.push(key); }
+  });
+  order.sort((a, b) => canonical[a].localeCompare(canonical[b], "it"));
+  const colorByKey = {};
+  const labelByKey = {};
+  order.forEach((key, i) => { colorByKey[key] = PALETTE[i % PALETTE.length]; labelByKey[key] = canonical[key]; });
+  return { colorByKey, labelByKey };
+}
+function colorFor(map, value){
+  if (!value) return NEUTRAL_COLOR;
+  return map.colorByKey[normalizeHeader(value)] || NEUTRAL_COLOR;
+}
+
+/* ---------- Utility ---------- */
+function normalizeHeader(h){
+  return (h || "").toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+function findField(row, aliases){
+  for (const key in row){
+    const nk = normalizeHeader(key);
+    if (aliases.some(a => normalizeHeader(a) === nk)) return (row[key] || "").toString().trim();
+  }
+  return "";
+}
+function parseCSV(url){
+  return new Promise((resolve, reject) => {
+    Papa.parse(url, {
+      download: true, header: true, skipEmptyLines: true,
+      complete: (res) => {
+        if (res.errors && res.errors.length && !(res.data || []).length){
+          reject(new Error(res.errors[0].message || "CSV non valido"));
+          return;
+        }
+        resolve(res.data || []);
+      },
+      error: (err) => reject(new Error(
+        (err && err.message) || "richiesta CSV bloccata dal browser"
+      ))
+    });
+  });
+}
+
+// Gli URL CSV pubblicati da Google possono essere reindirizzati verso un host
+// che non espone più gli header CORS. In quel caso XMLHttpRequest (usato da
+// PapaParse) fallisce anche se il foglio è pubblico. L'endpoint Visualization
+// accetta invece una callback JSONP e continua a funzionare dentro un iframe.
+function googleVisualizationUrl(publishedUrl, callbackName){
+  const source = new URL(publishedUrl);
+  const match = source.pathname.match(/^(.*\/spreadsheets\/d\/e\/[^/]+)\/pub$/) ||
+                source.pathname.match(/^(.*\/spreadsheets\/d\/[^/]+)\/(?:edit|view)$/);
+  if (!match) return "";
+  const endpoint = new URL(source.origin + match[1] + "/gviz/tq");
+  endpoint.searchParams.set("gid", source.searchParams.get("gid") || "0");
+  endpoint.searchParams.set("headers", "1");
+  endpoint.searchParams.set("tqx", "out:json;responseHandler:" + callbackName);
+  return endpoint.toString();
+}
+
+function gvizTableToRows(response){
+  if (!response || response.status === "error" || !response.table){
+    const detail = response && response.errors && response.errors[0];
+    throw new Error((detail && (detail.detailed_message || detail.message)) || "risposta Google non valida");
+  }
+  const columns = (response.table.cols || []).map((col, index) =>
+    (col && (col.label || col.id)) || ("colonna_" + (index + 1))
+  );
+  return (response.table.rows || []).map(row => {
+    const result = {};
+    columns.forEach((column, index) => {
+      const cell = row.c && row.c[index];
+      result[column] = cell == null ? "" : (cell.f != null ? cell.f : (cell.v != null ? cell.v : ""));
+    });
+    return result;
+  }).filter(row => Object.values(row).some(value => value !== ""));
+}
+
+function parseGoogleSheetJsonp(url){
+  return new Promise((resolve, reject) => {
+    const callbackName = "asmsaSheet_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+    const endpoint = googleVisualizationUrl(url, callbackName);
+    if (!endpoint){ reject(new Error("URL Google non riconosciuto")); return; }
+
+    const script = document.createElement("script");
+    const timeout = setTimeout(() => finish(new Error("Google non ha risposto entro 15 secondi")), 15000);
+    function cleanup(){
+      clearTimeout(timeout);
+      script.remove();
+      try { delete window[callbackName]; } catch (_) { window[callbackName] = undefined; }
+    }
+    function finish(error, rows){
+      cleanup();
+      error ? reject(error) : resolve(rows);
+    }
+    window[callbackName] = response => {
+      try { finish(null, gvizTableToRows(response)); }
+      catch (error) { finish(error); }
+    };
+    script.onerror = () => finish(new Error("endpoint Google Visualization non raggiungibile"));
+    script.src = endpoint;
+    document.head.appendChild(script);
+  });
+}
+
+async function loadSheet(label, url){
+  const isGoogleSheet = /docs\.google\.com\/spreadsheets\/d\/(?:e\/)?[^/]+\/(?:pub|edit|view)/i.test(url);
+  try{
+    // Per Google Sheets usa JSONP: non dipende dagli header CORS.
+    return isGoogleSheet ? await parseGoogleSheetJsonp(url) : await parseCSV(url);
+  }catch(error){
+    throw new Error(label + ": " + error.message);
+  }
+}
+function truncate(s, n){ return (s && s.length > n) ? s.slice(0, n - 1) + "…" : (s || ""); }
+function categoryOf(id){
+  const p = (id || "").toLowerCase();
+  for (const key in CONFIG.categorie){
+    if (CONFIG.categorie[key].match(p)) return key;
+  }
+  return "altro";
+}
+
+/* ---------- Stato globale ---------- */
+let network, nodesDS, edgesDS;
+let nodesRaw = {};      // id -> dati completi del nodo
+let edgesRaw = [];      // elenco completo degli archi
+let neighborsOf = {};   // id -> [{id, tipo, anno}]
+let nazioColors = { colorByKey: {}, labelByKey: {} };   // nazionalità -> colore
+let tipoColors = { colorByKey: {}, labelByKey: {} };    // tipo di legame -> colore
+let usedIcons = {};      // etichetta ruolo/categoria -> icona (nodi effettivamente presenti)
+let usedEdgeIcons = {};  // tipo di legame -> icona (collegamenti effettivamente presenti)
+let physicsOn = true;
+
+/* ---------- Caricamento dati ---------- */
+async function loadData(){
+  if (!CONFIG.nodiUrl || !CONFIG.connessioniUrl){
+    showError("Configurazione mancante", "Inserisci gli URL CSV di CONFIG.nodiUrl e CONFIG.connessioniUrl.");
+    return;
+  }
+  try{
+    const [nodiRows, connRows] = await Promise.all([
+      loadSheet("foglio nodi", CONFIG.nodiUrl),
+      loadSheet("foglio connessioni", CONFIG.connessioniUrl)
+    ]);
+    buildGraph(nodiRows, connRows);
+  }catch(err){
+    showError("Impossibile leggere i fogli", "Verifica che il foglio Google sia condiviso con «Chiunque abbia il link». Dettaglio: " + err.message);
+  }
+}
+
+function showError(title, detail){
+  document.getElementById("loading").outerHTML = `
+    <div class="state error"><strong>${title}</strong><div style="font-size:0.85rem;margin-top:8px;opacity:0.85;">${detail}</div></div>`;
+}
+
+function buildGraph(nodiRows, connRows){
+  // --- Nodi: unione con merge in caso di id duplicati nel foglio ---
+  nodiRows.forEach(r => {
+    const id = findField(r, CONFIG.columnsNodi.id);
+    if (!id) return;
+    const entry = {
+      nome: findField(r, CONFIG.columnsNodi.nome),
+      eta: findField(r, CONFIG.columnsNodi.eta),
+      professione: findField(r, CONFIG.columnsNodi.professione),
+      nazionalita: findField(r, CONFIG.columnsNodi.nazionalita),
+      residenza: findField(r, CONFIG.columnsNodi.residenza),
+      anno: findField(r, CONFIG.columnsNodi.anno),
+      fonti: findField(r, CONFIG.columnsNodi.fonti),
+      tipo: findField(r, CONFIG.columnsNodi.tipo),
+      altreQualifiche: findField(r, CONFIG.columnsNodi.altreQualifiche),
+      note: findField(r, CONFIG.columnsNodi.note)
+    };
+    if (nodesRaw[id]){
+      // Riga duplicata per lo stesso id: unisce i valori distinti invece di sovrascrivere
+      const prev = nodesRaw[id];
+      for (const k in entry){
+        if (entry[k] && prev[k] && !prev[k].includes(entry[k])) prev[k] += " / " + entry[k];
+        else if (entry[k] && !prev[k]) prev[k] = entry[k];
+      }
+    } else {
+      nodesRaw[id] = entry;
+    }
+  });
+
+  // --- Archi: scarta quelli con estremi mancanti o sconosciuti ---
+  let skipped = 0;
+  connRows.forEach((r, idx) => {
+    const from = findField(r, CONFIG.columnsConnessioni.from);
+    const to = findField(r, CONFIG.columnsConnessioni.to);
+    const tipo = findField(r, CONFIG.columnsConnessioni.tipo);
+    const anno = findField(r, CONFIG.columnsConnessioni.anno);
+    const fonti = findField(r, CONFIG.columnsConnessioni.fonti);
+    if (!from || !to || !nodesRaw[from] || !nodesRaw[to]){ skipped++; return; }
+    edgesRaw.push({ id: "e" + idx, from, to, tipo, anno, fonti });
+  });
+
+  // --- Grado di ciascun nodo (per dimensionare i pallini) ---
+  const degree = {};
+  edgesRaw.forEach(e => {
+    degree[e.from] = (degree[e.from] || 0) + 1;
+    degree[e.to] = (degree[e.to] || 0) + 1;
+    (neighborsOf[e.from] = neighborsOf[e.from] || []).push({ id: e.to, tipo: e.tipo, anno: e.anno });
+    (neighborsOf[e.to] = neighborsOf[e.to] || []).push({ id: e.from, tipo: e.tipo, anno: e.anno });
+  });
+
+  // --- Mappe colore dinamiche: nazionalità (nodi) e tipo di legame (archi) ---
+  nazioColors = buildColorMap(Object.values(nodesRaw).map(n => n.nazionalita));
+  tipoColors = buildColorMap(edgesRaw.map(e => e.tipo));
+
+  // --- Dataset per vis-network ---
+  usedIcons = {}; // etichetta -> icona effettivamente in uso (per la legenda)
+  usedEdgeIcons = {};
+  const visNodes = Object.keys(nodesRaw).map(id => {
+    const n = nodesRaw[id];
+    const cat = categoryOf(id);
+    const ringColor = colorFor(nazioColors, n.nazionalita);
+    const { icon, label: iconLabel } = getNodeIcon(n, cat);
+    usedIcons[iconLabel] = icon;
+    // Le imbarcazioni ricevono una massa maggiore: nella simulazione fisica si respingono
+    // di più a vicenda e dagli altri nodi, restando ben distanziate tra loro.
+    const mass = cat === "imbarcazione" ? 6 : 1;
+    return {
+      id,
+      label: truncate(n.nome || id, 26),
+      shape: "circularImage",
+      image: resolveIcon(icon),
+      color: { border: ringColor, highlight: { border: "#221F1A" } },
+      borderWidth: 3,
+      borderWidthSelected: 4,
+      mass,
+      value: degree[id] || 1,
+      title: n.nome || id
+    };
+  });
+  const visEdges = edgesRaw.map(e => {
+    const label = [e.tipo, e.anno].filter(Boolean).join(" · ");
+    const color = colorFor(tipoColors, e.tipo);
+    const iconKey = normalizeHeader(e.tipo);
+    if (EDGE_ICONS[iconKey]) usedEdgeIcons[e.tipo.trim()] = EDGE_ICONS[iconKey];
+    return {
+      id: e.id, from: e.from, to: e.to,
+      label,
+      title: label,
+      color: { color, highlight: "#221F1A", hover: "#221F1A" }
+    };
+  });
+
+  nodesDS = new vis.DataSet(visNodes);
+  edgesDS = new vis.DataSet(visEdges);
+
+  renderLegend();
+  renderNetwork();
+
+  document.getElementById("loading").style.display = "none";
+  const skipNote = skipped ? ` · ${skipped} collegamenti ignorati (riferimenti a id mancanti)` : "";
+  document.getElementById("count").textContent =
+    `${visNodes.length} nodi · ${visEdges.length} collegamenti${skipNote}`;
+}
+
+/* ---------- Legenda ---------- */
+function renderLegend(){
+  const legend = document.getElementById("legend");
+
+  const ruoliHtml = Object.keys(usedIcons).sort((a, b) => a.localeCompare(b, "it")).map(label => `
+    <span class="item"><img src="${resolveIcon(usedIcons[label])}" alt="" style="width:16px;height:16px;border-radius:50%;">${label}</span>
+  `).join("");
+
+  const nazioHtml = Object.keys(nazioColors.colorByKey).map(key => `
+    <span class="item"><span class="dot" style="background:${nazioColors.colorByKey[key]}"></span>${nazioColors.labelByKey[key]}</span>
+  `).join("") + `<span class="item"><span class="dot" style="background:${NEUTRAL_COLOR}"></span>Non specificata</span>`;
+
+  const legameColoreHtml = Object.keys(tipoColors.colorByKey).map(key => `
+    <span class="item"><span style="display:inline-block;width:14px;height:2px;background:${tipoColors.colorByKey[key]};"></span>${tipoColors.labelByKey[key]}</span>
+  `).join("");
+
+  const legameIconaHtml = Object.keys(usedEdgeIcons).sort((a, b) => a.localeCompare(b, "it")).map(label => `
+    <span class="item"><img src="${resolveIcon(usedEdgeIcons[label])}" alt="" style="width:14px;height:14px;border-radius:50%;">${label}</span>
+  `).join("");
+
+  legend.innerHTML = `
+    <span style="font-size:0.72rem;color:var(--ink-soft);font-style:italic;">Ruolo:</span> ${ruoliHtml}
+    <span style="font-size:0.72rem;color:var(--ink-soft);font-style:italic;margin-left:10px;">Nazionalità:</span> ${nazioHtml}
+    <span style="font-size:0.72rem;color:var(--ink-soft);font-style:italic;margin-left:10px;">Colore legame:</span> ${legameColoreHtml}
+    <span style="font-size:0.72rem;color:var(--ink-soft);font-style:italic;margin-left:10px;">Icona legame:</span> ${legameIconaHtml}
+  `;
+}
+
+/* ---------- Rete ---------- */
+function renderNetwork(){
+  const container = document.getElementById("network");
+
+  const options = {
+    nodes: {
+      shape: "circularImage",
+      scaling: { min: 16, max: 42 },
+      font: { face: "Inter", size: 12, color: "#221F1A" },
+      borderWidth: 3
+    },
+    edges: {
+      color: { color: "rgba(90,85,70,0.45)", highlight: "#221F1A", hover: "#221F1A" },
+      width: 1.4,
+      smooth: { type: "continuous" },
+      font: { size: 9, color: "#5A5546", strokeWidth: 0, align: "top" },
+      arrows: { to: { enabled: true, scaleFactor: 0.35 } }
+    },
+    physics: {
+      barnesHut: { gravitationalConstant: -3200, springLength: 130, springConstant: 0.045, damping: 0.28, avoidOverlap: 1 },
+      stabilization: { iterations: 250 }
+    },
+    interaction: { hover: true, tooltipDelay: 150, keyboard: true }
+  };
+
+  network = new vis.Network(container, { nodes: nodesDS, edges: edgesDS }, options);
+
+  network.on("click", (params) => {
+    if (params.nodes.length){ openNodePanel(params.nodes[0]); }
+    else if (params.edges.length){ openEdgePanel(params.edges[0]); }
+    else { closePanel(); }
+  });
+
+  // --- Icone al centro dei collegamenti, in base al tipo (attacco, denaro, miniere, ecc.) ---
+  const edgeIconImages = {};
+  const edgeIconKeys = Object.keys(EDGE_ICONS);
+  Promise.all(edgeIconKeys.map(key => new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => { edgeIconImages[key] = img; resolve(); };
+    img.onerror = resolve;
+    img.src = resolveIcon(EDGE_ICONS[key]);
+  }))).then(() => network.redraw());
+
+  network.on("afterDrawing", (ctx) => {
+    edgesRaw.forEach(e => {
+      const key = normalizeHeader(e.tipo);
+      const img = edgeIconImages[key];
+      if (!img) return;
+      const positions = network.getPositions([e.from, e.to]);
+      const p1 = positions[e.from], p2 = positions[e.to];
+      if (!p1 || !p2) return;
+      const mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
+      const size = 22;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(mx, my, size * 0.62, 0, Math.PI * 2);
+      ctx.fillStyle = "#F8F5EE";
+      ctx.globalAlpha = 0.95;
+      ctx.fill();
+      ctx.restore();
+      ctx.drawImage(img, mx - size / 2, my - size / 2, size, size);
+    });
+  });
+}
+
+/* ---------- Pannello dettaglio ---------- */
+const panel = document.getElementById("panel");
+const panelBody = document.getElementById("panelBody");
+
+function openNodePanel(id){
+  const n = nodesRaw[id];
+  if (!n) return;
+  const cat = categoryOf(id);
+  const { label: catLabel } = getNodeIcon(n, cat);
+
+  const neigh = (neighborsOf[id] || []);
+  const neighHtml = neigh.length ? neigh.map(x => {
+    const relLabel = [x.tipo, x.anno].filter(Boolean).join(" · ");
+    return `
+    <button data-id="${x.id}">
+      ${(nodesRaw[x.id] && nodesRaw[x.id].nome) || x.id}
+      ${relLabel ? `<div class="rel">${relLabel}</div>` : ""}
+    </button>`;
+  }).join("") : "<p style='font-size:0.85rem;color:var(--ink-soft);'>Nessun collegamento registrato.</p>";
+
+  panelBody.innerHTML = `
+    <div class="kind">${catLabel}</div>
+    <h3>${n.nome || id}</h3>
+    <dl>
+      ${n.eta ? `<dt>Età</dt><dd>${n.eta}</dd>` : ""}
+      ${n.professione ? `<dt>Professione</dt><dd>${n.professione}</dd>` : ""}
+      ${n.altreQualifiche ? `<dt>Altre qualifiche</dt><dd>${n.altreQualifiche}</dd>` : ""}
+      ${n.nazionalita ? `<dt>Nazionalità</dt><dd>${n.nazionalita}</dd>` : ""}
+      ${n.residenza ? `<dt>Residenza</dt><dd>${n.residenza}</dd>` : ""}
+      ${n.anno ? `<dt>Anno</dt><dd>${n.anno}</dd>` : ""}
+      ${n.tipo ? `<dt>Tipo</dt><dd>${n.tipo}</dd>` : ""}
+      ${n.fonti ? `<dt>Fonti</dt><dd>${n.fonti}</dd>` : ""}
+      ${n.note ? `<dt>Note</dt><dd>${n.note}</dd>` : ""}
+    </dl>
+    <div class="neighbors">
+      <h4>Collegamenti (${neigh.length})</h4>
+      ${neighHtml}
+    </div>
+  `;
+  wireNeighborButtons();
+  panel.classList.add("open");
+  network.selectNodes([id]);
+  network.focus(id, { scale: 1.1, animation: { duration: 400 } });
+}
+
+function openEdgePanel(edgeId){
+  const e = edgesRaw.find(x => x.id === edgeId);
+  if (!e) return;
+  const a = nodesRaw[e.from], b = nodesRaw[e.to];
+  panelBody.innerHTML = `
+    <div class="kind">Collegamento</div>
+    <h3>${e.tipo || "Relazione"}</h3>
+    <dl>
+      ${e.anno ? `<dt>Anno</dt><dd>${e.anno}</dd>` : ""}
+      ${e.fonti ? `<dt>Fonti</dt><dd>${e.fonti}</dd>` : ""}
+    </dl>
+    <div class="neighbors">
+      <h4>Tra</h4>
+      <button data-id="${e.from}">${(a && a.nome) || e.from}</button>
+      <button data-id="${e.to}">${(b && b.nome) || e.to}</button>
+    </div>
+  `;
+  wireNeighborButtons();
+  panel.classList.add("open");
+  network.selectEdges([edgeId]);
+}
+
+function wireNeighborButtons(){
+  panelBody.querySelectorAll(".neighbors button").forEach(btn => {
+    btn.addEventListener("click", () => openNodePanel(btn.dataset.id));
+  });
+}
+function closePanel(){ panel.classList.remove("open"); network && network.unselectAll(); }
+document.getElementById("panelClose").addEventListener("click", closePanel);
+
+/* ---------- Ricerca ---------- */
+document.getElementById("search").addEventListener("input", (e) => {
+  const q = normalizeHeader(e.target.value);
+  if (!nodesDS) return;
+  const updates = Object.keys(nodesRaw).map(id => {
+    const match = !q || normalizeHeader(nodesRaw[id].nome || id).includes(q);
+    return {
+      id,
+      opacity: match ? 1 : 0.22,
+      font: { color: match ? "#221F1A" : "rgba(90,85,70,0.3)" }
+    };
+  });
+  nodesDS.update(updates);
+});
+
+/* ---------- Controlli ---------- */
+document.getElementById("physicsToggle").addEventListener("click", (e) => {
+  physicsOn = !physicsOn;
+  network.setOptions({ physics: { enabled: physicsOn } });
+  e.target.textContent = "Fisica: " + (physicsOn ? "on" : "off");
+  e.target.classList.toggle("active", physicsOn);
+});
+document.getElementById("resetView").addEventListener("click", () => {
+  network && network.fit({ animation: true });
+});
+
+loadData();
+</script>
+</body>
+</html>
