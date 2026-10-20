@@ -60,10 +60,34 @@ button{ font-family: inherit; }
   padding: 7px 13px; border-radius: var(--radius); font-size:0.85rem; cursor:pointer;
 }
 .toolbar button.tool.active{ background: var(--ink); color: var(--paper-alt); border-color: var(--ink); }
-.legend{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; width:100%; margin-top:6px; }
+.filter-panel{ width:100%; border:1px solid var(--line); border-radius:var(--radius); background:#fff; }
+.filter-panel summary{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:9px 12px; cursor:pointer; color:var(--ink); font-size:0.85rem; font-weight:600;
+  list-style:none;
+}
+.filter-panel summary::-webkit-details-marker{ display:none; }
+.filter-panel summary::after{ content:"▾"; color:var(--ink-soft); transition:transform .2s ease; }
+.filter-panel[open] summary::after{ transform:rotate(180deg); }
+.filter-summary{ display:flex; align-items:center; gap:8px; min-width:0; }
+.filter-status{ color:var(--ink-soft); font-size:0.74rem; font-weight:400; font-style:italic; white-space:nowrap; }
+.filter-body{ padding:12px; border-top:1px solid var(--line); }
+.filter-controls{ display:grid; grid-template-columns:repeat(3,minmax(150px,1fr)) auto; gap:10px; align-items:end; }
+.filter-control{ display:flex; flex-direction:column; gap:4px; min-width:0; }
+.filter-control label{ font-size:0.72rem; color:var(--ink-soft); font-style:italic; }
+.filter-control select{
+  width:100%; padding:8px 30px 8px 10px; border:1px solid var(--line); border-radius:var(--radius);
+  background:#fff; color:var(--ink); font:inherit; font-size:0.82rem;
+}
+.filter-reset{ white-space:nowrap; }
+.legend{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; width:100%; margin-top:14px; padding-top:12px; border-top:1px solid var(--line); }
 .legend .item{ display:flex; align-items:center; gap:6px; font-size:0.8rem; color: var(--ink-soft); }
 .legend .dot{ width:10px; height:10px; border-radius:50%; display:inline-block; }
 .count{ width:100%; font-size:0.78rem; color: var(--ink-soft); font-style: italic; margin-top: 2px; }
+@media (max-width:760px){
+  .filter-controls{ grid-template-columns:1fr; }
+  .filter-status{ overflow:hidden; text-overflow:ellipsis; }
+}
 
 /* ---------- Area grafo ---------- */
 .stage{ position: relative; height: 78vh; min-height: 480px; }
@@ -114,7 +138,29 @@ button{ font-family: inherit; }
   <input type="search" id="search" placeholder="Cerca un nome…" aria-label="Cerca nella rete">
   <button class="tool active" id="physicsToggle">Fisica: on</button>
   <button class="tool" id="resetView">Adatta alla vista</button>
-  <div class="legend" id="legend"></div>
+  <details class="filter-panel" id="filterPanel">
+    <summary>
+      <span class="filter-summary">Filtri e legenda <span class="filter-status" id="filterStatus">Nessun filtro attivo</span></span>
+    </summary>
+    <div class="filter-body">
+      <div class="filter-controls">
+        <div class="filter-control">
+          <label for="roleFilter">Ruolo</label>
+          <select id="roleFilter"><option value="">Tutti i ruoli</option></select>
+        </div>
+        <div class="filter-control">
+          <label for="nationalityFilter">Nazionalità</label>
+          <select id="nationalityFilter"><option value="">Tutte le nazionalità</option></select>
+        </div>
+        <div class="filter-control">
+          <label for="relationFilter">Tipo di legame</label>
+          <select id="relationFilter"><option value="">Tutti i legami</option></select>
+        </div>
+        <button class="tool filter-reset" id="resetFilters" type="button">Azzera filtri</button>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+  </details>
   <div class="count" id="count"></div>
 </div>
 
@@ -485,6 +531,8 @@ let tipoColors = { colorByKey: {}, labelByKey: {} };    // tipo di legame -> col
 let usedIcons = {};      // etichetta ruolo/categoria -> icona (nodi effettivamente presenti)
 let usedEdgeIcons = {};  // tipo di legame -> icona (collegamenti effettivamente presenti)
 let physicsOn = true;
+let totalNodeCount = 0;
+let totalEdgeCount = 0;
 
 /* ---------- Caricamento dati ---------- */
 async function loadData(){
@@ -602,8 +650,11 @@ function buildGraph(nodiRows, connRows){
 
   nodesDS = new vis.DataSet(visNodes);
   edgesDS = new vis.DataSet(visEdges);
+  totalNodeCount = visNodes.length;
+  totalEdgeCount = visEdges.length;
 
   renderLegend();
+  renderFilters();
   renderNetwork();
 
   document.getElementById("loading").style.display = "none";
@@ -639,6 +690,88 @@ function renderLegend(){
     <span style="font-size:0.72rem;color:var(--ink-soft);font-style:italic;margin-left:10px;">Icona legame:</span> ${legameIconaHtml}
   `;
 }
+
+/* ---------- Filtri ---------- */
+function fillSelect(selectId, entries, defaultLabel){
+  const select = document.getElementById(selectId);
+  select.innerHTML = `<option value="">${defaultLabel}</option>` + entries.map(([value, label]) =>
+    `<option value="${escapeAttribute(value)}">${escapeHtml(label)}</option>`
+  ).join("");
+}
+function escapeHtml(value){
+  return String(value).replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+}
+function escapeAttribute(value){ return escapeHtml(value); }
+
+function renderFilters(){
+  const roles = {};
+  Object.keys(nodesRaw).forEach(id => {
+    const node = nodesRaw[id];
+    const role = getNodeIcon(node, categoryOf(id)).label;
+    roles[normalizeHeader(role)] = role;
+  });
+  const roleEntries = Object.entries(roles).sort((a,b) => a[1].localeCompare(b[1], "it"));
+  const nationalityEntries = Object.keys(nazioColors.labelByKey).map(key => [key, nazioColors.labelByKey[key]]);
+  nationalityEntries.push(["__none__", "Non specificata"]);
+  const relationEntries = Object.keys(tipoColors.labelByKey).map(key => [key, tipoColors.labelByKey[key]]);
+
+  fillSelect("roleFilter", roleEntries, "Tutti i ruoli");
+  fillSelect("nationalityFilter", nationalityEntries, "Tutte le nazionalità");
+  fillSelect("relationFilter", relationEntries, "Tutti i legami");
+}
+
+function applyFilters(){
+  if (!nodesDS || !edgesDS) return;
+  const roleValue = document.getElementById("roleFilter").value;
+  const nationalityValue = document.getElementById("nationalityFilter").value;
+  const relationValue = document.getElementById("relationFilter").value;
+
+  const nodePasses = {};
+  Object.keys(nodesRaw).forEach(id => {
+    const node = nodesRaw[id];
+    const role = normalizeHeader(getNodeIcon(node, categoryOf(id)).label);
+    const nationality = node.nazionalita ? normalizeHeader(node.nazionalita) : "__none__";
+    nodePasses[id] = (!roleValue || role === roleValue) &&
+                     (!nationalityValue || nationality === nationalityValue);
+  });
+
+  const matchingEdges = edgesRaw.filter(edge =>
+    (!relationValue || normalizeHeader(edge.tipo) === relationValue) &&
+    nodePasses[edge.from] && nodePasses[edge.to]
+  );
+  const connected = new Set();
+  matchingEdges.forEach(edge => { connected.add(edge.from); connected.add(edge.to); });
+  const relationIsActive = Boolean(relationValue);
+  const visibleNodeIds = Object.keys(nodesRaw).filter(id =>
+    nodePasses[id] && (!relationIsActive || connected.has(id))
+  );
+  const visibleNodes = new Set(visibleNodeIds);
+  const visibleEdges = new Set(matchingEdges.filter(edge =>
+    visibleNodes.has(edge.from) && visibleNodes.has(edge.to)
+  ).map(edge => edge.id));
+
+  nodesDS.update(Object.keys(nodesRaw).map(id => ({ id, hidden: !visibleNodes.has(id) })));
+  edgesDS.update(edgesRaw.map(edge => ({ id:edge.id, hidden:!visibleEdges.has(edge.id) })));
+
+  const activeLabels = [];
+  if (roleValue) activeLabels.push(document.getElementById("roleFilter").selectedOptions[0].textContent);
+  if (nationalityValue) activeLabels.push(document.getElementById("nationalityFilter").selectedOptions[0].textContent);
+  if (relationValue) activeLabels.push(document.getElementById("relationFilter").selectedOptions[0].textContent);
+  document.getElementById("filterStatus").textContent = activeLabels.length ? activeLabels.join(" · ") : "Nessun filtro attivo";
+  document.getElementById("count").textContent = activeLabels.length
+    ? `${visibleNodes.size} di ${totalNodeCount} nodi · ${visibleEdges.size} di ${totalEdgeCount} collegamenti`
+    : `${totalNodeCount} nodi · ${totalEdgeCount} collegamenti`;
+  closePanel();
+  network.fit({ animation:{ duration:350 } });
+}
+
+["roleFilter", "nationalityFilter", "relationFilter"].forEach(id =>
+  document.getElementById(id).addEventListener("change", applyFilters)
+);
+document.getElementById("resetFilters").addEventListener("click", () => {
+  ["roleFilter", "nationalityFilter", "relationFilter"].forEach(id => document.getElementById(id).value = "");
+  applyFilters();
+});
 
 /* ---------- Rete ---------- */
 function renderNetwork(){
@@ -685,6 +818,8 @@ function renderNetwork(){
 
   network.on("afterDrawing", (ctx) => {
     edgesRaw.forEach(e => {
+      const edgeState = edgesDS.get(e.id);
+      if (edgeState && edgeState.hidden) return;
       const key = normalizeHeader(e.tipo);
       const img = edgeIconImages[key];
       if (!img) return;
