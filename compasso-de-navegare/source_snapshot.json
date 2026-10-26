@@ -1,0 +1,696 @@
+{
+  "nodes": [
+    {
+      "ID": "1",
+      "LUOGO": "Tavolara",
+      "LAT": "40.90295392084681",
+      "LONG": "9.708127753290244",
+      "NOME": "Tavolara"
+    },
+    {
+      "ID": "2",
+      "LUOGO": "Milazzo",
+      "LAT": "38.2203949154046",
+      "LONG": "15.24782767872724",
+      "NOME": "Milazzo"
+    },
+    {
+      "ID": "3",
+      "LUOGO": "Marettimo",
+      "LAT": "37.96947268760592",
+      "LONG": "12.072710926696578",
+      "NOME": "Marettimo"
+    },
+    {
+      "ID": "4",
+      "LUOGO": "Ustica",
+      "LAT": "38.70606086173933",
+      "LONG": "13.175252540759681",
+      "NOME": "Ustica"
+    },
+    {
+      "ID": "5",
+      "LUOGO": "Capo Vaticano in Calabria",
+      "LAT": "38.62038315989544",
+      "LONG": "15.827136980355089",
+      "NOME": "Capo Vaticano in Calabria"
+    },
+    {
+      "ID": "6",
+      "LUOGO": "Capo Suvero in Calabria",
+      "LAT": "38.94892968018097",
+      "LONG": "16.166409003925146",
+      "NOME": "Capo Suvero in Calabria"
+    },
+    {
+      "ID": "7",
+      "LUOGO": "Palinuro",
+      "LAT": "40.037651774125486",
+      "LONG": "15.283932006923928",
+      "NOME": "Palinuro"
+    },
+    {
+      "ID": "8",
+      "LUOGO": "Gaeta",
+      "LAT": "41.2344760953716",
+      "LONG": "13.574719331446934",
+      "NOME": "Gaeta"
+    },
+    {
+      "ID": "9",
+      "LUOGO": "Foce di Roma (Foce del Tevere?)",
+      "LAT": "41.7405755110582",
+      "LONG": "12.2338752048846",
+      "NOME": "Foce di Roma (Foce del Tevere?)"
+    },
+    {
+      "ID": "10",
+      "LUOGO": "Montecristo, isola",
+      "LAT": "42.33666967237709",
+      "LONG": "10.290827301997027",
+      "NOME": "Montecristo, isola"
+    },
+    {
+      "ID": "11",
+      "LUOGO": "Monte Argentario",
+      "LAT": "42.43804687137917",
+      "LONG": "11.124737741957992",
+      "NOME": "Monte Argentario"
+    },
+    {
+      "ID": "12",
+      "LUOGO": "Aleria in Corsica",
+      "LAT": "42.08804256653505",
+      "LONG": "9.538355280228796",
+      "NOME": "Aleria in Corsica"
+    },
+    {
+      "ID": "13",
+      "LUOGO": "Ponza, isola",
+      "LAT": "40.91131520330089",
+      "LONG": "12.957656730969262",
+      "NOME": "Ponza, isola"
+    },
+    {
+      "ID": "14",
+      "LUOGO": "Isola San Pietro",
+      "LAT": "39.139566231341306",
+      "LONG": "8.292742512493184",
+      "NOME": "Isola San Pietro"
+    },
+    {
+      "ID": "15",
+      "LUOGO": "Ras Jebel",
+      "LAT": "37.229081773192775",
+      "LONG": "10.145939076125057",
+      "NOME": "Ras Jebel"
+    },
+    {
+      "ID": "16",
+      "LUOGO": "Biserta, Tunisia",
+      "LAT": "37.27544454486217",
+      "LONG": "9.879923994154643",
+      "NOME": "Biserta, Tunisia"
+    },
+    {
+      "ID": "17",
+      "LUOGO": "La Galite, Tunisia",
+      "LAT": "37.524651980274285",
+      "LONG": "8.939773680696698",
+      "NOME": "La Galite, Tunisia"
+    },
+    {
+      "ID": "18",
+      "LUOGO": "Annaba, Algeria",
+      "LAT": "36.90254200463493",
+      "LONG": "7.774655120391276",
+      "NOME": "Annaba, Algeria"
+    },
+    {
+      "ID": "19",
+      "LUOGO": "Capo Bougaron, Algeria",
+      "LAT": "37.08635399286817",
+      "LONG": "6.466939525024987",
+      "NOME": "Capo Bougaron, Algeria"
+    },
+    {
+      "ID": "20",
+      "LUOGO": "Bugia (Bejaia), Algeria",
+      "LAT": "36.75005287632946",
+      "LONG": "5.090402718916719",
+      "NOME": "Bugia (Bejaia), Algeria"
+    },
+    {
+      "ID": "21",
+      "LUOGO": "Capo Corbelin",
+      "LAT": "36.90853300203586",
+      "LONG": "4.420649281208757",
+      "NOME": "Capo Corbelin"
+    },
+    {
+      "ID": "22",
+      "LUOGO": "Capo Tedlés, Algeria",
+      "LAT": "36.90784033140945",
+      "LONG": "4.1534432938301356",
+      "NOME": "Capo Tedlés, Algeria"
+    },
+    {
+      "ID": "23",
+      "LUOGO": "Algeri",
+      "LAT": "36.75702911304178",
+      "LONG": "3.0860229517901194",
+      "NOME": "Algeri"
+    },
+    {
+      "ID": "24",
+      "LUOGO": "Capo Palos, Spagna",
+      "LAT": "37.62752665828537",
+      "LONG": "-0.7023731945712397",
+      "NOME": "Capo Palos, Spagna"
+    },
+    {
+      "ID": "25",
+      "LUOGO": "Minorca",
+      "LAT": "39.844480563714484",
+      "LONG": "4.317803281487115",
+      "NOME": "Minorca"
+    },
+    {
+      "ID": "26",
+      "LUOGO": "Maon",
+      "LAT": "39.89195946460583",
+      "LONG": "4.265468280118594",
+      "NOME": "Maon"
+    },
+    {
+      "ID": "27",
+      "LUOGO": "Barcellona",
+      "LAT": "41.34725525551028",
+      "LONG": "2.1694109214518673",
+      "NOME": "Barcellona"
+    },
+    {
+      "ID": "28",
+      "LUOGO": "Capo Begur, Spagna",
+      "LAT": "41.95029429311325",
+      "LONG": "3.2333085838512767",
+      "NOME": "Capo Begur, Spagna"
+    },
+    {
+      "ID": "29",
+      "LUOGO": "Cap d'Agde, Francia",
+      "LAT": "43.27171296787875",
+      "LONG": "3.5073984427220495",
+      "NOME": "Cap d'Agde, Francia"
+    },
+    {
+      "ID": "30",
+      "LUOGO": "Aigues Mortes, Francia",
+      "LAT": "43.53841578060899",
+      "LONG": "4.118701372635634",
+      "NOME": "Aigues Mortes, Francia"
+    },
+    {
+      "ID": "31",
+      "LUOGO": "Marsiglia",
+      "LAT": "43.30350577508377",
+      "LONG": "5.354786106930813",
+      "NOME": "Marsiglia"
+    },
+    {
+      "ID": "32",
+      "LUOGO": "Isole Hyeres, Francia",
+      "LAT": "43.018839037526995",
+      "LONG": "6.232191912700425",
+      "NOME": "Isole Hyeres, Francia"
+    },
+    {
+      "ID": "33",
+      "LUOGO": "Villefranche (Villafranca Marittima), Francia",
+      "LAT": "43.70341359104732",
+      "LONG": "7.3146439554186",
+      "NOME": "Villefranche (Villafranca Marittima), Francia"
+    },
+    {
+      "ID": "34",
+      "LUOGO": "Capo Mannu",
+      "LAT": "40.05091404862964",
+      "LONG": "8.40125003663385",
+      "NOME": "Capo Mannu"
+    },
+    {
+      "ID": "35",
+      "LUOGO": "Aigues Mortes",
+      "LAT": "43.54553859416802",
+      "LONG": "4.214203225429037",
+      "NOME": "Aigues Mortes"
+    },
+    {
+      "ID": "36",
+      "LUOGO": "Argentiera",
+      "LAT": "40.74019896835471",
+      "LONG": "8.14748081425999",
+      "NOME": "Argentiera"
+    },
+    {
+      "ID": "37",
+      "LUOGO": "Marsiglia",
+      "LAT": "43.29570475373048",
+      "LONG": "5.345730442060586",
+      "NOME": "Marsiglia"
+    },
+    {
+      "ID": "38",
+      "LUOGO": "Asinara",
+      "LAT": "40.989483627759675",
+      "LONG": "8.221130570617019",
+      "NOME": "Asinara"
+    },
+    {
+      "ID": "39",
+      "LUOGO": "Isole Hyeres",
+      "LAT": "42.99603044894786",
+      "LONG": "6.218139691044646",
+      "NOME": "Isole Hyeres"
+    },
+    {
+      "ID": "40",
+      "LUOGO": "Capo Teulada",
+      "LAT": "38.8655409373173",
+      "LONG": "8.649080438367408",
+      "NOME": "Capo Teulada"
+    },
+    {
+      "ID": "41",
+      "LUOGO": "Capo Bougaron",
+      "LAT": "37.08648703202224",
+      "LONG": "6.4663144724308195",
+      "NOME": "Capo Bougaron"
+    },
+    {
+      "ID": "42",
+      "LUOGO": "Annaba, Algeria",
+      "LAT": "36.89581698276327",
+      "LONG": "7.7657474770110655",
+      "NOME": "Annaba, Algeria"
+    },
+    {
+      "ID": "43",
+      "LUOGO": "La Galite, Tunisia",
+      "LAT": "37.5282525620395",
+      "LONG": "8.940888613733046",
+      "NOME": "La Galite, Tunisia"
+    },
+    {
+      "ID": "44",
+      "LUOGO": "Biserta, Tunisia",
+      "LAT": "37.27778789608894",
+      "LONG": "9.879356213486524",
+      "NOME": "Biserta, Tunisia"
+    },
+    {
+      "ID": "45",
+      "LUOGO": "Ras Jebel, Tunisia",
+      "LAT": "37.22900015495646",
+      "LONG": "10.146420536663417",
+      "NOME": "Ras Jebel, Tunisia"
+    },
+    {
+      "ID": "46",
+      "LUOGO": "Zembra (Giamur), Tunisia",
+      "LAT": "37.11999657721079",
+      "LONG": "10.808282923815282",
+      "NOME": "Zembra (Giamur), Tunisia"
+    },
+    {
+      "ID": "47",
+      "LUOGO": "Pantelleria",
+      "LAT": "36.83199774951986",
+      "LONG": "11.941214447971936",
+      "NOME": "Pantelleria"
+    },
+    {
+      "ID": "48",
+      "LUOGO": "Marettimo",
+      "LAT": "37.96926391870756",
+      "LONG": "12.073996804539084",
+      "NOME": "Marettimo"
+    },
+    {
+      "ID": "49",
+      "LUOGO": "Capo Carbonara",
+      "LAT": "39.086390693853716",
+      "LONG": "9.53456924327928",
+      "NOME": "Capo Carbonara"
+    },
+    {
+      "ID": "50",
+      "LUOGO": "Biserta, Tunisia",
+      "LAT": "37.27778789608894",
+      "LONG": "9.879356213486524",
+      "NOME": "Biserta, Tunisia"
+    },
+    {
+      "ID": "51",
+      "LUOGO": "Ras Jebel, Tunisia",
+      "LAT": "37.22900015495646",
+      "LONG": "10.146420536663417",
+      "NOME": "Ras Jebel, Tunisia"
+    },
+    {
+      "ID": "52",
+      "LUOGO": "Pantelleria, isola",
+      "LAT": "36.83199774951986",
+      "LONG": "11.941214447971936",
+      "NOME": "Pantelleria, isola"
+    },
+    {
+      "ID": "53",
+      "LUOGO": "Marettimo, isola",
+      "LAT": "37.96926391870756",
+      "LONG": "12.073996804539084",
+      "NOME": "Marettimo, isola"
+    },
+    {
+      "ID": "54",
+      "LUOGO": "Salerno",
+      "LAT": "40.67549568362671",
+      "LONG": "14.76347034984494",
+      "NOME": "Salerno"
+    },
+    {
+      "ID": "55",
+      "LUOGO": "Ustica, isola",
+      "LAT": "38.70606086173933",
+      "LONG": "13.175252540759681",
+      "NOME": "Ustica, isola"
+    },
+    {
+      "ID": "56",
+      "LUOGO": "Capo Cherchell, Algeria",
+      "LAT": "36.610309223512985",
+      "LONG": "2.191238339457665",
+      "NOME": "Capo Cherchell, Algeria"
+    },
+    {
+      "ID": "57",
+      "LUOGO": "Monte Santo",
+      "LAT": "40.08269956680585",
+      "LONG": "9.734107266915709",
+      "NOME": "Monte Santo"
+    },
+    {
+      "ID": "58",
+      "LUOGO": "Zembra (Giamur), Tunisia",
+      "LAT": "37.11999657721079",
+      "LONG": "10.808282923815282",
+      "NOME": "Zembra (Giamur), Tunisia"
+    },
+    {
+      "ID": "59",
+      "LUOGO": "Pantelleria",
+      "LAT": "36.83199774951986",
+      "LONG": "11.941214447971936",
+      "NOME": "Pantelleria"
+    },
+    {
+      "ID": "60",
+      "LUOGO": "Marettimo",
+      "LAT": "37.96926391870756",
+      "LONG": "12.073996804539084",
+      "NOME": "Marettimo"
+    },
+    {
+      "ID": "61",
+      "LUOGO": "Capo Comino",
+      "LAT": "40.54212064350428",
+      "LONG": "9.798921027109425",
+      "NOME": "Capo Comino"
+    },
+    {
+      "ID": "62",
+      "LUOGO": "Marettimo",
+      "LAT": "37.96926391870756",
+      "LONG": "12.073996804539084",
+      "NOME": "Marettimo"
+    },
+    {
+      "ID": "63",
+      "LUOGO": "Palermo",
+      "LAT": "38.12638641165846",
+      "LONG": "13.370321119044041",
+      "NOME": "Palermo"
+    },
+    {
+      "ID": "64",
+      "LUOGO": "Ustica, isola",
+      "LAT": "38.70606086173933",
+      "LONG": "13.175252540759681",
+      "NOME": "Ustica, isola"
+    },
+    {
+      "ID": "65",
+      "LUOGO": "Vulcano, isola",
+      "LAT": "38.419670561549545",
+      "LONG": "14.957945438610844",
+      "NOME": "Vulcano, isola"
+    },
+    {
+      "ID": "66",
+      "LUOGO": "Scalea in Calabria",
+      "LAT": "39.81072651084536",
+      "LONG": "15.786861332188401",
+      "NOME": "Scalea in Calabria"
+    },
+    {
+      "ID": "67",
+      "LUOGO": "Capo Cherchell",
+      "LAT": "36.59932459156749",
+      "LONG": "2.159658636909961",
+      "NOME": "Capo Cherchell"
+    }
+  ],
+  "edges": [
+    {
+      "source_id": "1",
+      "target_id": "2"
+    },
+    {
+      "source_id": "1",
+      "target_id": "3"
+    },
+    {
+      "source_id": "1",
+      "target_id": "4"
+    },
+    {
+      "source_id": "1",
+      "target_id": "5"
+    },
+    {
+      "source_id": "1",
+      "target_id": "6"
+    },
+    {
+      "source_id": "1",
+      "target_id": "7"
+    },
+    {
+      "source_id": "1",
+      "target_id": "8"
+    },
+    {
+      "source_id": "1",
+      "target_id": "9"
+    },
+    {
+      "source_id": "1",
+      "target_id": "10"
+    },
+    {
+      "source_id": "1",
+      "target_id": "11"
+    },
+    {
+      "source_id": "1",
+      "target_id": "12"
+    },
+    {
+      "source_id": "1",
+      "target_id": "13"
+    },
+    {
+      "source_id": "14",
+      "target_id": "15"
+    },
+    {
+      "source_id": "14",
+      "target_id": "16"
+    },
+    {
+      "source_id": "14",
+      "target_id": "17"
+    },
+    {
+      "source_id": "14",
+      "target_id": "18"
+    },
+    {
+      "source_id": "14",
+      "target_id": "19"
+    },
+    {
+      "source_id": "14",
+      "target_id": "20"
+    },
+    {
+      "source_id": "14",
+      "target_id": "21"
+    },
+    {
+      "source_id": "14",
+      "target_id": "22"
+    },
+    {
+      "source_id": "14",
+      "target_id": "23"
+    },
+    {
+      "source_id": "14",
+      "target_id": "24"
+    },
+    {
+      "source_id": "14",
+      "target_id": "25"
+    },
+    {
+      "source_id": "14",
+      "target_id": "26"
+    },
+    {
+      "source_id": "14",
+      "target_id": "27"
+    },
+    {
+      "source_id": "14",
+      "target_id": "28"
+    },
+    {
+      "source_id": "14",
+      "target_id": "29"
+    },
+    {
+      "source_id": "14",
+      "target_id": "30"
+    },
+    {
+      "source_id": "14",
+      "target_id": "31"
+    },
+    {
+      "source_id": "14",
+      "target_id": "32"
+    },
+    {
+      "source_id": "14",
+      "target_id": "33"
+    },
+    {
+      "source_id": "34",
+      "target_id": "35"
+    },
+    {
+      "source_id": "36",
+      "target_id": "37"
+    },
+    {
+      "source_id": "38",
+      "target_id": "39"
+    },
+    {
+      "source_id": "40",
+      "target_id": "41"
+    },
+    {
+      "source_id": "40",
+      "target_id": "42"
+    },
+    {
+      "source_id": "40",
+      "target_id": "43"
+    },
+    {
+      "source_id": "40",
+      "target_id": "44"
+    },
+    {
+      "source_id": "40",
+      "target_id": "45"
+    },
+    {
+      "source_id": "40",
+      "target_id": "46"
+    },
+    {
+      "source_id": "40",
+      "target_id": "47"
+    },
+    {
+      "source_id": "40",
+      "target_id": "48"
+    },
+    {
+      "source_id": "49",
+      "target_id": "50"
+    },
+    {
+      "source_id": "49",
+      "target_id": "51"
+    },
+    {
+      "source_id": "49",
+      "target_id": "52"
+    },
+    {
+      "source_id": "49",
+      "target_id": "53"
+    },
+    {
+      "source_id": "49",
+      "target_id": "54"
+    },
+    {
+      "source_id": "49",
+      "target_id": "55"
+    },
+    {
+      "source_id": "49",
+      "target_id": "56"
+    },
+    {
+      "source_id": "57",
+      "target_id": "58"
+    },
+    {
+      "source_id": "57",
+      "target_id": "59"
+    },
+    {
+      "source_id": "57",
+      "target_id": "60"
+    },
+    {
+      "source_id": "61",
+      "target_id": ""
+    }
+  ],
+  "source": {
+    "filename": "ASMSA PORTOLANI COMPASSO DE NAVEGARE.xlsx",
+    "sha256": "f2e18071984299334e949ef32e5dca0ddf83c8c66edb7fcc4a21229882c7cf13",
+    "sheets": [
+      "PELEGGI LUOGHI",
+      "PELEGGI CONNESSIONI"
+    ],
+    "note": "Estratto senza correzioni delle identificazioni, coordinate o forme nominali; ID numerici interi serializzati come testo."
+  }
+}

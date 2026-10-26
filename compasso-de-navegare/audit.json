@@ -1,0 +1,104 @@
+{
+  "source": {
+    "filename": "ASMSA PORTOLANI COMPASSO DE NAVEGARE.xlsx",
+    "sha256": "f2e18071984299334e949ef32e5dca0ddf83c8c66edb7fcc4a21229882c7cf13",
+    "sheets": [
+      "PELEGGI LUOGHI",
+      "PELEGGI CONNESSIONI"
+    ],
+    "note": "Estratto senza correzioni delle identificazioni, coordinate o forme nominali; ID numerici interi serializzati come testo."
+  },
+  "inputNodes": 67,
+  "inputEdges": 53,
+  "validNodes": 67,
+  "validEdges": 52,
+  "issues": [
+    {
+      "dataset": "archi",
+      "row": 54,
+      "reason": "Estremo mancante o nodo escluso",
+      "source": "61",
+      "target": "",
+      "raw": {
+        "source_id": "61",
+        "target_id": ""
+      }
+    },
+    {
+      "dataset": "nodi",
+      "reason": "Coordinate identiche, ID distinti conservati",
+      "ids": [
+        "4",
+        "55",
+        "64"
+      ],
+      "coordinates": [
+        13.175252540759681,
+        38.70606086173933
+      ]
+    },
+    {
+      "dataset": "nodi",
+      "reason": "Coordinate identiche, ID distinti conservati",
+      "ids": [
+        "44",
+        "50"
+      ],
+      "coordinates": [
+        9.879356213486524,
+        37.27778789608894
+      ]
+    },
+    {
+      "dataset": "nodi",
+      "reason": "Coordinate identiche, ID distinti conservati",
+      "ids": [
+        "45",
+        "51"
+      ],
+      "coordinates": [
+        10.146420536663417,
+        37.22900015495646
+      ]
+    },
+    {
+      "dataset": "nodi",
+      "reason": "Coordinate identiche, ID distinti conservati",
+      "ids": [
+        "46",
+        "58"
+      ],
+      "coordinates": [
+        10.808282923815282,
+        37.11999657721079
+      ]
+    },
+    {
+      "dataset": "nodi",
+      "reason": "Coordinate identiche, ID distinti conservati",
+      "ids": [
+        "47",
+        "52",
+        "59"
+      ],
+      "coordinates": [
+        11.941214447971936,
+        36.83199774951986
+      ]
+    },
+    {
+      "dataset": "nodi",
+      "reason": "Coordinate identiche, ID distinti conservati",
+      "ids": [
+        "48",
+        "53",
+        "60",
+        "62"
+      ],
+      "coordinates": [
+        12.073996804539084,
+        37.96926391870756
+      ]
+    }
+  ]
+}

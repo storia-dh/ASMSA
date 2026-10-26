@@ -1,0 +1,290 @@
+{
+  "nodes": 67,
+  "edges": 52,
+  "distinctCoordinates": 57,
+  "components": 15,
+  "componentsAfterExactCoordinateGrouping": 10,
+  "minKm": 132.38124477040458,
+  "maxKm": 803.2836560497799,
+  "meanKm": 373.67148719844477,
+  "medianKm": 346.3366203676237,
+  "rank": [
+    {
+      "id": "14",
+      "name": "Isola San Pietro",
+      "in": 0,
+      "out": 19
+    },
+    {
+      "id": "1",
+      "name": "Tavolara",
+      "in": 0,
+      "out": 12
+    },
+    {
+      "id": "40",
+      "name": "Capo Teulada",
+      "in": 0,
+      "out": 8
+    },
+    {
+      "id": "49",
+      "name": "Capo Carbonara",
+      "in": 0,
+      "out": 7
+    },
+    {
+      "id": "57",
+      "name": "Monte Santo",
+      "in": 0,
+      "out": 3
+    },
+    {
+      "id": "2",
+      "name": "Milazzo",
+      "in": 1,
+      "out": 0
+    },
+    {
+      "id": "3",
+      "name": "Marettimo",
+      "in": 1,
+      "out": 0
+    },
+    {
+      "id": "4",
+      "name": "Ustica",
+      "in": 1,
+      "out": 0
+    },
+    {
+      "id": "5",
+      "name": "Capo Vaticano in Calabria",
+      "in": 1,
+      "out": 0
+    },
+    {
+      "id": "6",
+      "name": "Capo Suvero in Calabria",
+      "in": 1,
+      "out": 0
+    },
+    {
+      "id": "7",
+      "name": "Palinuro",
+      "in": 1,
+      "out": 0
+    },
+    {
+      "id": "8",
+      "name": "Gaeta",
+      "in": 1,
+      "out": 0
+    }
+  ],
+  "shortest": {
+    "id": 10,
+    "s": {
+      "id": "1",
+      "hist": "Tavolara",
+      "modern": "Tavolara",
+      "international": "",
+      "p": [
+        9.708127753290244,
+        40.90295392084681
+      ],
+      "area": "Sardegna",
+      "areaMethod": "rettangolo geografico · da verificare",
+      "kind": "non determinata",
+      "kindMethod": "indizio lessicale · da verificare",
+      "note": "",
+      "source": "",
+      "raw": {
+        "ID": "1",
+        "LUOGO": "Tavolara",
+        "LAT": "40.90295392084681",
+        "LONG": "9.708127753290244",
+        "NOME": "Tavolara"
+      }
+    },
+    "t": {
+      "id": "12",
+      "hist": "Aleria in Corsica",
+      "modern": "Aleria in Corsica",
+      "international": "",
+      "p": [
+        9.538355280228796,
+        42.08804256653505
+      ],
+      "area": "Italia peninsulare / area italiana",
+      "areaMethod": "rettangolo geografico · da verificare",
+      "kind": "non determinata",
+      "kindMethod": "indizio lessicale · da verificare",
+      "note": "",
+      "source": "",
+      "raw": {
+        "ID": "12",
+        "LUOGO": "Aleria in Corsica",
+        "LAT": "42.08804256653505",
+        "LONG": "9.538355280228796",
+        "NOME": "Aleria in Corsica"
+      }
+    },
+    "km": 132.38124477040458,
+    "az": 353.90870903191967,
+    "histRaw": "",
+    "histValue": null,
+    "unit": "",
+    "raw": {
+      "source_id": "1",
+      "target_id": "12"
+    }
+  },
+  "longest": {
+    "id": 21,
+    "s": {
+      "id": "14",
+      "hist": "Isola San Pietro",
+      "modern": "Isola San Pietro",
+      "international": "",
+      "p": [
+        8.292742512493184,
+        39.139566231341306
+      ],
+      "area": "Sardegna",
+      "areaMethod": "rettangolo geografico · da verificare",
+      "kind": "isola",
+      "kindMethod": "indizio lessicale · da verificare",
+      "note": "",
+      "source": "",
+      "raw": {
+        "ID": "14",
+        "LUOGO": "Isola San Pietro",
+        "LAT": "39.139566231341306",
+        "LONG": "8.292742512493184",
+        "NOME": "Isola San Pietro"
+      }
+    },
+    "t": {
+      "id": "24",
+      "hist": "Capo Palos, Spagna",
+      "modern": "Capo Palos, Spagna",
+      "international": "",
+      "p": [
+        -0.7023731945712397,
+        37.62752665828537
+      ],
+      "area": "Spagna / Iberia",
+      "areaMethod": "rettangolo geografico · da verificare",
+      "kind": "capo",
+      "kindMethod": "indizio lessicale · da verificare",
+      "note": "",
+      "source": "",
+      "raw": {
+        "ID": "24",
+        "LUOGO": "Capo Palos, Spagna",
+        "LAT": "37.62752665828537",
+        "LONG": "-0.7023731945712397",
+        "NOME": "Capo Palos, Spagna"
+      }
+    },
+    "km": 803.2836560497799,
+    "az": 260.7659517790155,
+    "histRaw": "",
+    "histValue": null,
+    "unit": "",
+    "raw": {
+      "source_id": "14",
+      "target_id": "24"
+    }
+  },
+  "audit": [
+    {
+      "dataset": "archi",
+      "row": 54,
+      "reason": "Estremo mancante o nodo escluso",
+      "source": "61",
+      "target": "",
+      "raw": {
+        "source_id": "61",
+        "target_id": ""
+      }
+    },
+    {
+      "dataset": "nodi",
+      "reason": "Coordinate identiche, ID distinti conservati",
+      "ids": [
+        "4",
+        "55",
+        "64"
+      ],
+      "coordinates": [
+        13.175252540759681,
+        38.70606086173933
+      ]
+    },
+    {
+      "dataset": "nodi",
+      "reason": "Coordinate identiche, ID distinti conservati",
+      "ids": [
+        "44",
+        "50"
+      ],
+      "coordinates": [
+        9.879356213486524,
+        37.27778789608894
+      ]
+    },
+    {
+      "dataset": "nodi",
+      "reason": "Coordinate identiche, ID distinti conservati",
+      "ids": [
+        "45",
+        "51"
+      ],
+      "coordinates": [
+        10.146420536663417,
+        37.22900015495646
+      ]
+    },
+    {
+      "dataset": "nodi",
+      "reason": "Coordinate identiche, ID distinti conservati",
+      "ids": [
+        "46",
+        "58"
+      ],
+      "coordinates": [
+        10.808282923815282,
+        37.11999657721079
+      ]
+    },
+    {
+      "dataset": "nodi",
+      "reason": "Coordinate identiche, ID distinti conservati",
+      "ids": [
+        "47",
+        "52",
+        "59"
+      ],
+      "coordinates": [
+        11.941214447971936,
+        36.83199774951986
+      ]
+    },
+    {
+      "dataset": "nodi",
+      "reason": "Coordinate identiche, ID distinti conservati",
+      "ids": [
+        "48",
+        "53",
+        "60",
+        "62"
+      ],
+      "coordinates": [
+        12.073996804539084,
+        37.96926391870756
+      ]
+    }
+  ]
+}
