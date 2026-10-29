@@ -136,7 +136,7 @@ button:hover { background:#e6edf3; } button:disabled { opacity:.5; cursor:wait; 
 <header><div class="header-text"><h1>Mappa crediti NIN</h1><p class="subtitle">Felice Nin Conte del Castillo · 1725</p></div><div id="status" role="status" aria-live="polite">Caricamento…</div></header>
 <section class="toolbar" aria-label="Importazione dati e cartografia">
 <details id="settings"><summary>Dati CSV e impostazioni della mappa</summary>
-<div class="row"><label>CSV pubblicato sul web<input id="csv-url" type="url"></label><button id="reload">Carica URL</button><label>Oppure apri un CSV locale<input id="csv-file" type="file" accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values"></label></div>
+<div class="row"><button id="reload">Aggiorna dati</button><label>Oppure apri un CSV locale<input id="csv-file" type="file" accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values"></label></div>
 <div class="row"><label>Codifica<select id="encoding"><option value="auto">Automatica</option><option value="utf-8">UTF-8</option><option value="windows-1252">Latin1 / Windows-1252</option><option value="utf-16le">UTF-16 LE</option><option value="utf-16be">UTF-16 BE</option></select></label>
 <label>Separatore<select id="delimiter"><option value="auto">Automatico</option><option value=",">Virgola</option><option value=";">Punto e virgola</option><option value="tab">Tabulazione</option></select></label>
 <label>Intestazioni<select id="header-mode"><option value="auto">Automatiche</option><option value="yes">Prima riga utile</option><option value="no">Assenti</option></select></label><button id="reparse">Rileggi il file</button></div>
@@ -275,7 +275,6 @@ const CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vRxZ1JcJy6VdGQnt3
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function notify(message) {$('message').textContent=message;$('message').hidden=!message;if(message)$('settings').open=true;}
-$('csv-url').value=CSV_URL;
 if(typeof L==='undefined') {
   $('status').textContent='Libreria mappa non disponibile';
   notify('Impossibile caricare Leaflet dal CDN. Verifica la connessione o le regole CSP del sito.');
@@ -362,10 +361,10 @@ function start() {
     const version=++loadVersion;request?.abort();request=new AbortController();$('status').textContent='Caricamento CSV…';notify('');
     raw=null;table=null;markers.clearLayers();viewBounds=null;$('columns').replaceChildren();$('diagnostics').textContent='Caricamento…';
     try {
-      const url=new URL($('csv-url').value);if(!['https:','http:'].includes(url.protocol))throw Error('Usa un URL HTTP o HTTPS.');
+      const url=new URL(CSV_URL);if(!['https:','http:'].includes(url.protocol))throw Error('Usa un URL HTTP o HTTPS.');
       const buffer=await fetchWithTimeout(url.href,request.signal);if(version!==loadVersion)return;
       if(buffer.byteLength>30*1024*1024)throw Error('CSV troppo grande: limite 30 MB.');
-      raw=buffer;source='CSV da URL';reparse();
+      raw=buffer;source='Foglio dati NIN';reparse();
     }catch(e){if(version!==loadVersion)return;$('status').textContent='CSV remoto non disponibile';notify(`Impossibile scaricare il CSV (${e.name==='AbortError'?'timeout o richiesta annullata':e.message}). Verifica pubblicazione del foglio, URL e CORS. Puoi aprire una copia locale del CSV.`);$('diagnostics').textContent=e.message;}
   }
   $('reload').onclick=loadURL;$('reparse').onclick=reparse;$('apply').onclick=render;
