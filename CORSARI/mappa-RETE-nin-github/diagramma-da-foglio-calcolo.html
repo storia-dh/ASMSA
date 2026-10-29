@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schema da foglio di calcolo</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+  :root{
+    --ink:#1e2a3a;
+    --ink-soft:#4a5768;
+    --paper:#f3f1ea;
+    --paper-raised:#fbfaf6;
+    --line:#d8d3c4;
+    --accent:#2f6b63;
+    --accent-soft:#e4ede9;
+    --warn:#8a4a2b;
+    --warn-soft:#f3e3d6;
+    --radius:10px;
+    --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#eef0f2; --ink-soft:#aab2bd; --paper:#181c22; --paper-raised:#20252c;
+      --line:#333a44; --accent:#6fb3a6; --accent-soft:#1d2f2b; --warn:#e0a479; --warn-soft:#332419;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#eef0f2; --ink-soft:#aab2bd; --paper:#181c22; --paper-raised:#20252c;
+    --line:#333a44; --accent:#6fb3a6; --accent-soft:#1d2f2b; --warn:#e0a479; --warn-soft:#332419;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--sans); min-height:100vh;
+  }
+  header{
+    padding:28px clamp(16px,4vw,48px) 18px; border-bottom:1px solid var(--line);
+  }
+  header h1{
+    font-family:var(--serif); font-weight:500; font-size:clamp(22px,3vw,30px);
+    margin:0 0 6px; letter-spacing:.2px;
+  }
+  header p{margin:0; color:var(--ink-soft); font-size:14.5px; max-width:62ch; line-height:1.5;}
+
+  .panel{
+    margin:18px clamp(16px,4vw,48px) 0; padding:16px 18px; background:var(--paper-raised);
+    border:1px solid var(--line); border-radius:var(--radius);
+  }
+  .panel h2{
+    font-size:13px; text-transform:none; letter-spacing:.2px; margin:0 0 12px;
+    color:var(--ink-soft); font-weight:600;
+  }
+  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;}
+  .field{flex:1 1 260px; min-width:220px; display:flex; flex-direction:column; gap:5px;}
+  .field label{font-size:12.5px; color:var(--ink-soft);}
+  .field input[type=text]{
+    font-family:var(--mono); font-size:12.5px; padding:9px 10px; border-radius:7px;
+    border:1px solid var(--line); background:var(--paper); color:var(--ink); width:100%;
+  }
+  .field input[type=text]:focus{outline:2px solid var(--accent); outline-offset:1px;}
+  button{
+    font-family:var(--sans); font-size:13px; padding:9px 14px; border-radius:7px;
+    border:1px solid var(--line); background:var(--paper); color:var(--ink); cursor:pointer;
+  }
+  button:hover{border-color:var(--accent);}
+  button.primary{background:var(--accent); border-color:var(--accent); color:var(--paper-raised); font-weight:600;}
+  button.primary:hover{opacity:.92;}
+  button:focus-visible, input:focus-visible{outline:2px solid var(--accent); outline-offset:1px;}
+  .toggle{display:flex; align-items:center; gap:7px; font-size:12.5px; color:var(--ink-soft);}
+  .actions{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; align-items:center;}
+
+  .status{margin-top:10px; font-size:12.5px; display:flex; flex-direction:column; gap:6px;}
+  .status .ok{color:var(--accent);}
+  .status .warn{color:var(--warn); background:var(--warn-soft); padding:6px 9px; border-radius:6px;}
+  .status .info{color:var(--ink-soft);}
+
+  .stage-wrap{margin:18px clamp(16px,4vw,48px) 40px;}
+  .stage-toolbar{
+    display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;
+    margin-bottom:8px;
+  }
+  .zoom-controls{display:flex; gap:6px;}
+  .zoom-controls button{padding:6px 10px; font-size:13px;}
+  .legend{display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:var(--ink-soft);}
+  .legend .dot{display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px; vertical-align:middle;}
+
+  .canvas-viewport{
+    position:relative; width:100%; height:min(70vh, 640px); min-height:340px;
+    border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;
+    background:
+      linear-gradient(var(--line) 1px, transparent 1px) 0 0/28px 28px,
+      linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 0/28px 28px,
+      var(--paper-raised);
+    background-blend-mode: normal;
+    cursor:grab;
+  }
+  .canvas-viewport.dragging{cursor:grabbing;}
+  .canvas-viewport::before{ /* subtle vignette so grid doesn't fight content */
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:radial-gradient(ellipse at center, transparent 55%, var(--paper-raised) 100%);
+    opacity:.4;
+  }
+  .canvas-content{position:absolute; top:0; left:0; transform-origin:0 0; will-change:transform;}
+  .lines-svg{position:absolute; top:0; left:0; overflow:visible; pointer-events:none;}
+
+  .node-box{
+    position:absolute; width:200px; display:flex; flex-direction:column; justify-content:center;
+    padding:9px 13px; border:1px solid; border-radius:var(--radius);
+    background:var(--paper-raised); box-shadow:0 1px 2px rgba(0,0,0,.06);
+    transition:box-shadow .15s ease, transform .15s ease;
+  }
+  .node-box.shape-sharp{border-radius:2px;}
+  .node-box.shape-ellipse{border-radius:50%; text-align:center; align-items:center; aspect-ratio:1.9/1; height:auto;}
+  .node-box.shape-diamond{
+    clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%); text-align:center; align-items:center; padding:9px 30px;
+  }
+  .node-box.has-link{cursor:pointer;}
+  .node-box.has-link:hover{box-shadow:0 3px 10px rgba(0,0,0,.14); transform:translateY(-1px);}
+  .node-title{font-size:13.5px; font-weight:600; line-height:1.28; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;}
+  .node-sub{font-size:11.5px; margin-top:3px; color:var(--ink-soft); line-height:1.25; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;}
+
+  .empty-state{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    flex-direction:column; gap:8px; color:var(--ink-soft); text-align:center; padding:20px;
+  }
+  .empty-state b{color:var(--ink); font-weight:600;}
+
+  .embed-panel textarea{
+    width:100%; min-height:64px; font-family:var(--mono); font-size:12px; padding:10px;
+    border-radius:7px; border:1px solid var(--line); background:var(--paper); color:var(--ink); resize:vertical;
+  }
+  .copy-row{display:flex; justify-content:flex-end; margin-top:6px;}
+  .hint{font-size:11.5px; color:var(--ink-soft); margin-top:6px; line-height:1.5;}
+
+  @media print{
+    header, .panel, .stage-toolbar{display:none;}
+    .canvas-viewport{height:auto; border:none;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Schema da foglio di calcolo</h1>
+  <p>Incolla il link CSV pubblicato della scheda <strong>Nodi</strong> (e, se lo usi, quello della scheda <strong>Impostazioni</strong>): lo schema si ridisegna da solo, resta aggiornato quando modifichi il foglio, ed è pronto da incorporare su una pagina web.</p>
+</header>
+
+<div class="panel">
+  <h2>Sorgente dati</h2>
+  <div class="row">
+    <div class="field">
+      <label for="nodiUrl">Link CSV pubblicato — scheda "Nodi" (obbligatorio)</label>
+      <input type="text" id="nodiUrl" placeholder="https://docs.google.com/.../pub?output=csv&gid=...">
+    </div>
+    <div class="field">
+      <label for="impUrl">Link CSV pubblicato — scheda "Impostazioni" (opzionale)</label>
+      <input type="text" id="impUrl" placeholder="lascia vuoto per usare i valori predefiniti">
+    </div>
+  </div>
+  <div class="actions">
+    <button class="primary" id="loadBtn">Carica dati</button>
+    <button id="demoBtn">Usa dati di esempio</button>
+    <label class="toggle"><input type="checkbox" id="autoRefresh"> aggiorna ogni <select id="refreshSecs" style="font-family:var(--mono); font-size:12px;"><option value="30">30s</option><option value="60" selected>60s</option><option value="300">5 min</option></select></label>
+  </div>
+  <div class="status" id="status"></div>
+  <p class="hint">Per ottenere il link: nel foglio Google, apri la scheda "Nodi" → <em>File → Condividi → Pubblica sul web</em> → scegli il foglio "Nodi" (non "Intero documento") → formato <strong>CSV</strong> → Pubblica. Ripeti per "Impostazioni" se la usi.</p>
+</div>
+
+<div class="stage-wrap">
+  <div class="stage-toolbar">
+    <div class="legend" id="legend"></div>
+    <div class="zoom-controls">
+      <button id="zoomOut" title="Riduci">−</button>
+      <button id="zoomReset" title="Adatta alla vista">Adatta</button>
+      <button id="zoomIn" title="Ingrandisci">+</button>
+      <button id="printBtn" title="Stampa / salva PDF">Stampa</button>
+    </div>
+  </div>
+  <div class="canvas-viewport" id="viewport">
+    <svg class="lines-svg" id="linesSvg"></svg>
+    <div class="canvas-content" id="canvasContent"></div>
+    <div class="empty-state" id="emptyState">
+      <b>Nessun dato caricato</b>
+      <span>Incolla il link CSV della scheda "Nodi" qui sopra, oppure prova con i dati di esempio.</span>
+    </div>
+  </div>
+</div>
+
+<div class="panel embed-panel">
+  <h2>Incorpora questa pagina</h2>
+  <p class="hint" style="margin-top:0;">Carica questo file HTML sul tuo sito, Google Drive pubblicato o GitHub Pages, poi incolla il suo indirizzo qui sotto per generare il codice da incorporare. Ricaricando la pagina di destinazione, lo schema si aggiorna da solo con i dati più recenti del foglio.</p>
+  <div class="row">
+    <div class="field">
+      <label for="hostedUrl">Indirizzo dove hai pubblicato questo file</label>
+      <input type="text" id="hostedUrl" placeholder="https://tuosito.it/schema-da-foglio.html">
+    </div>
+  </div>
+  <textarea id="embedCode" readonly></textarea>
+  <div class="copy-row"><button id="copyEmbed">Copia codice</button></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const els = {
+    nodiUrl: document.getElementById('nodiUrl'),
+    impUrl: document.getElementById('impUrl'),
+    loadBtn: document.getElementById('loadBtn'),
+    demoBtn: document.getElementById('demoBtn'),
+    autoRefresh: document.getElementById('autoRefresh'),
+    refreshSecs: document.getElementById('refreshSecs'),
+    status: document.getElementById('status'),
+    legend: document.getElementById('legend'),
+    viewport: document.getElementById('viewport'),
+    canvasContent: document.getElementById('canvasContent'),
+    linesSvg: document.getElementById('linesSvg'),
+    emptyState: document.getElementById('emptyState'),
+    hostedUrl: document.getElementById('hostedUrl'),
+    embedCode: document.getElementById('embedCode'),
+    copyEmbed: document.getElementById('copyEmbed'),
+  };
+
+  // ---------- persisted config (per-viewer only) ----------
+  try{
+    els.nodiUrl.value = localStorage.getItem('sf_nodiUrl') || '';
+    els.impUrl.value = localStorage.getItem('sf_impUrl') || '';
+    els.hostedUrl.value = localStorage.getItem('sf_hostedUrl') || '';
+  }catch(e){}
+
+  function saveConfig(){
+    try{
+      localStorage.setItem('sf_nodiUrl', els.nodiUrl.value.trim());
+      localStorage.setItem('sf_impUrl', els.impUrl.value.trim());
+    }catch(e){}
+  }
+
+  // ---------- palette ----------
+  const PALETTE = {
+    'neutro':      {fill:'#eceae2', ink:'#4a4436', border:'#c9c2ac'},
+    'primario':    {fill:'#dfe7ea', ink:'#1e4550', border:'#9fb8bf'},
+    'secondario':  {fill:'#f3e3d6', ink:'#6b3f22', border:'#d9b995'},
+    'positivo':    {fill:'#e1ebe0', ink:'#2f5c33', border:'#a9c7a7'},
+    'negativo':    {fill:'#f2dede', ink:'#7a2f2f', border:'#d9a3a3'},
+    'attenzione':  {fill:'#f7ecd0', ink:'#6b5013', border:'#d9bd76'},
+    'avviso':      {fill:'#f7ecd0', ink:'#6b5013', border:'#d9bd76'},
+    'accento':     {fill:'#e6e0ee', ink:'#453372', border:'#bcaad8'},
+  };
+  const FALLBACK_CYCLE = ['primario','positivo','secondario','accento','negativo','attenzione'];
+  function colorFor(cat){
+    const key = (cat||'neutro').toString().trim().toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    if(PALETTE[key]) return PALETTE[key];
+    // deterministic fallback for unrecognised category names
+    let h=0; for(let i=0;i<key.length;i++) h = (h*31 + key.charCodeAt(i))>>>0;
+    return PALETTE[FALLBACK_CYCLE[h % FALLBACK_CYCLE.length]];
+  }
+
+  function shapeClass(forma){
+    const f=(forma||'').toString().trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    if(f.includes('ellisse') || f.includes('ovale')) return 'shape-ellipse';
+    if(f.includes('rombo') || f.includes('diamante')) return 'shape-diamond';
+    if(f.includes('rettangolo') && !f.includes('arrotond')) return 'shape-sharp';
+    return ''; // default = rounded
+  }
+
+  function isTrue(v, def=true){
+    if(v===undefined || v===null || v==='') return def;
+    const s=v.toString().trim().toLowerCase();
+    return ['sì','si','true','1','yes','vero','x'].includes(s);
+  }
+
+  // ---------- state ----------
+  let settings = { lineType:'gomito', arrowStart:'nessuna', arrowEnd:'triangolo', lineColor:'#8c8571', lineWidth:1.5 };
+  let view = { scale:1, x:40, y:30 };
+  let dragging=false, dragStart=null;
+  let refreshTimer=null;
+
+  // ---------- CSV loading ----------
+  function fetchCSV(url){
+    return new Promise((resolve,reject)=>{
+      if(!url){ resolve(null); return; }
+      const bust = url + (url.includes('?')?'&':'?') + 'cb=' + Date.now();
+      Papa.parse(bust, {
+        download:true, header:true, skipEmptyLines:true,
+        complete:(res)=>resolve(res.data),
+        error:(err)=>reject(err)
+      });
+    });
+  }
+
+  function parseSettings(rows){
+    if(!rows || !rows.length) return;
+    const map = {};
+    rows.forEach(r=>{
+      const keys = Object.keys(r);
+      if(keys.length<2) return;
+      const campo = (r[keys[0]]||'').toString().trim().toLowerCase();
+      const valore = (r['valore'] !== undefined ? r['valore'] : r[keys[1]] || '').toString().trim();
+      if(campo) map[campo]=valore;
+    });
+    const get = (...names)=>{ for(const n of names){ if(map[n]) return map[n]; } return null; };
+    const lt = get('tipo linea','tipo_linea'); if(lt) settings.lineType = lt.toLowerCase();
+    const as = get('freccia iniziale','freccia_iniziale'); if(as) settings.arrowStart = as.toLowerCase();
+    const ae = get('freccia finale','freccia_finale'); if(ae) settings.arrowEnd = ae.toLowerCase();
+    const lc = get('colore linee','colore_linee'); if(lc) settings.lineColor = lc;
+    const lw = get('spessore linee','spessore_linee'); if(lw && !isNaN(parseFloat(lw))) settings.lineWidth = parseFloat(lw);
+  }
+
+  function setStatus(msgs){
+    els.status.innerHTML = msgs.map(m=>`<div class="${m.type}">${m.text}</div>`).join('');
+  }
+
+  async function loadData(){
+    saveConfig();
+    const nodiUrl = els.nodiUrl.value.trim();
+    if(!nodiUrl){
+      setStatus([{type:'warn', text:'Inserisci il link CSV pubblicato della scheda "Nodi", oppure premi "Usa dati di esempio".'}]);
+      return;
+    }
+    setStatus([{type:'info', text:'Caricamento in corso…'}]);
+    try{
+      const [nodiRows, impRows] = await Promise.all([
+        fetchCSV(nodiUrl),
+        fetchCSV(els.impUrl.value.trim())
+      ]);
+      if(els.impUrl.value.trim()) parseSettings(impRows);
+      renderFromRows(nodiRows);
+    }catch(err){
+      setStatus([{type:'warn', text:'Impossibile scaricare il CSV. Verifica che il link sia quello "Pubblica sul web" in formato CSV (non un link di condivisione normale) e che il foglio sia pubblico.'}]);
+      console.error(err);
+    }
+  }
+
+  // ---------- demo data (the Vergine di Bonaria e S. Antonio da Padova scheme) ----------
+  const DEMO_ROWS = [
+    {id:'N001', padre_id:'', titolo:'Ricavato vendita prede', sottotitolo:'proventi del bottino catturato', categoria_colore:'Neutro', forma:'Rettangolo arrotondato', ordine:1, visibile:'Sì', url:''},
+    {id:'N002', padre_id:'N001', titolo:'Trattenuta iniziale: 7%', sottotitolo:'4% abutinador + 3% premio fianza', categoria_colore:'Neutro', forma:'Rettangolo arrotondato', ordine:1, visibile:'Sì', url:''},
+    {id:'N003', padre_id:'N002', titolo:'Resto in 3 parti uguali', sottotitolo:'dopo diritti regi e quarantene', categoria_colore:'Neutro', forma:'Rettangolo arrotondato', ordine:1, visibile:'Sì', url:''},
+    {id:'N004', padre_id:'N003', titolo:'Manca ed equipaggio', sottotitolo:'meno 60 lire debito', categoria_colore:'Positivo', forma:'Rettangolo arrotondato', ordine:1, visibile:'Sì', url:''},
+    {id:'N005', padre_id:'N003', titolo:'Conte come armatore', sottotitolo:'quota piena', categoria_colore:'Secondario', forma:'Rettangolo arrotondato', ordine:2, visibile:'Sì', url:''},
+    {id:'N006', padre_id:'N003', titolo:'Brigantino (armi)', sottotitolo:'vele, alberi, cannoni', categoria_colore:'Neutro', forma:'Rettangolo arrotondato', ordine:3, visibile:'Sì', url:''},
+    {id:'N007', padre_id:'N006', titolo:'1/4 a Manca', sottotitolo:'sua metà nave', categoria_colore:'Positivo', forma:'Rettangolo arrotondato', ordine:1, visibile:'Sì', url:''},
+    {id:'N008', padre_id:'N006', titolo:'3/4 al conte', sottotitolo:"l'altra metà", categoria_colore:'Secondario', forma:'Rettangolo arrotondato', ordine:2, visibile:'Sì', url:''},
+  ];
+
+  els.demoBtn.addEventListener('click', ()=>{
+    settings = { lineType:'gomito', arrowStart:'nessuna', arrowEnd:'triangolo', lineColor:'#8c8571', lineWidth:1.5 };
+    setStatus([{type:'ok', text:'Dati di esempio caricati (schema Vergine di Bonaria e S. Antonio da Padova).'}]);
+    renderFromRows(DEMO_ROWS);
+  });
+
+  // ---------- build hierarchy + layout ----------
+  const BOX_W = 200, GAP_X = 26, ROW_STEP = 128;
+
+  function renderFromRows(rows){
+    if(!rows || !rows.length){
+      setStatus([{type:'warn', text:'Il foglio non contiene righe leggibili.'}]);
+      return;
+    }
+    const clean = rows.filter(r => (r.id||'').toString().trim() !== '');
+    const byId = {};
+    const dupIds = [];
+    clean.forEach(r=>{
+      const id = r.id.toString().trim();
+      if(byId[id]) dupIds.push(id); else byId[id] = {
+        id, padre_id: (r.padre_id||'').toString().trim(),
+        titolo: (r.titolo||'').toString().trim(),
+        sottotitolo: (r.sottotitolo||'').toString().trim(),
+        categoria_colore: (r.categoria_colore||'Neutro').toString().trim(),
+        forma: (r.forma||'').toString().trim(),
+        ordine: parseFloat(r.ordine) || 0,
+        visibile: isTrue(r.visibile, true),
+        url: (r.url||'').toString().trim(),
+        children: []
+      };
+    });
+
+    const orphanParents = [];
+    Object.values(byId).forEach(n=>{
+      if(n.padre_id){
+        if(byId[n.padre_id]) byId[n.padre_id].children.push(n);
+        else { orphanParents.push(n.id); n.padre_id=''; }
+      }
+    });
+
+    const roots = Object.values(byId).filter(n=>!n.padre_id);
+    Object.values(byId).forEach(n=> n.children.sort((a,b)=>a.ordine-b.ordine));
+    roots.sort((a,b)=>a.ordine-b.ordine);
+
+    if(!roots.length){
+      setStatus([{type:'warn', text:'Nessun nodo radice trovato (controlla i valori di padre_id).'}]);
+      return;
+    }
+
+    // width (leaf-count) pass, skipping hidden subtrees
+    function widthOf(n){
+      if(!n.visibile){ n._w = 0; return 0; }
+      const vc = n.children.filter(c=>c.visibile);
+      n._w = vc.length ? vc.reduce((s,c)=>s+widthOf(c),0) : 1;
+      return n._w;
+    }
+    let totalW = 0;
+    roots.forEach(r=>{ if(r.visibile) totalW += widthOf(r); });
+
+    if(totalW === 0){
+      setStatus([{type:'warn', text:'Tutti i nodi risultano nascosti (colonna "visibile").'}]);
+      return;
+    }
+
+    function placeX(n, left){
+      if(!n.visibile) return;
+      const vc = n.children.filter(c=>c.visibile);
+      if(!vc.length){ n._x = left + 0.5; return; }
+      let cursor = left;
+      vc.forEach(c=>{ placeX(c, cursor); cursor += c._w; });
+      n._x = (vc[0]._x + vc[vc.length-1]._x)/2;
+    }
+    let cursor=0;
+    roots.forEach(r=>{ if(r.visibile){ placeX(r, cursor); cursor += r._w; } });
+
+    function assignDepth(n, d){ n._depth=d; n.children.forEach(c=>{ if(c.visibile) assignDepth(c, d+1); }); }
+    roots.forEach(r=>{ if(r.visibile) assignDepth(r,0); });
+
+    const flat = [];
+    (function collect(n){ if(!n.visibile) return; flat.push(n); n.children.forEach(collect); })
+      ({children: roots, visibile:true, _depth:-1});
+
+    // status messages
+    const msgs = [{type:'ok', text:`Caricati ${flat.length} nodi visibili.`}];
+    if(dupIds.length) msgs.push({type:'warn', text:'ID duplicati ignorati: '+[...new Set(dupIds)].join(', ')});
+    if(orphanParents.length) msgs.push({type:'warn', text:'padre_id non trovato (trattati come radice): '+orphanParents.join(', ')});
+    setStatus(msgs);
+
+    draw(flat, totalW);
+  }
+
+  function nodeHeight(n){ return n.sottotitolo ? 64 : 44; }
+
+  function draw(flat, totalW){
+    els.canvasContent.innerHTML = '';
+    els.emptyState.style.display = 'none';
+
+    const pxW = totalW * (BOX_W+GAP_X);
+    const maxDepth = Math.max(...flat.map(n=>n._depth));
+    const pxH = (maxDepth+1) * ROW_STEP + 60;
+    els.canvasContent.style.width = pxW+'px';
+    els.canvasContent.style.height = pxH+'px';
+    els.linesSvg.setAttribute('width', pxW);
+    els.linesSvg.setAttribute('height', pxH);
+    els.linesSvg.setAttribute('viewBox', `0 0 ${pxW} ${pxH}`);
+
+    // marker defs
+    const markerShapes = {
+      triangolo: (id)=>`<marker id="${id}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1L9 5L1 9Z" fill="${settings.lineColor}"/></marker>`,
+      v: (id)=>`<marker id="${id}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="${settings.lineColor}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>`,
+      cerchio: (id)=>`<marker id="${id}" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5"><circle cx="5" cy="5" r="4" fill="${settings.lineColor}"/></marker>`,
+      quadrato: (id)=>`<marker id="${id}" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5"><rect x="1" y="1" width="8" height="8" fill="${settings.lineColor}"/></marker>`,
+      rombo: (id)=>`<marker id="${id}" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6"><polygon points="5,0 10,5 5,10 0,5" fill="${settings.lineColor}"/></marker>`,
+      nessuna: ()=> ''
+    };
+    function markerDef(kind, id){ const f = markerShapes[kind] || markerShapes.nessuna; return f(id); }
+    const defs = `<defs>${markerDef(settings.arrowStart,'mk-start')}${markerDef(settings.arrowEnd,'mk-end')}</defs>`;
+
+    let linesHTML = defs;
+    const boxesHTML = [];
+
+    flat.forEach(n=>{
+      const cx = n._x*(BOX_W+GAP_X) + BOX_W/2 + 12;
+      const top = n._depth*ROW_STEP + 20;
+      n._px = cx; n._py = top; n._h = nodeHeight(n);
+      const col = colorFor(n.categoria_colore);
+      const shp = shapeClass(n.forma);
+      const linkAttr = n.url ? ` data-url="${n.url.replace(/"/g,'&quot;')}"` : '';
+      boxesHTML.push(`<div class="node-box ${shp}${n.url?' has-link':''}" style="left:${cx-BOX_W/2}px; top:${top}px; height:${n._h}px; background:${col.fill}; border-color:${col.border}; color:${col.ink};"${linkAttr}>
+        <div class="node-title">${escapeHTML(n.titolo)}</div>
+        ${n.sottotitolo?`<div class="node-sub">${escapeHTML(n.sottotitolo)}</div>`:''}
+      </div>`);
+
+      const parent = n.__parentRef;
+    });
+
+    // connectors: recompute parent->child pairs
+    function walk(n, parent){
+      if(parent){
+        linesHTML += connector(parent, n);
+      }
+      n.children.forEach(c=>{ if(c.visibile) walk(c, n); });
+    }
+    // rebuild roots list from flat (roots have depth 0)
+    const rootsInFlat = flat.filter(n=>n._depth===0);
+    rootsInFlat.forEach(r=>walk(r, null));
+
+    function connector(p, c){
+      const x1=p._px, y1=p._py+p._h, x2=c._px, y2=c._py;
+      const midY = (y1+y2)/2;
+      let d;
+      if(settings.lineType.includes('rett') || settings.lineType.includes('curv')){
+        if(settings.lineType.includes('curv')){
+          d = `M${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`;
+        } else {
+          d = `M${x1} ${y1} L ${x2} ${y2}`;
+        }
+      } else { // gomito (elbow) default
+        d = `M${x1} ${y1} L ${x1} ${midY} L ${x2} ${midY} L ${x2} ${y2}`;
+      }
+      const ms = settings.arrowStart!=='nessuna' ? ' marker-start="url(#mk-start)"' : '';
+      const me = settings.arrowEnd!=='nessuna' ? ' marker-end="url(#mk-end)"' : '';
+      return `<path d="${d}" fill="none" stroke="${settings.lineColor}" stroke-width="${settings.lineWidth}"${ms}${me}/>`;
+    }
+
+    els.linesSvg.innerHTML = linesHTML;
+    els.canvasContent.innerHTML = boxesHTML.join('');
+
+    els.canvasContent.querySelectorAll('.node-box[data-url]').forEach(el=>{
+      el.addEventListener('click', ()=> window.open(el.getAttribute('data-url'), '_blank', 'noopener'));
+    });
+
+    buildLegend(flat);
+    fitToView(pxW, pxH);
+  }
+
+  function escapeHTML(s){ return s.replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+  function buildLegend(flat){
+    const seen = new Map();
+    flat.forEach(n=>{
+      const key = (n.categoria_colore||'Neutro').trim();
+      if(!seen.has(key)) seen.set(key, colorFor(key));
+    });
+    els.legend.innerHTML = [...seen.entries()].map(([name,col])=>
+      `<span><span class="dot" style="background:${col.border}"></span>${escapeHTML(name)}</span>`
+    ).join('');
+  }
+
+  // ---------- pan & zoom ----------
+  function applyTransform(){
+    els.canvasContent.style.transform = `translate(${view.x}px, ${view.y}px) scale(${view.scale})`;
+    els.linesSvg.style.transform = els.canvasContent.style.transform;
+  }
+  function fitToView(pxW, pxH){
+    const vw = els.viewport.clientWidth, vh = els.viewport.clientHeight;
+    const s = Math.min(1, (vw-40)/pxW, (vh-40)/pxH);
+    view.scale = Math.max(s, 0.15);
+    view.x = (vw - pxW*view.scale)/2;
+    view.y = 24;
+    applyTransform();
+  }
+  document.getElementById('zoomIn').addEventListener('click', ()=>{ view.scale=Math.min(2.5,view.scale*1.2); applyTransform(); });
+  document.getElementById('zoomOut').addEventListener('click', ()=>{ view.scale=Math.max(0.1,view.scale/1.2); applyTransform(); });
+  document.getElementById('zoomReset').addEventListener('click', ()=>{
+    const w = parseFloat(els.canvasContent.style.width)||0, h=parseFloat(els.canvasContent.style.height)||0;
+    if(w&&h) fitToView(w,h);
+  });
+  els.viewport.addEventListener('pointerdown', (e)=>{
+    dragging=true; dragStart={x:e.clientX-view.x, y:e.clientY-view.y};
+    els.viewport.classList.add('dragging'); els.viewport.setPointerCapture(e.pointerId);
+  });
+  els.viewport.addEventListener('pointermove', (e)=>{
+    if(!dragging) return;
+    view.x = e.clientX-dragStart.x; view.y = e.clientY-dragStart.y; applyTransform();
+  });
+  ['pointerup','pointerleave','pointercancel'].forEach(evt=>{
+    els.viewport.addEventListener(evt, ()=>{ dragging=false; els.viewport.classList.remove('dragging'); });
+  });
+  els.viewport.addEventListener('wheel', (e)=>{
+    e.preventDefault();
+    const rect = els.viewport.getBoundingClientRect();
+    const mx = e.clientX-rect.left, my = e.clientY-rect.top;
+    const prevScale = view.scale;
+    const delta = e.deltaY>0 ? 0.9 : 1.1;
+    view.scale = Math.min(2.5, Math.max(0.1, view.scale*delta));
+    view.x = mx - (mx-view.x)*(view.scale/prevScale);
+    view.y = my - (my-view.y)*(view.scale/prevScale);
+    applyTransform();
+  }, {passive:false});
+
+  window.addEventListener('resize', ()=>{
+    const w = parseFloat(els.canvasContent.style.width)||0, h=parseFloat(els.canvasContent.style.height)||0;
+    if(w&&h) fitToView(w,h);
+  });
+
+  // ---------- controls ----------
+  els.loadBtn.addEventListener('click', loadData);
+  els.autoRefresh.addEventListener('change', ()=>{
+    clearInterval(refreshTimer);
+    if(els.autoRefresh.checked){
+      refreshTimer = setInterval(loadData, parseInt(els.refreshSecs.value,10)*1000);
+    }
+  });
+  els.refreshSecs.addEventListener('change', ()=>{
+    if(els.autoRefresh.checked){ els.autoRefresh.dispatchEvent(new Event('change')); }
+  });
+  document.getElementById('printBtn').addEventListener('click', ()=>window.print());
+
+  // ---------- embed code ----------
+  function updateEmbed(){
+    const url = els.hostedUrl.value.trim();
+    try{ localStorage.setItem('sf_hostedUrl', url); }catch(e){}
+    if(!url){ els.embedCode.value = '(inserisci prima l\'indirizzo dove hai pubblicato questo file)'; return; }
+    els.embedCode.value = `<iframe src="${url}" style="width:100%; max-width:900px; height:640px; border:1px solid #d8d3c4; border-radius:10px;" loading="lazy" title="Schema"></iframe>`;
+  }
+  els.hostedUrl.addEventListener('input', updateEmbed);
+  els.copyEmbed.addEventListener('click', ()=>{
+    els.embedCode.select();
+    navigator.clipboard?.writeText(els.embedCode.value).catch(()=>document.execCommand('copy'));
+  });
+  updateEmbed();
+
+  // auto-load if a URL was already saved from a previous visit
+  if(els.nodiUrl.value.trim()) loadData();
+})();
+</script>
+</body>
+</html>

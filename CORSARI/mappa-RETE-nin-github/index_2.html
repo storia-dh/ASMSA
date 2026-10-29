@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Mappa crediti NIN</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink:#1f2b3a;
+      --ink-soft:#3a4a5c;
+      --muted:#7a7160;
+      --paper:#fbf6ea;
+      --paper-line:#e6dcc3;
+      --gold:#b8863b;
+      --gold-light:#e3b56a;
+      --header-bg-1:#16202c;
+      --header-bg-2:#233346;
+      --map-bg:#e9dfc4;
+    }
+    * { box-sizing: border-box; }
+    html, body { height:100%; margin:0; font-family:'Inter',ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; color:var(--ink); background:#0e1520; }
+    .app { height:100%; min-height:420px; display:grid; grid-template-rows:auto 1fr; }
+
+    header {
+      z-index:1000; display:flex; align-items:center; gap:16px; padding:16px 22px;
+      background:linear-gradient(115deg,var(--header-bg-1),var(--header-bg-2));
+      border-bottom:3px solid var(--gold);
+      box-shadow:0 6px 24px rgba(0,0,0,.35);
+    }
+    .header-text { min-width:0; }
+    h1 {
+      margin:0; font-family:'Fraunces',serif; font-weight:600; letter-spacing:-.01em;
+      font-size:clamp(1.05rem,2.6vw,1.5rem); color:#f6ecd6;
+    }
+    .subtitle { margin:3px 0 0; font-size:.8rem; color:#b9c2cf; }
+    #status { margin-left:auto; color:#c9a24b; font-size:.82rem; white-space:nowrap; font-weight:500; }
+
+    #map { width:100%; height:100%; min-height:360px; }
+    #map.leaflet-container { background:var(--map-bg); touch-action:none; font-family:'Inter',sans-serif; }
+    .warm-tiles { filter:sepia(.12) saturate(.9) contrast(1.02); }
+
+    .message {
+      position:absolute; z-index:1100; inset:auto 16px 16px 16px; max-width:620px;
+      padding:13px 16px; border-radius:12px; background:var(--paper);
+      border-top:3px solid var(--gold);
+      box-shadow:0 10px 30px rgba(22,32,44,.28); font-size:.9rem; line-height:1.45; color:var(--ink);
+    }
+    .message[hidden] { display:none; }
+
+    /* Popup */
+    .leaflet-popup-content-wrapper { background:var(--paper); border-radius:14px; box-shadow:0 12px 32px rgba(22,32,44,.32); }
+    .leaflet-popup-tip { background:var(--paper); }
+    .leaflet-popup-content { margin:14px 16px; min-width:200px; max-width:280px; line-height:1.4; }
+    .popup-count { font-size:.72rem; color:var(--muted); margin-bottom:8px; letter-spacing:.01em; }
+    .popup-list { max-height:230px; overflow-y:auto; padding-right:2px; }
+    .popup-entry { padding:9px 0; border-top:1px solid var(--paper-line); }
+    .popup-entry:first-child { padding-top:0; border-top:none; }
+    .popup-name { font-family:'Fraunces',serif; font-weight:600; font-size:.98rem; color:var(--ink); margin-bottom:4px; }
+    .popup-affare {
+      font-size:.85rem; color:#4a3c1f; background:rgba(184,134,59,.14);
+      border-left:3px solid var(--gold); padding:5px 8px; border-radius:0 6px 6px 0; margin:4px 0;
+    }
+    .popup-date { font-size:.76rem; color:var(--muted); margin-top:3px; }
+
+    /* Tooltip on hover */
+    .credit-tooltip {
+      background:var(--paper) !important; color:var(--ink) !important; border:none !important;
+      border-radius:8px !important; box-shadow:0 6px 16px rgba(22,32,44,.28) !important;
+      font-family:'Fraunces',serif; font-weight:600; font-size:.82rem; padding:5px 9px !important;
+    }
+    .credit-tooltip::before { border-top-color:var(--paper) !important; }
+
+    /* Legend */
+    .legend {
+      background:var(--paper); padding:10px 13px; border-radius:12px; border-top:3px solid var(--gold);
+      box-shadow:0 6px 20px rgba(22,32,44,.24); color:var(--ink-soft); font-size:.78rem; line-height:1.4; max-width:220px;
+    }
+    .legend-dot {
+      display:inline-block; width:13px; height:13px; margin-right:6px; border-radius:50%; vertical-align:-2px;
+      background:radial-gradient(circle at 32% 30%, var(--gold-light), var(--gold) 70%);
+      border:1.5px solid #fff;
+    }
+
+    /* Reset view control */
+    .reset-control a {
+      display:flex; align-items:center; justify-content:center; width:30px; height:30px;
+      background:var(--paper); color:var(--ink-soft); font-size:15px; text-decoration:none;
+    }
+    .reset-control a:hover { color:var(--gold); }
+
+    /* Marker */
+    .credit-marker { position:relative; width:100%; height:100%; transition:transform .15s ease, filter .15s ease; }
+    .credit-marker:hover { transform:translateY(-2px) scale(1.08); filter:brightness(1.05); }
+    .credit-marker .bubble {
+      width:100%; height:100%; border-radius:50%;
+      background:radial-gradient(circle at 32% 28%, var(--gold-light), var(--gold) 72%);
+      border:2.5px solid #fffaf0;
+      box-shadow:0 4px 12px rgba(22,32,44,.4), 0 0 0 3px rgba(184,134,59,.18);
+      display:flex; align-items:center; justify-content:center;
+      color:#fff; font-weight:700; font-size:11px; text-shadow:0 1px 1px rgba(0,0,0,.3);
+    }
+    .credit-marker .bubble::after {
+      content:''; position:absolute; left:50%; bottom:-6px; transform:translateX(-50%);
+      border-left:6px solid transparent; border-right:6px solid transparent; border-top:7px solid var(--gold);
+    }
+
+    .leaflet-control-zoom a { color:var(--ink-soft); }
+    .leaflet-control-attribution { background:rgba(251,246,234,.85) !important; }
+
+    @media (max-width:560px) {
+      header { padding:11px 14px; gap:10px; }
+      .subtitle { display:none; }
+      #status { font-size:.72rem; }
+      .app { min-height:340px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div class="header-text">
+        <h1>Mappa crediti NIN</h1>
+        <p class="subtitle">Affari e crediti geolocalizzati</p>
+      </div>
+      <div id="status" role="status">Caricamento…</div>
+    </header>
+    <div id="map" aria-label="Mappa interattiva dei crediti NIN"></div>
+    <div id="message" class="message" role="alert" hidden></div>
+  </main>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script>
+    const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRxZ1JcJy6VdGQnt3oy0v_xm4tqQSfombk-lw9rS0eQiPDg7_tO-GHxdFPaOR0wHqwdDyCRgYbZZPAZ/pub?gid=1913274688&single=true&output=csv';
+
+    // Colonne del foglio (indice a partire da 0): B=Nome, L=Affare, N=Data. Le coordinate
+    // vengono cercate tra E, F, G ma non vengono mai mostrate in interfaccia.
+    const COL_NOME = 1, COL_AFFARE = 11, COL_DATA = 12;
+
+    const map = L.map('map', {
+      scrollWheelZoom:true, touchZoom:true, dragging:true, doubleClickZoom:true,
+      boxZoom:true, keyboard:true, zoomControl:true, tap:false
+    }).setView([42.2,12.5],5);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom:19, subdomains:'abc',
+      attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      className:'warm-tiles'
+    }).addTo(map);
+
+    const statusEl = document.querySelector('#status');
+    const messageEl = document.querySelector('#message');
+    const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+    const number = value => {
+      const normalized = String(value ?? '').trim().replace(',', '.');
+      return normalized === '' ? NaN : Number(normalized);
+    };
+    const coordinatePair = (cells, labels) => {
+      const values = cells.map(number);
+      const latIndex=labels.findIndex(v=>/lat/i.test(v));
+      const lonIndex=labels.findIndex(v=>/(lon|lng|long)/i.test(v));
+      if (latIndex>=0 && lonIndex>=0 && Number.isFinite(values[latIndex]) && Number.isFinite(values[lonIndex])) return [values[latIndex],values[lonIndex]];
+      for (let a=0; a<values.length; a++) for (let b=0; b<values.length; b++) {
+        if (a === b) continue;
+        if (Math.abs(values[a]) <= 90 && Math.abs(values[b]) <= 180 && Number.isFinite(values[a]) && Number.isFinite(values[b])) return [values[a], values[b]];
+      }
+      return null;
+    };
+    function showError(text) { statusEl.textContent='Dati non disponibili'; messageEl.textContent=text; messageEl.hidden=false; }
+
+    function buildPopup(entries) {
+      const count = entries.length;
+      const items = entries.map(e => `
+        <div class="popup-entry">
+          <div class="popup-name">${escapeHtml(e.nome || 'Senza nome')}</div>
+          ${e.affare ? `<div class="popup-affare">${escapeHtml(e.affare)}</div>` : ''}
+          ${e.data ? `<div class="popup-date">${escapeHtml(e.data)}</div>` : ''}
+        </div>`).join('');
+      return `
+        ${count > 1 ? `<div class="popup-count">${count} affari registrati in questo luogo</div>` : ''}
+        <div class="popup-list">${items}</div>`;
+    }
+
+    Papa.parse(CSV_URL, {
+      download:true, skipEmptyLines:true,
+      complete(result) {
+        if (!result.data?.length) return showError('Il foglio non contiene righe leggibili. Verifica che sia pubblicato sul web.');
+        const header = result.data[0];
+        const coordLabels = header.slice(4,7).map((v,i) => v || `Colonna ${String.fromCharCode(69+i)}`);
+        const groups=new Map(); let skipped=0;
+        result.data.slice(1).forEach(row => {
+          const coordCells = row.slice(4,7);
+          const pair = coordinatePair(coordCells, coordLabels);
+          if (!pair) { skipped++; return; }
+          const key = `${pair[0].toFixed(5)},${pair[1].toFixed(5)}`;
+          if (!groups.has(key)) groups.set(key, { pair, entries: [] });
+          groups.get(key).entries.push({
+            nome: (row[COL_NOME] ?? '').toString().trim(),
+            affare: (row[COL_AFFARE] ?? '').toString().trim(),
+            data: (row[COL_DATA] ?? '').toString().trim()
+          });
+        });
+
+        const bounds=[]; let total=0; let maxCount=1;
+        groups.forEach(group => { maxCount=Math.max(maxCount, group.entries.length); });
+
+        groups.forEach(group => {
+          const entries = group.entries;
+          const count = entries.length;
+          total += count; bounds.push(group.pair);
+          const size = Math.round(26 + 22*Math.sqrt((count-1)/Math.max(1,maxCount-1)));
+          const icon = L.divIcon({
+            className:'',
+            html:`<div class="credit-marker"><div class="bubble">${count>1?count:''}</div></div>`,
+            iconSize:[size,size], iconAnchor:[size/2,size+6], popupAnchor:[0,-(size+4)]
+          });
+          const marker = L.marker(group.pair,{icon,riseOnHover:true}).addTo(map);
+          marker.bindPopup(buildPopup(entries), {maxWidth:290});
+          const tooltipLabel = entries[0].nome || entries[0].affare || 'Affare';
+          marker.bindTooltip(count>1 ? `${tooltipLabel} e altri ${count-1}` : tooltipLabel, {
+            direction:'top', offset:[0,-(size*0.55)], opacity:0.96, className:'credit-tooltip'
+          });
+        });
+
+        if (!bounds.length) return showError('Nelle colonne E, F e G non ho trovato una coppia di coordinate valida (latitudine e longitudine).');
+        map.fitBounds(bounds,{padding:[28,28],maxZoom:14});
+        statusEl.textContent=`${total} affari · ${bounds.length} luoghi${skipped ? ` · ${skipped} righe ignorate` : ''}`;
+
+        const legend=L.control({position:'bottomright'});
+        legend.onAdd=()=>{ const div=L.DomUtil.create('div','legend'); div.innerHTML='<span class="legend-dot"></span>La dimensione indica il numero di affari registrati in quel luogo'; return div; };
+        legend.addTo(map);
+
+        const ResetControl = L.Control.extend({
+          options:{position:'topleft'},
+          onAdd(){
+            const container=L.DomUtil.create('div','leaflet-bar reset-control');
+            const link=L.DomUtil.create('a',' ',container);
+            link.href='#'; link.title='Torna alla vista iniziale'; link.innerHTML='&#8634;';
+            L.DomEvent.on(link,'click',e=>{ L.DomEvent.preventDefault(e); map.fitBounds(bounds,{padding:[28,28],maxZoom:14}); });
+            return container;
+          }
+        });
+        map.addControl(new ResetControl());
+
+        setTimeout(()=>map.invalidateSize(),100);
+      },
+      error() { showError('Non riesco a leggere il CSV. Controlla la pubblicazione del foglio e le autorizzazioni CORS.'); }
+    });
+    new ResizeObserver(()=>map.invalidateSize()).observe(document.querySelector('#map'));
+  </script>
+</body>
+</html>
