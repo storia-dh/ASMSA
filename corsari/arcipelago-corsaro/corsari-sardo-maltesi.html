@@ -3,807 +3,717 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rete di relazioni</title>
+<title>Arcipelago Corsaro — rete storica</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/10.1.0/standalone/umd/vis-network.min.js"></script>
-
 <style>
-:root{
-  --paper: #EFEAE1;
-  --paper-alt: #F8F5EE;
-  --ink: #221F1A;
-  --ink-soft: #5A5546;
-  --accent: #2E3A55;
-  --accent-warm: #A97F2E;
-  --gruppo: #4B6B58;
-  --altro: #8A8578;
-  --line: #D8D0BC;
-  --danger: #8B3A3A;
-  --radius: 4px;
-}
-*{ box-sizing: border-box; }
-body{
-  margin:0;
-  background: var(--paper);
-  color: var(--ink);
-  font-family: 'Inter', -apple-system, sans-serif;
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-}
-h1,h2,h3{ font-family:'Fraunces', Georgia, serif; margin:0; }
-button{ font-family: inherit; }
-:focus-visible{ outline: 2px solid var(--accent); outline-offset: 2px; }
-
-/* ---------- Masthead ---------- */
-.masthead{ padding: 40px 28px 22px; border-bottom: 1px solid var(--line); }
-.masthead h1{
-  font-size: clamp(1.7rem, 3vw, 2.3rem);
-  font-weight: 600; font-style: italic; letter-spacing: -0.01em; max-width: 20ch;
-}
-.masthead .intro{ margin-top: 12px; max-width: 70ch; font-size: 1rem; color: var(--ink-soft); }
-.masthead .intro p{ margin: 0; }
-
-/* ---------- Toolbar ---------- */
-.toolbar{
-  padding: 14px 28px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;
-  border-bottom: 1px solid var(--line); background: var(--paper-alt);
-}
-.toolbar input[type="search"]{
-  flex: 1 1 220px; max-width: 320px; padding: 8px 12px;
-  border: 1px solid var(--line); border-radius: var(--radius); font-size: 0.9rem; background:#fff;
-}
-.toolbar button.tool{
-  border:1px solid var(--line); background:#fff; color: var(--ink-soft);
-  padding: 7px 13px; border-radius: var(--radius); font-size:0.85rem; cursor:pointer;
-}
-.toolbar button.tool.active{ background: var(--ink); color: var(--paper-alt); border-color: var(--ink); }
-.legend{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; width:100%; margin-top:6px; }
-.legend .item{ display:flex; align-items:center; gap:6px; font-size:0.8rem; color: var(--ink-soft); }
-.legend .dot{ width:10px; height:10px; border-radius:50%; display:inline-block; }
-.count{ width:100%; font-size:0.78rem; color: var(--ink-soft); font-style: italic; margin-top: 2px; }
-
-/* ---------- Area grafo ---------- */
-.stage{ position: relative; height: 78vh; min-height: 480px; }
-#network{ width:100%; height:100%; background: var(--paper); }
-.state{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color: var(--ink-soft); }
-.state.error{ color: var(--danger); flex-direction:column; text-align:center; padding: 20px; }
-
-/* ---------- Pannello laterale ---------- */
-.panel{
-  position:absolute; top:0; right:-360px; width:340px; height:100%;
-  background: var(--paper-alt); border-left: 1px solid var(--line);
-  box-shadow: -6px 0 18px rgba(20,18,14,0.08);
-  transition: right .28s ease; overflow-y:auto; padding: 22px 22px 30px;
-}
-.panel.open{ right:0; }
-.panel .close{
-  position:absolute; top:14px; right:14px; background:none; border:none;
-  font-size:1.3rem; color: var(--ink-soft); cursor:pointer; line-height:1;
-}
-.panel .kind{ font-size:0.72rem; text-transform:none; font-style:italic; color: var(--accent-warm); }
-.panel h3{ font-size:1.25rem; font-weight:600; margin-top:6px; line-height:1.3; }
-.panel dl{ margin-top:16px; }
-.panel dt{ font-size:0.72rem; color: var(--ink-soft); font-style:italic; margin-top:10px; }
-.panel dd{ margin:2px 0 0; font-size:0.92rem; }
-.panel .neighbors{ margin-top:18px; }
-.panel .neighbors h4{ font-size:0.85rem; font-weight:600; margin-bottom:8px; }
-.panel .neighbors button{
-  display:block; width:100%; text-align:left; background:#fff; border:1px solid var(--line);
-  border-radius: var(--radius); padding: 8px 10px; margin-bottom:6px; font-size:0.85rem; cursor:pointer; color: var(--ink);
-}
-.panel .neighbors button:hover{ border-color: var(--accent); }
-.panel .neighbors .rel{ font-size:0.72rem; color: var(--ink-soft); font-style:italic; }
+/* PERSONALIZZAZIONE: modifica queste variabili. Lo sfondo resta trasparente. */
+:root{--page-bg:transparent;--surface:rgba(248,245,238,.96);--control:rgba(255,255,255,.96);--ink:#211f1a;--ink-soft:#625d51;--line:#d5cdbb;--accent:#243d63;--accent-warm:#976f22;--danger:#8b3a3a;--focus:#1769aa;--radius:5px;--font-body:'Inter',sans-serif;--font-title:'Fraunces',Georgia,serif;--stage-height:72vh;--stage-min-height:520px;--panel-width:360px;--page-inline:28px;--shadow:-8px 0 24px rgba(20,18,14,.13)}
+*{box-sizing:border-box}html,body{margin:0;background:transparent}body{color:var(--ink);font-family:var(--font-body);line-height:1.5;-webkit-font-smoothing:antialiased}button,input,select{font:inherit}button,summary,select{touch-action:manipulation}:focus-visible{outline:3px solid var(--focus);outline-offset:2px}.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.masthead{padding:32px var(--page-inline) 18px;border-bottom:1px solid var(--line)}.masthead h1{margin:0;font:600 clamp(1.75rem,3vw,2.35rem)/1.15 var(--font-title);font-style:italic}.masthead p{max-width:78ch;margin:10px 0 0;color:var(--ink-soft)}.method-note{margin-top:12px;max-width:86ch;font-size:.78rem;color:var(--ink-soft)}.method-note summary{cursor:pointer;color:var(--accent);font-weight:600}.method-note p{margin:7px 0 0}
+.toolbar{padding:12px var(--page-inline);display:flex;flex-wrap:wrap;align-items:center;gap:10px;border-bottom:1px solid var(--line)}.search{flex:1 1 230px;max-width:340px;padding:8px 11px;color:var(--ink);background:var(--control);border:1px solid var(--line);border-radius:var(--radius)}.tool{min-height:36px;padding:7px 12px;color:var(--ink-soft);background:var(--control);border:1px solid var(--line);border-radius:var(--radius);cursor:pointer}.tool:hover{border-color:var(--accent);color:var(--ink)}.tool.active{color:#fff;background:var(--accent);border-color:var(--accent)}
+.filters{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)}.filters>summary{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 12px;cursor:pointer;list-style:none;font-size:.85rem;font-weight:600}.filters>summary::-webkit-details-marker{display:none}.filters>summary::after{content:'▾';transition:transform .2s}.filters[open]>summary::after{transform:rotate(180deg)}.filter-status{margin-left:7px;color:var(--ink-soft);font-size:.74rem;font-weight:400;font-style:italic}.filter-body{padding:12px;border-top:1px solid var(--line)}.filter-grid{display:grid;grid-template-columns:repeat(4,minmax(145px,1fr));gap:10px}.field{display:flex;flex-direction:column;gap:4px;min-width:0}.field label,.field-title{font-size:.72rem;color:var(--ink-soft);font-style:italic}.field select{width:100%;min-height:36px;padding:7px 9px;color:var(--ink);background:var(--control);border:1px solid var(--line);border-radius:var(--radius)}.year-pair{display:grid;grid-template-columns:1fr 1fr;gap:6px}.checks{display:flex;flex-wrap:wrap;gap:12px 18px;margin-top:12px}.check{display:inline-flex;align-items:center;gap:7px;font-size:.8rem;color:var(--ink-soft)}.filter-actions{display:flex;gap:8px;margin-top:12px}.encoding-legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}.legend-item{display:inline-flex;align-items:center;gap:6px;font-size:.76rem;color:var(--ink-soft)}.symbol{display:inline-block;width:13px;height:13px;border:2px solid rgba(33,31,26,.55);background:var(--symbol-color)}.symbol.persona{border-radius:50%}.symbol.imbarcazione{transform:rotate(45deg);border-radius:2px}.symbol.gruppo{border-radius:2px}.symbol.prigioniero{clip-path:polygon(50% 100%,0 0,100% 0)}.symbol.altro{border-radius:50% 50% 2px 2px}.count{width:100%;min-height:1.2em;color:var(--ink-soft);font-size:.78rem;font-style:italic}
+.stage{position:relative;height:var(--stage-height);min-height:var(--stage-min-height);overflow:hidden;background:transparent}#network{width:100%;height:100%;background:transparent}.state{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;color:var(--ink-soft);text-align:center;pointer-events:none}.state.error{color:var(--danger);flex-direction:column}
+.panel{position:absolute;z-index:4;top:0;right:calc(0px - var(--panel-width) - 24px);width:var(--panel-width);max-width:94vw;height:100%;padding:22px 22px 30px;overflow:auto;background:var(--surface);border-left:1px solid var(--line);box-shadow:var(--shadow);transition:right .25s}.panel.open{right:0}.panel-close{position:absolute;top:12px;right:12px;width:36px;height:36px;padding:0;color:var(--ink-soft);background:var(--control);border:1px solid var(--line);border-radius:50%;cursor:pointer}.panel-kind{color:var(--accent-warm);font-size:.72rem;font-style:italic}.panel h2{padding-right:34px;margin:5px 0 0;font:600 1.28rem/1.3 var(--font-title)}.panel dl{margin:16px 0}.panel dt{margin-top:10px;color:var(--ink-soft);font-size:.72rem;font-style:italic}.panel dd{margin:2px 0 0;font-size:.9rem;overflow-wrap:anywhere}.neighbors{margin-top:18px}.neighbors h3{margin:0 0 8px;font-size:.83rem}.neighbor{display:block;width:100%;margin-bottom:6px;padding:8px 10px;color:var(--ink);text-align:left;background:var(--control);border:1px solid var(--line);border-radius:var(--radius);cursor:pointer}.neighbor small{display:block;color:var(--ink-soft)}
+.data-view{margin:12px var(--page-inline) 26px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)}.data-view>summary{padding:10px 12px;cursor:pointer;font-weight:600;font-size:.85rem}.table-wrap{max-height:440px;overflow:auto;border-top:1px solid var(--line)}table{width:100%;border-collapse:collapse;font-size:.78rem}caption{padding:10px;text-align:left;color:var(--ink-soft)}th,td{padding:8px 10px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}th{position:sticky;top:0;z-index:1;background:#f4f0e7}
+@media(max-width:900px){.filter-grid{grid-template-columns:repeat(2,minmax(140px,1fr))}}@media(max-width:560px){:root{--page-inline:14px;--stage-height:68vh;--stage-min-height:460px;--panel-width:92vw}.masthead{padding-top:22px}.filter-grid{grid-template-columns:1fr}.search{max-width:none}.filter-status{display:block;margin:2px 0 0}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+.export-actions{display:flex;flex-wrap:wrap;gap:8px;width:100%}.quality-summary{display:flex;align-items:center;gap:8px}.quality-badge{display:inline-flex;align-items:center;justify-content:center;min-width:1.6em;padding:1px 6px;border-radius:999px;background:#e7dfcf;color:var(--ink);font-size:.72rem}.quality-body{padding:12px;border-top:1px solid var(--line);font-size:.8rem}.quality-body h3{margin:10px 0 5px;font-size:.86rem}.quality-list{margin:0;padding-left:20px}.quality-list li{margin:3px 0}.quality-error{color:#8b3a3a}.quality-warning{color:#7a5b18}.quality-info{color:var(--ink-soft)}.metadata-grid{display:grid;grid-template-columns:max-content 1fr;gap:4px 12px;margin:8px 0}.metadata-grid dt{font-weight:600}.metadata-grid dd{margin:0;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
-
-<!-- =====================================================================
-     TESTO DI APERTURA — sostituisci titolo e paragrafo con il tuo testo
-     ===================================================================== -->
 <header class="masthead">
-  <h1 id="rete-titolo">Arcipelago Corsaro</h1>
-  <div class="intro" id="rete-intro">
-    <p>Il grafico mostra le reti di circolazione e redistribuzione della ricchezza che collegavano la produzione rurale e il corso marittimo nello spazio sardo-maltese del XVIII secolo</p>
-  </div>
+  <h1>Arcipelago Corsaro</h1>
+  <p>Rete delle relazioni che collegavano persone, imbarcazioni e gruppi nella circolazione della ricchezza nello spazio sardo-maltese del XVIII secolo.</p>
+  <details class="method-note"><summary>Come leggere la visualizzazione</summary><p>Questa è una proiezione esplorativa del corpus, non una fotografia completa della società storica. Forma e colore distinguono il tipo di entità; la dimensione dei nodi è uniforme per non suggerire gerarchie implicite. “Corsaro” è trattato come ruolo contestuale, non come essenza personale; la classificazione legacy ricavata dagli ID viene segnalata come derivazione editoriale. I collegamenti non hanno freccia salvo quando la direzione è dichiarata nei dati. Il filtro temporale agisce sulle relazioni documentate e non sulla durata biografica degli attori.</p></details>
 </header>
-
-<div class="toolbar">
-  <input type="search" id="search" placeholder="Cerca un nome…" aria-label="Cerca nella rete">
-  <button class="tool active" id="physicsToggle">Fisica: on</button>
-  <button class="tool" id="resetView">Adatta alla vista</button>
-  <div class="legend" id="legend"></div>
-  <div class="count" id="count"></div>
-</div>
-
-<div class="stage">
-  <div id="network"></div>
-  <div class="state" id="loading">Caricamento della rete…</div>
-  <aside class="panel" id="panel">
-    <button class="close" id="panelClose" aria-label="Chiudi">&times;</button>
-    <div id="panelBody"></div>
-  </aside>
-</div>
-
+<section class="toolbar" aria-label="Strumenti della rete">
+  <label class="sr-only" for="search">Cerca una persona o un'entità</label><input class="search" id="search" type="search" placeholder="Cerca un nome…" autocomplete="off">
+  <button class="tool" id="physicsToggle" type="button" aria-pressed="false">Movimento: off</button><button class="tool" id="resetView" type="button">Vista completa</button><button class="tool" id="clearSelection" type="button">Togli selezione</button>
+  <div class="export-actions" aria-label="Esportazione dei dati"><button class="tool" id="exportCsv" type="button">Esporta CSV normalizzati</button><button class="tool" id="exportJsonLd" type="button">Esporta JSON-LD</button><button class="tool" id="exportGraphml" type="button">Esporta GraphML della vista</button><button class="tool" id="exportManifest" type="button">Manifest FAIR</button></div>
+  <details class="filters" id="filterPanel"><summary><span>Filtri analitici <span class="filter-status" id="filterStatus">Nessun filtro attivo</span></span></summary><div class="filter-body">
+    <div class="filter-grid">
+      <div class="field"><label for="entityFilter">Tipo di entità</label><select id="entityFilter"><option value="">Tutti</option></select></div>
+      <div class="field"><label for="roleFilter">Ruolo</label><select id="roleFilter"><option value="">Tutti</option></select></div>
+      <div class="field"><label for="nationalityFilter">Nazionalità</label><select id="nationalityFilter"><option value="">Tutte</option></select></div>
+      <div class="field"><label for="relationFilter">Tipo di relazione</label><select id="relationFilter"><option value="">Tutte</option></select></div>
+      <div class="field"><span class="field-title">Intervallo delle relazioni</span><div class="year-pair"><label><span class="sr-only">Anno iniziale</span><select id="yearFrom"><option value="">Da</option></select></label><label><span class="sr-only">Anno finale</span><select id="yearTo"><option value="">A</option></select></label></div></div>
+      <div class="field"><label for="labelMode">Etichette dei nodi</label><select id="labelMode"><option value="important">Solo nodi principali</option><option value="all">Tutte</option><option value="none">Nessuna</option></select></div>
+      <div class="field"><label for="certaintyFilter">Certezza della relazione</label><select id="certaintyFilter"><option value="">Tutti i livelli</option></select></div>
+      <div class="field"><label for="statusFilter">Status attestato</label><select id="statusFilter"><option value="">Tutti gli status</option></select></div>
+      <div class="field"><label for="placeFilter">Luogo attestato</label><select id="placeFilter"><option value="">Tutti i luoghi</option></select></div>
+      <div class="field"><label for="derivationFilter">Provenienza del dato</label><select id="derivationFilter"><option value="">Dati espliciti e legacy</option><option value="explicit">Solo dati espliciti</option><option value="legacy-adapter">Solo adattamenti legacy</option></select></div>
+    </div>
+    <div class="checks"><label class="check"><input id="showNeighbors" type="checkbox" checked> Mostra anche i vicini dei risultati</label><label class="check"><input id="includeUndated" type="checkbox" checked> Includi relazioni senza data</label><label class="check"><input id="onlySourced" type="checkbox"> Solo relazioni con fonte</label></div>
+    <div class="filter-actions"><button class="tool" id="resetFilters" type="button">Azzera filtri</button></div><div class="encoding-legend" id="entityLegend" aria-label="Legenda dei tipi di entità"></div>
+  </div></details>
+  <div class="count" id="count" role="status" aria-live="polite"></div>
+</section>
+<main>
+  <section class="stage" aria-labelledby="networkTitle"><h2 class="sr-only" id="networkTitle">Grafo interattivo della rete</h2><p class="sr-only" id="networkHelp">Il grafo è accompagnato da una tabella accessibile sotto la visualizzazione. Selezionando un nodo vengono evidenziati i suoi collegamenti diretti.</p><div id="network" role="img" aria-describedby="networkHelp" aria-label="Rete storica interattiva"></div><div class="state" id="loading">Caricamento della rete…</div><aside class="panel" id="panel" role="dialog" aria-modal="false" aria-hidden="true" aria-labelledby="panelTitle"><button class="panel-close" id="panelClose" type="button" aria-label="Chiudi il pannello">×</button><div id="panelBody"></div></aside></section>
+  <details class="data-view" id="dataView"><summary>Vista tabellare accessibile dei collegamenti visibili</summary><div class="table-wrap"><table><caption id="tableCaption">Collegamenti attualmente visibili nella rete.</caption><thead><tr><th scope="col">Da</th><th scope="col">Relazione</th><th scope="col">A</th><th scope="col">Data</th><th scope="col">Certezza</th><th scope="col">Fonti</th></tr></thead><tbody id="relationTableBody"></tbody></table></div></details>
+  <details class="data-view" id="qualityView"><summary class="quality-summary">Qualità e provenienza dei dati <span class="quality-badge" id="qualityBadge">0</span></summary><div class="quality-body" id="qualityBody"></div></details>
+</main>
 <script>
+const CONFIG={nodiUrl:"https://docs.google.com/spreadsheets/d/1fALYR2tXJE15oPeTBnXbUVy00ouHE_bFzp67S2gosjY/edit?gid=378951882",connessioniUrl:"https://docs.google.com/spreadsheets/d/1fALYR2tXJE15oPeTBnXbUVy00ouHE_bFzp67S2gosjY/edit?gid=434015411",columnsNodi:{id:["id"],nome:["nome","name","label","etichetta"],eta:["eta","età","age"],professione:["professione","profession"],nazionalita:["nazionalita","nazionalità","nationality"],residenza:["residenza","luogo","location"],anno:["anno","year"],fonti:["fonti","fonte","source","sources"],tipo:["tipo","type"],altreQualifiche:["altre qualifiche","qualifiche","altre qualifica"],note:["note","nota","notes"]},columnsConnessioni:{from:["id a","ida","source","from","origine"],to:["id b","idb","target","to","destinazione"],tipo:["tipo","type","relazione"],anno:["anno","year"],fonti:["fonti","fonte","source"],certezza:["certezza","affidabilita","affidabilità","certainty"],direzione:["direzione","direction","orientata"]}};
 /* =====================================================================
-   CONFIGURAZIONE — modifica solo questa parte
+   PROFILO APPLICATIVO E COLONNE ARRICCHITE FACOLTATIVE
+
+   Il foglio storico attuale continua a funzionare. Quando le colonne qui
+   elencate sono presenti, il loro valore esplicito prevale sulle inferenze
+   legacy. L'applicazione conserva sempre valore originale, normalizzazione,
+   fonte, certezza e responsabilità editoriale.
+
+   Questo è un profilo locale mappabile a CIDOC CRM e PROV-O: non pretende
+   una conformità CRM completa, che richiederebbe decisioni editoriali più
+   articolate su eventi, partecipazioni, luoghi e documenti.
    ===================================================================== */
-const CONFIG = {
-  // URL del foglio originale. Il codice usa Google Visualization in modalità
-  // JSONP: funziona da GitHub Pages senza proxy, workflow o blocchi CORS.
-  nodiUrl: "https://docs.google.com/spreadsheets/d/1fALYR2tXJE15oPeTBnXbUVy00ouHE_bFzp67S2gosjY/edit?gid=378951882",
-  connessioniUrl: "https://docs.google.com/spreadsheets/d/1fALYR2tXJE15oPeTBnXbUVy00ouHE_bFzp67S2gosjY/edit?gid=434015411",
+const PROJECT_META = {
+  schemaVersion: "ASMSA-CorsairNetwork-1.0",
+  appVersion: "3.0.0",
+  datasetId: "https://giampsalice.github.io/ASMSA/NIN_rete_corsari.html",
+  title: "Arcipelago Corsaro",
+  description: "Proiezione esplorativa di asserzioni e relazioni documentate nello spazio sardo-maltese del XVIII secolo",
+  publisher: "ASMSA",
+  license: null,
+  language: "it",
+  modelNote: "Profilo locale entity–assertion–relation–source, mappabile ma non dichiarato conforme a CIDOC CRM."
+};
 
-  columnsNodi: {
-    id:               ["id"],
-    nome:             ["nome", "name", "label", "etichetta"],
-    eta:              ["eta", "età", "age"],
-    professione:      ["professione", "profession"],
-    nazionalita:      ["nazionalita", "nazionalità", "nationality"],
-    residenza:        ["residenza", "luogo", "location"],
-    anno:             ["anno", "year"],
-    fonti:            ["fonti", "fonte", "source", "sources"],
-    tipo:             ["tipo", "type"],
-    altreQualifiche:  ["altre qualifiche", "qualifiche", "altre qualifica"],
-    note:             ["note", "nota", "notes"]
+const ADVANCED = {
+  node: {
+    entityType: ["entity_type", "tipo_entita", "tipo entità"],
+    originalLabel: ["label_originale", "nome_originale"],
+    normalizedRole: ["ruolo_normalizzato", "role"],
+    status: ["status", "stato_giuridico"],
+    dateStart: ["data_inizio", "valid_from", "role_from"],
+    dateEnd: ["data_fine", "valid_to", "role_to"],
+    dateQualifier: ["data_qualificatore", "date_qualifier"],
+    placeId: ["luogo_id", "place_id"],
+    sourceId: ["fonte_id", "source_id"],
+    sourceLocator: ["source_locator", "segnatura", "folio", "carta"],
+    certainty: ["certezza", "certainty"],
+    assertedBy: ["asserted_by", "responsabile_editoriale"],
+    editorialNote: ["nota_editoriale", "editorial_note"]
   },
-  columnsConnessioni: {
-    from:  ["id a", "ida", "source", "from", "origine"],
-    to:    ["id b", "idb", "target", "to", "destinazione"],
-    tipo:  ["tipo", "type", "relazione"],
-    anno:  ["anno", "year"],
-    fonti: ["fonti", "fonte", "source"]
+  edge: {
+    relationId: ["relation_id", "id_relazione"],
+    predicate: ["relation_type", "predicate", "tipo_normalizzato"],
+    directed: ["directed", "direzione", "direction", "orientata"],
+    dateStart: ["data_inizio", "event_from", "valid_from"],
+    dateEnd: ["data_fine", "event_to", "valid_to"],
+    dateQualifier: ["data_qualificatore", "date_qualifier"],
+    placeId: ["luogo_id", "place_id"],
+    placeType: ["tipo_luogo", "place_type"],
+    sourceId: ["fonte_id", "source_id"],
+    sourceLocator: ["source_locator", "segnatura", "folio", "carta"],
+    certainty: ["certezza", "certainty"],
+    evidence: ["evidenza", "quotation", "estratto"],
+    assertedBy: ["asserted_by", "responsabile_editoriale"],
+    editorialNote: ["nota_editoriale", "editorial_note"]
   }
 };
 
-// ---------------------------------------------------------------------
-// ICONE — ognuna può essere sostituita con un URL personalizzato al posto
-// della stringa SVG: basta scrivere icon: 'https://tuosito.it/icona.png'
-// (funziona anche con .svg). Il codice riconosce da solo se è un URL o
-// un disegno SVG incorporato.
-// ---------------------------------------------------------------------
-function resolveIcon(icon){
-  if (!icon) return "";
-  if (icon.startsWith("http") || icon.startsWith("data:")) return icon;
-  return svgToDataUri(icon);
+// Forma e colore codificano la stessa categoria, evitando di dipendere solo dal colore.
+const ENTITY_STYLE={persona:{label:"Persona",shape:"dot",color:"#31577d"},imbarcazione:{label:"Imbarcazione",shape:"diamond",color:"#a36b22"},gruppo:{label:"Gruppo",shape:"box",color:"#52745e"},prigioniero:{label:"Prigioniero",shape:"triangleDown",color:"#8a4b55"},altro:{label:"Altra entità",shape:"square",color:"#777064"}};
+const FIXED_LAYOUT_SEED=1775;
+let network,nodesDS,edgesDS,nodesRaw={},edgesRaw=[],neighborsOf={},visibleNodeIds=new Set(),visibleEdgeIds=new Set(),selectedNodeId=null,lastFocusedElement=null,physicsOn=false,importantDegree=Infinity;
+let canonicalModel={entities:[],assertions:[],relations:[],sources:[],metadata:{}};
+let qualityIssues=[];
+function normalize(v){return String(v??"").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")}function esc(v){return String(v??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]))}function field(row,aliases){for(const k in row)if(aliases.some(a=>normalize(a)===normalize(k)))return String(row[k]??"").trim();return""}function entityOf(id){const p=normalize(id);if(p.startsWith("crs"))return"persona";if(p.startsWith("bst"))return"imbarcazione";if(p.startsWith("nin"))return"gruppo";if(p.startsWith("slv"))return"prigioniero";return"altro"}function splitTerms(v){return String(v||"").split(/\s*[\/;|]\s*/).map(x=>x.trim()).filter(Boolean)}function parseYears(v){const ys=(String(v||"").match(/\b(1[5-9]\d{2}|20\d{2})\b/g)||[]).map(Number);return ys.length?{min:Math.min(...ys),max:Math.max(...ys)}:null}function overlaps(r,a,b,u){const from=Math.min(a,b),to=Math.max(a,b);return r?r.max>=from&&r.min<=to:u}function isDirected(v){return["si","sì","diretta","diretto","orientata","orientato","1","true"].includes(normalize(v))}function certaintyStyle(v){const c=normalize(v);if(/ipotet|suppost|hypothetical/.test(c))return[2,6];if(/incert|uncertain|dubbi|probab/.test(c))return[7,5];return false}
+function googleUrl(sheetUrl,callback){const s=new URL(sheetUrl),m=s.pathname.match(/^(.*\/spreadsheets\/d\/[^/]+)\/(?:edit|view)$/);if(!m)return"";const e=new URL(s.origin+m[1]+"/gviz/tq");e.searchParams.set("gid",s.searchParams.get("gid")||"0");e.searchParams.set("headers","1");e.searchParams.set("tqx","out:json;responseHandler:"+callback);return e.toString()}
+function gvizRows(r){if(!r||r.status==="error"||!r.table)throw new Error("Risposta Google non valida");const cols=(r.table.cols||[]).map((c,i)=>(c&&(c.label||c.id))||`colonna_${i+1}`);return(r.table.rows||[]).map(row=>{const out={};cols.forEach((n,i)=>{const c=row.c&&row.c[i];out[n]=c==null?"":(c.f!=null?c.f:(c.v!=null?c.v:""))});return out}).filter(x=>Object.values(x).some(v=>v!==""))}
+function loadSheet(label,url){return new Promise((resolve,reject)=>{const cb=`asmsa_${Date.now()}_${Math.random().toString(36).slice(2)}`,script=document.createElement("script"),endpoint=googleUrl(url,cb),timer=setTimeout(()=>finish(new Error(`${label}: nessuna risposta entro 15 secondi`)),15000);function clean(){clearTimeout(timer);script.remove();try{delete window[cb]}catch(_){window[cb]=undefined}}function finish(error,data){clean();error?reject(error):resolve(data)}if(!endpoint){finish(new Error(`${label}: URL non riconosciuto`));return}window[cb]=r=>{try{finish(null,gvizRows(r))}catch(e){finish(new Error(`${label}: ${e.message}`))}};script.onerror=()=>finish(new Error(`${label}: endpoint non raggiungibile`));script.src=endpoint;document.head.appendChild(script)})}
+async function loadData(){try{const[n,e]=await Promise.all([loadSheet("Foglio nodi",CONFIG.nodiUrl),loadSheet("Foglio connessioni",CONFIG.connessioniUrl)]);buildData(n,e)}catch(e){showError("Impossibile leggere i dati",e.message)}}function showError(t,d){const el=document.getElementById("loading");el.className="state error";el.innerHTML=`<strong>${esc(t)}</strong><span>${esc(d)}</span>`}
+function buildData(nodeRows,edgeRows){nodesRaw={};edgesRaw=[];neighborsOf={};nodeRows.forEach(row=>{const id=field(row,CONFIG.columnsNodi.id);if(!id)return;const n={id,nome:field(row,CONFIG.columnsNodi.nome),eta:field(row,CONFIG.columnsNodi.eta),professione:field(row,CONFIG.columnsNodi.professione),nazionalita:field(row,CONFIG.columnsNodi.nazionalita),residenza:field(row,CONFIG.columnsNodi.residenza),anno:field(row,CONFIG.columnsNodi.anno),fonti:field(row,CONFIG.columnsNodi.fonti),tipo:field(row,CONFIG.columnsNodi.tipo),altreQualifiche:field(row,CONFIG.columnsNodi.altreQualifiche),note:field(row,CONFIG.columnsNodi.note)};if(!nodesRaw[id])nodesRaw[id]=n;else Object.keys(n).forEach(k=>{if(k!=="id"&&n[k]&&!splitTerms(nodesRaw[id][k]).includes(n[k]))nodesRaw[id][k]=nodesRaw[id][k]?`${nodesRaw[id][k]} / ${n[k]}`:n[k]})});let skipped=0;edgeRows.forEach((row,i)=>{const from=field(row,CONFIG.columnsConnessioni.from),to=field(row,CONFIG.columnsConnessioni.to);if(!from||!to||!nodesRaw[from]||!nodesRaw[to]){skipped++;return}const e={id:`e${i}`,from,to,tipo:field(row,CONFIG.columnsConnessioni.tipo),anno:field(row,CONFIG.columnsConnessioni.anno),fonti:field(row,CONFIG.columnsConnessioni.fonti),certezza:field(row,CONFIG.columnsConnessioni.certezza),direzione:field(row,CONFIG.columnsConnessioni.direzione)};e.years=parseYears(e.anno);edgesRaw.push(e);(neighborsOf[from]??=[]).push({id:to,edge:e});(neighborsOf[to]??=[]).push({id:from,edge:e})});const uniq={};Object.keys(nodesRaw).forEach(id=>uniq[id]=new Set);edgesRaw.forEach(e=>{uniq[e.from].add(e.to);uniq[e.to].add(e.from)});const ds=Object.values(uniq).map(s=>s.size).sort((a,b)=>a-b);importantDegree=ds.length?ds[Math.floor(ds.length*.85)]:Infinity;const vn=Object.values(nodesRaw).map(n=>{n.entity=entityOf(n.id);n.degree=uniq[n.id].size;const s=ENTITY_STYLE[n.entity];return{id:n.id,label:n.degree>=importantDegree?(n.nome||n.id):"",shape:s.shape,size:20,title:n.nome||n.id,color:{background:s.color,border:"#211f1a",highlight:{background:s.color,border:"#111"}},borderWidth:1.5,borderWidthSelected:3,font:{face:"Inter",size:12,color:"#211f1a",background:"rgba(248,245,238,.82)",strokeWidth:0},opacity:1}});const ve=edgesRaw.map(e=>({id:e.id,from:e.from,to:e.to,label:"",title:[e.tipo,e.anno,e.certezza].filter(Boolean).join(" · "),width:1.2,color:{color:"rgba(76,72,64,.34)",highlight:"#243d63",hover:"#243d63"},dashes:certaintyStyle(e.certezza),smooth:{type:"continuous"},arrows:{to:{enabled:isDirected(e.direzione),scaleFactor:.45}}}));nodesDS=new vis.DataSet(vn);edgesDS=new vis.DataSet(ve);populateControls();renderLegend();renderNetwork();applyView();document.getElementById("loading").style.display="none";if(skipped)document.getElementById("count").dataset.skipped=String(skipped)}
+function option(s,v,l){const o=document.createElement("option");o.value=v;o.textContent=l;s.appendChild(o)}function populateControls(){const ent=document.getElementById("entityFilter");Object.entries(ENTITY_STYLE).forEach(([k,s])=>option(ent,k,s.label));const roles=new Map,nats=new Map,rels=new Map,years=new Set;Object.values(nodesRaw).forEach(n=>{splitTerms(n.tipo).forEach(v=>roles.set(normalize(v),v));splitTerms(n.nazionalita).forEach(v=>nats.set(normalize(v),v))});edgesRaw.forEach(e=>{if(e.tipo)rels.set(normalize(e.tipo),e.tipo);if(e.years)for(let y=e.years.min;y<=e.years.max;y++)years.add(y)});[["roleFilter",roles],["nationalityFilter",nats],["relationFilter",rels]].forEach(([id,map])=>{const s=document.getElementById(id);[...map].sort((a,b)=>a[1].localeCompare(b[1],"it")).forEach(([v,l])=>option(s,v,l))});const ys=[...years].sort((a,b)=>a-b);["yearFrom","yearTo"].forEach(id=>{const s=document.getElementById(id);ys.forEach(y=>option(s,String(y),String(y)))})}function renderLegend(){document.getElementById("entityLegend").innerHTML=Object.entries(ENTITY_STYLE).map(([k,s])=>`<span class="legend-item"><span class="symbol ${k}" style="--symbol-color:${esc(s.color)}"></span>${esc(s.label)}</span>`).join("")}
+function currentFilters(){const ys=edgesRaw.flatMap(e=>e.years?[e.years.min,e.years.max]:[]),lo=ys.length?Math.min(...ys):-Infinity,hi=ys.length?Math.max(...ys):Infinity;return{q:normalize(document.getElementById("search").value),entity:document.getElementById("entityFilter").value,role:document.getElementById("roleFilter").value,nationality:document.getElementById("nationalityFilter").value,relation:document.getElementById("relationFilter").value,from:Number(document.getElementById("yearFrom").value||lo),to:Number(document.getElementById("yearTo").value||hi),includeUndated:document.getElementById("includeUndated").checked,onlySourced:document.getElementById("onlySourced").checked,showNeighbors:document.getElementById("showNeighbors").checked,labelMode:document.getElementById("labelMode").value}}
+function nodeMatches(n,f){const search=normalize([n.nome,n.id,n.tipo,n.professione,n.nazionalita,n.residenza].join(" ")),roles=splitTerms(n.tipo).map(normalize),nats=splitTerms(n.nazionalita).map(normalize);return(!f.q||search.includes(f.q))&&(!f.entity||n.entity===f.entity)&&(!f.role||roles.includes(f.role))&&(!f.nationality||nats.includes(f.nationality))}function edgeMatches(e,f){return(!f.relation||normalize(e.tipo)===f.relation)&&overlaps(e.years,f.from,f.to,f.includeUndated)&&(!f.onlySourced||!!e.fonti)}function nodeLabel(n,m){if(m==="none")return"";if(m==="all")return n.nome||n.id;return n.degree>=importantDegree?(n.nome||n.id):""}
+function applyView(){if(!nodesDS||!edgesDS)return;const f=currentFilters(),seed=new Set(Object.values(nodesRaw).filter(n=>nodeMatches(n,f)).map(n=>n.id)),nodeActive=!!(f.q||f.entity||f.role||f.nationality),edgeActive=!!(f.relation||document.getElementById("yearFrom").value||document.getElementById("yearTo").value||f.onlySourced||!f.includeUndated),qualified=edgesRaw.filter(e=>edgeMatches(e,f));const shown=nodeActive?qualified.filter(e=>f.showNeighbors?(seed.has(e.from)||seed.has(e.to)):(seed.has(e.from)&&seed.has(e.to))):qualified;visibleEdgeIds=new Set(shown.map(e=>e.id));visibleNodeIds=new Set;shown.forEach(e=>{visibleNodeIds.add(e.from);visibleNodeIds.add(e.to)});if(nodeActive&&!f.showNeighbors)seed.forEach(id=>visibleNodeIds.add(id));if(!nodeActive&&!edgeActive)Object.keys(nodesRaw).forEach(id=>visibleNodeIds.add(id));nodesDS.update(Object.values(nodesRaw).map(n=>({id:n.id,hidden:!visibleNodeIds.has(n.id),label:nodeLabel(n,f.labelMode)})));edgesDS.update(edgesRaw.map(e=>({id:e.id,hidden:!visibleEdgeIds.has(e.id)})));selectedNodeId=null;closePanel(false);applyHighlight();updateSummary(f);renderTable();if(network&&visibleNodeIds.size)network.fit({animation:matchMedia("(prefers-reduced-motion:reduce)").matches?false:{duration:300}})}
+function applyHighlight(){if(!nodesDS||!edgesDS)return;const hood=new Set(selectedNodeId?[selectedNodeId,...(neighborsOf[selectedNodeId]||[]).map(n=>n.id)]:[]);nodesDS.update([...visibleNodeIds].map(id=>({id,opacity:selectedNodeId?(hood.has(id)?1:.12):1})));edgesDS.update(edgesRaw.filter(e=>visibleEdgeIds.has(e.id)).map(e=>{const hit=selectedNodeId&&(e.from===selectedNodeId||e.to===selectedNodeId);return{id:e.id,width:hit?3:1.2,color:{color:selectedNodeId?(hit?"#243d63":"rgba(76,72,64,.08)"):"rgba(76,72,64,.34)",highlight:"#243d63",hover:"#243d63"}}}))}
+function updateSummary(f){const a=[];[["entityFilter",f.entity],["roleFilter",f.role],["nationalityFilter",f.nationality],["relationFilter",f.relation]].forEach(([id,v])=>{if(v)a.push(document.getElementById(id).selectedOptions[0].textContent)});if(document.getElementById("yearFrom").value||document.getElementById("yearTo").value)a.push(`${document.getElementById("yearFrom").value||"…"}–${document.getElementById("yearTo").value||"…"}`);if(f.q)a.push(`ricerca: ${document.getElementById("search").value}`);if(f.onlySourced)a.push("con fonte");document.getElementById("filterStatus").textContent=a.length?a.join(" · "):"Nessun filtro attivo";const skipped=document.getElementById("count").dataset.skipped;document.getElementById("count").textContent=`${visibleNodeIds.size} nodi · ${visibleEdgeIds.size} collegamenti${skipped?` · ${skipped} righe ignorate per ID mancanti`:""}`}
+function renderTable(){const body=document.getElementById("relationTableBody"),rows=edgesRaw.filter(e=>visibleEdgeIds.has(e.id));body.innerHTML=rows.length?rows.map(e=>`<tr><td>${esc(nodesRaw[e.from]?.nome||e.from)}</td><td>${esc(e.tipo||"Non specificata")}</td><td>${esc(nodesRaw[e.to]?.nome||e.to)}</td><td>${esc(e.anno||"Non datata")}</td><td>${esc(e.certezza||"Non specificata")}</td><td>${esc(e.fonti||"Non indicata")}</td></tr>`).join(""):`<tr><td colspan="6">Nessun collegamento corrisponde ai filtri attivi.</td></tr>`;document.getElementById("tableCaption").textContent=`${rows.length} collegamenti attualmente visibili nella rete.`}
+function renderNetwork(){const reduced=matchMedia("(prefers-reduced-motion:reduce)").matches,options={layout:{randomSeed:FIXED_LAYOUT_SEED,improvedLayout:true},nodes:{scaling:{min:20,max:20},chosen:true},edges:{selectionWidth:2,hoverWidth:1.5},physics:{enabled:!reduced,barnesHut:{gravitationalConstant:-2900,centralGravity:.22,springLength:135,springConstant:.035,damping:.32,avoidOverlap:.55},stabilization:{enabled:true,iterations:500,updateInterval:50,fit:true}},interaction:{hover:true,tooltipDelay:180,keyboard:{enabled:true,bindToWindow:false},navigationButtons:true,multiselect:false}};physicsOn=!reduced;updatePhysicsButton();network=new vis.Network(document.getElementById("network"),{nodes:nodesDS,edges:edgesDS},options);network.once("stabilizationIterationsDone",()=>{physicsOn=false;network.setOptions({physics:{enabled:false}});updatePhysicsButton()});network.on("click",p=>{if(p.nodes.length){selectedNodeId=p.nodes[0];lastFocusedElement=document.activeElement;openNodePanel(selectedNodeId);applyHighlight()}else if(p.edges.length){selectedNodeId=null;lastFocusedElement=document.activeElement;openEdgePanel(p.edges[0]);applyHighlight()}else{selectedNodeId=null;closePanel(false);applyHighlight()}})}function updatePhysicsButton(){const b=document.getElementById("physicsToggle");b.textContent=`Movimento: ${physicsOn?"on":"off"}`;b.classList.toggle("active",physicsOn);b.setAttribute("aria-pressed",String(physicsOn))}
+const panel=document.getElementById("panel"),panelBody=document.getElementById("panelBody"),panelClose=document.getElementById("panelClose");function openPanel(html){panelBody.innerHTML=html;panel.classList.add("open");panel.setAttribute("aria-hidden","false");panel.querySelectorAll(".neighbor").forEach(b=>b.addEventListener("click",()=>{const id=b.dataset.id;if(visibleNodeIds.has(id)){selectedNodeId=id;openNodePanel(id);applyHighlight();network.focus(id,{scale:1.05,animation:{duration:250}})}}));panelClose.focus({preventScroll:true})}function detail(l,v){return v?`<dt>${esc(l)}</dt><dd>${esc(v)}</dd>`:""}
+function openNodePanel(id){const n=nodesRaw[id];if(!n)return;const ns=(neighborsOf[id]||[]).filter(x=>visibleNodeIds.has(x.id)&&visibleEdgeIds.has(x.edge.id));openPanel(`<div class="panel-kind">${esc(ENTITY_STYLE[n.entity].label)} · ${n.degree} partner unici</div><h2 id="panelTitle">${esc(n.nome||id)}</h2><dl>${detail("Identificativo",id)}${detail("Ruolo",n.tipo)}${detail("Professione",n.professione)}${detail("Altre qualifiche",n.altreQualifiche)}${detail("Nazionalità",n.nazionalita)}${detail("Residenza",n.residenza)}${detail("Data",n.anno)}${detail("Età",n.eta)}${detail("Fonti",n.fonti)}${detail("Note",n.note)}</dl><div class="neighbors"><h3>Collegamenti visibili (${ns.length})</h3>${ns.length?ns.map(x=>`<button class="neighbor" data-id="${esc(x.id)}">${esc(nodesRaw[x.id]?.nome||x.id)}<small>${esc([x.edge.tipo,x.edge.anno].filter(Boolean).join(" · "))}</small></button>`).join(""):"<p>Nessun collegamento visibile con i filtri attivi.</p>"}</div>`)}
+function openEdgePanel(id){const e=edgesRaw.find(x=>x.id===id);if(!e)return;openPanel(`<div class="panel-kind">Relazione ${isDirected(e.direzione)?"direzionale":"non orientata"}</div><h2 id="panelTitle">${esc(e.tipo||"Relazione non specificata")}</h2><dl>${detail("Da",nodesRaw[e.from]?.nome||e.from)}${detail("A",nodesRaw[e.to]?.nome||e.to)}${detail("Data",e.anno||"Non datata")}${detail("Certezza",e.certezza||"Non specificata")}${detail("Fonti",e.fonti||"Non indicate")}</dl><div class="neighbors"><button class="neighbor" data-id="${esc(e.from)}">Apri ${esc(nodesRaw[e.from]?.nome||e.from)}</button><button class="neighbor" data-id="${esc(e.to)}">Apri ${esc(nodesRaw[e.to]?.nome||e.to)}</button></div>`)}
+function closePanel(restore=true){panel.classList.remove("open");panel.setAttribute("aria-hidden","true");network&&network.unselectAll();if(restore&&lastFocusedElement?.focus)lastFocusedElement.focus()}
+
+/* =====================================================================
+   ADATTATORE LEGACY → MODELLO CANONICO
+
+   L'adattatore non modifica i dati del foglio e non inventa precisione.
+   Ogni trasformazione è marcata come "legacy-adapter"; i campi dello
+   schema arricchito sono invece marcati "explicit". Le asserzioni conservano
+   valore originale, valore normalizzato, tempo, fonte e responsabilità.
+   ===================================================================== */
+function advancedField(row, section, key) {
+  return field(row, ADVANCED[section][key] || []);
 }
-function svgToDataUri(svg){ return "data:image/svg+xml," + encodeURIComponent(svg); }
 
-// --- Icone di default per categoria (usate quando il "tipo" del nodo non
-//     corrisponde a nessun ruolo specifico elencato più sotto in ROLE_ICONS) ---
-const ICON_CORSARO = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
-  <circle cx="50" cy="38" r="15" fill="#221F1A"/>
-  <path d="M35 30 Q50 20 65 30 L65 34 Q50 26 35 34 Z" fill="#8B3A3A"/>
-  <path d="M22 86 C22 62 78 62 78 86 Z" fill="#221F1A"/>
-</svg>`;
-const ICON_IMBARCAZIONE = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
-  <path d="M18 68 L82 68 L70 84 L30 84 Z" fill="#1E4E79"/>
-  <rect x="47" y="20" width="4" height="48" fill="#1E4E79"/>
-  <path d="M51 24 L74 62 L51 62 Z" fill="#1E4E79"/>
-</svg>`;
-const ICON_GRUPPO = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
-  <circle cx="36" cy="42" r="11" fill="#221F1A"/>
-  <circle cx="64" cy="42" r="11" fill="#221F1A"/>
-  <circle cx="50" cy="62" r="11" fill="#221F1A"/>
-</svg>`;
-const ICON_PRIGIONIERO = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
-  <ellipse cx="38" cy="50" rx="16" ry="11" fill="none" stroke="#221F1A" stroke-width="7" transform="rotate(-20 38 50)"/>
-  <ellipse cx="62" cy="50" rx="16" ry="11" fill="none" stroke="#221F1A" stroke-width="7" transform="rotate(20 62 50)"/>
-</svg>`;
-const ICON_ALTRO = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
-  <path d="M50 18 L68 50 L50 82 L32 50 Z" fill="#221F1A"/>
-</svg>`;
-
-// --- Icone per ruolo specifico, lette dalla colonna "Tipo" del foglio nodi.
-//     "test" cerca una parola chiave nel testo (senza distinguere maiuscole/minuscole
-//     o accenti): se combacia, quell'icona sostituisce quella di default della categoria.
-//     Aggiungi nuove voci in qualsiasi punto dell'elenco: la prima che combacia vince.
-const ROLE_ICONS = [
-  { test: t => t.includes("armator"), label: "Armatore", icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-      <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
-      <path d="M22 45 Q50 25 78 45" fill="none" stroke="#221F1A" stroke-width="6"/>
-      <rect x="22" y="45" width="56" height="30" rx="4" fill="#221F1A"/>
-      <rect x="46" y="55" width="8" height="10" fill="#F8F5EE"/>
-    </svg>` },
-  { test: t => t.includes("capitano"), label: "Capitano", icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-      <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
-      <circle cx="50" cy="28" r="7" fill="none" stroke="#221F1A" stroke-width="5"/>
-      <line x1="50" y1="35" x2="50" y2="78" stroke="#221F1A" stroke-width="6"/>
-      <line x1="30" y1="45" x2="70" y2="45" stroke="#221F1A" stroke-width="6"/>
-      <path d="M30 65 Q30 82 50 82 Q70 82 70 65" fill="none" stroke="#221F1A" stroke-width="6"/>
-    </svg>` },
-  { test: t => t.includes("patrone"), label: "Patrone", icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-      <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
-      <circle cx="50" cy="50" r="26" fill="none" stroke="#221F1A" stroke-width="6"/>
-      <circle cx="50" cy="50" r="6" fill="#221F1A"/>
-      <line x1="50" y1="14" x2="50" y2="86" stroke="#221F1A" stroke-width="5"/>
-      <line x1="14" y1="50" x2="86" y2="50" stroke="#221F1A" stroke-width="5"/>
-      <line x1="24" y1="24" x2="76" y2="76" stroke="#221F1A" stroke-width="5"/>
-      <line x1="76" y1="24" x2="24" y2="76" stroke="#221F1A" stroke-width="5"/>
-    </svg>` },
-  { test: t => t.includes("nocchiero") || t.includes("piloto") || t.includes("pilota"), label: "Nocchiero / pilota", icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-      <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
-      <circle cx="50" cy="50" r="30" fill="none" stroke="#221F1A" stroke-width="5"/>
-      <path d="M50 30 L58 50 L50 70 L42 50 Z" fill="#221F1A"/>
-    </svg>` },
-  { test: t => t.includes("tenente"), label: "Tenente", icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-      <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
-      <path d="M25 40 L50 60 L75 40" fill="none" stroke="#221F1A" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M25 60 L50 80 L75 60" fill="none" stroke="#221F1A" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>` },
-  { test: t => t.includes("soldato") || t.includes("sergente") || t.includes("guardiano") || t.includes("sacra religione"), label: "Militare", icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-      <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
-      <path d="M50 18 L78 30 L78 52 Q78 76 50 86 Q22 76 22 52 L22 30 Z" fill="#221F1A"/>
-    </svg>` },
-  { test: t => t.includes("chirurgo"), label: "Chirurgo", icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-      <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
-      <rect x="42" y="22" width="16" height="56" fill="#8B3A3A"/>
-      <rect x="22" y="42" width="56" height="16" fill="#8B3A3A"/>
-    </svg>` },
-  { test: t => t.includes("sacerdote") || t.includes("prete") || t.includes("cappellano"), label: "Sacerdote", icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-      <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
-      <rect x="45" y="16" width="10" height="66" fill="#221F1A"/>
-      <rect x="26" y="34" width="48" height="10" fill="#221F1A"/>
-    </svg>` },
-  { test: t => t.includes("contadin") || t.includes("massaio"), label: "Contadino", icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-      <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
-      <line x1="50" y1="82" x2="50" y2="20" stroke="#221F1A" stroke-width="4"/>
-      <ellipse cx="40" cy="30" rx="6" ry="10" fill="#221F1A" transform="rotate(-25 40 30)"/>
-      <ellipse cx="60" cy="30" rx="6" ry="10" fill="#221F1A" transform="rotate(25 60 30)"/>
-      <ellipse cx="38" cy="46" rx="6" ry="10" fill="#221F1A" transform="rotate(-25 38 46)"/>
-      <ellipse cx="62" cy="46" rx="6" ry="10" fill="#221F1A" transform="rotate(25 62 46)"/>
-    </svg>` },
-  { test: t => t.includes("mercante"), label: "Mercante", icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-      <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
-      <line x1="50" y1="20" x2="50" y2="70" stroke="#221F1A" stroke-width="5"/>
-      <line x1="25" y1="35" x2="75" y2="35" stroke="#221F1A" stroke-width="5"/>
-      <circle cx="25" cy="50" r="10" fill="none" stroke="#221F1A" stroke-width="4"/>
-      <circle cx="75" cy="50" r="10" fill="none" stroke="#221F1A" stroke-width="4"/>
-      <line x1="50" y1="70" x2="35" y2="82" stroke="#221F1A" stroke-width="5"/>
-      <line x1="50" y1="70" x2="65" y2="82" stroke="#221F1A" stroke-width="5"/>
-    </svg>` },
-  { test: t => t.includes("scrivano") || t.includes("console") || t.includes("procuratore"), label: "Scrivano / console / procuratore", icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-      <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
-      <path d="M28 78 L64 22 Q72 14 80 22 Q88 30 80 38 L36 74 Z" fill="#221F1A"/>
-      <line x1="24" y1="82" x2="34" y2="72" stroke="#221F1A" stroke-width="5"/>
-    </svg>` },
-  { test: t => t.includes("ascia"), label: "Maestro d'ascia", icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-      <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
-      <line x1="55" y1="20" x2="30" y2="85" stroke="#221F1A" stroke-width="6" stroke-linecap="round"/>
-      <path d="M55 18 L82 30 L70 50 L45 38 Z" fill="#221F1A"/>
-    </svg>` },
-  { test: t => t.includes("taverniere"), label: "Taverniere", icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-      <circle cx="50" cy="50" r="48" fill="#F8F5EE"/>
-      <rect x="32" y="34" width="30" height="46" rx="4" fill="#221F1A"/>
-      <path d="M62 42 Q80 42 80 58 Q80 74 62 70" fill="none" stroke="#221F1A" stroke-width="6"/>
-    </svg>` },
-  { test: t => t.includes("catturato"), label: "Catturato", icon: ICON_PRIGIONIERO }
-];
-
-// --- Icone per tipo di collegamento, disegnate al centro della linea.
-//     La chiave deve corrispondere (senza distinzione maiuscole/minuscole e
-//     accenti) al valore della colonna "tipo" nel foglio connessioni.
-const EDGE_ICONS = {
-  "attacco": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-    <line x1="18" y1="82" x2="70" y2="20" stroke="#8B3A3A" stroke-width="8" stroke-linecap="round"/>
-    <path d="M64 14 Q82 20 76 38" fill="none" stroke="#8B3A3A" stroke-width="8" stroke-linecap="round"/>
-    <line x1="18" y1="82" x2="28" y2="92" stroke="#5c2626" stroke-width="8" stroke-linecap="round"/>
-    <line x1="10" y1="76" x2="24" y2="68" stroke="#5c2626" stroke-width="6" stroke-linecap="round"/>
-  </svg>`,
-  "prestito": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-    <circle cx="50" cy="50" r="40" fill="#A97F2E" stroke="#6b5320" stroke-width="5"/>
-    <circle cx="50" cy="50" r="24" fill="none" stroke="#F8F5EE" stroke-width="4"/>
-  </svg>`,
-  "consegna patente": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-    <rect x="14" y="26" width="72" height="48" rx="3" fill="#F8F5EE" stroke="#221F1A" stroke-width="5"/>
-    <path d="M14 28 L50 56 L86 28" fill="none" stroke="#221F1A" stroke-width="5"/>
-  </svg>`,
-  "catturato": ICON_PRIGIONIERO,
-  "corso": ICON_CORSARO,
-  "miniere": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-    <line x1="28" y1="90" x2="68" y2="18" stroke="#5A5546" stroke-width="7" stroke-linecap="round"/>
-    <path d="M58 12 L88 26 L72 44 L48 28 Z" fill="#5A5546"/>
-  </svg>`,
-  "procura": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-    <rect x="8" y="42" width="38" height="17" rx="8.5" fill="#2E3A55" transform="rotate(-10 27 50)"/>
-    <rect x="54" y="42" width="38" height="17" rx="8.5" fill="#2E3A55" transform="rotate(10 73 50)"/>
-    <circle cx="50" cy="50" r="11" fill="#2E3A55"/>
-  </svg>`
-};
-
-// Etichette e icona di default per le categorie dedotte dal prefisso dell'id
-// (crs_ persona/corsaro, bst_ imbarcazione, nin_ gruppo, slv_ prigioniero/schiavo).
-// Il colore del bordo dei nodi resta legato alla nazionalità (vedi PALETTE più sotto).
-CONFIG.categorie = {
-  persona:       { match: p => p.startsWith("crs"), label: "Persona (corsaro)", icon: ICON_CORSARO },
-  imbarcazione:  { match: p => p.startsWith("bst"), label: "Imbarcazione",      icon: ICON_IMBARCAZIONE },
-  gruppo:        { match: p => p.startsWith("nin"), label: "Gruppo",            icon: ICON_GRUPPO },
-  prigioniero:   { match: p => p.startsWith("slv"), label: "Catturato/schiavo", icon: ICON_PRIGIONIERO },
-  altro:         { match: () => true,               label: "Altro",            icon: ICON_ALTRO }
-};
-
-// Restituisce l'icona giusta per un nodo: se la colonna "Tipo" corrisponde a un
-// ruolo specifico (vedi ROLE_ICONS) usa quella, altrimenti l'icona di default
-// della categoria. Le imbarcazioni non passano da qui: la colonna "Tipo" per
-// loro indica il tipo di nave, non un ruolo, quindi mantengono sempre l'icona nave.
-function getNodeIcon(n, cat){
-  if (cat !== "imbarcazione" && n.tipo){
-    const t = normalizeHeader(n.tipo);
-    const rule = ROLE_ICONS.find(r => r.test(t));
-    if (rule) return { icon: rule.icon, label: rule.label };
+function hashString(value) {
+  let hash = 2166136261;
+  for (const ch of String(value || "")) {
+    hash ^= ch.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
   }
-  return { icon: CONFIG.categorie[cat].icon, label: CONFIG.categorie[cat].label };
+  return (hash >>> 0).toString(16);
 }
 
-// Tavolozza usata per colorare dinamicamente nazionalità (nodi) e tipo di legame (linee).
-// Se i valori distinti superano la lunghezza dell'array, i colori si ripetono ciclicamente.
-const PALETTE = ["#2E3A55","#A97F2E","#4B6B58","#8B3A3A","#5B4B8A","#3E7C8C","#B5652D","#6B5B3E","#7A4B6B","#3F6B3F"];
-const NEUTRAL_COLOR = "#B9B2A0";
-function buildColorMap(values){
-  // Raggruppa i valori ignorando maiuscole/minuscole e accenti (es. "Sardo" e "sardo" diventano un'unica voce).
-  const canonical = {};   // chiave normalizzata -> etichetta da mostrare (la prima incontrata)
-  const order = [];
-  values.forEach(v => {
-    if (!v) return;
-    const key = normalizeHeader(v);
-    if (!(key in canonical)){ canonical[key] = v.trim(); order.push(key); }
-  });
-  order.sort((a, b) => canonical[a].localeCompare(canonical[b], "it"));
-  const colorByKey = {};
-  const labelByKey = {};
-  order.forEach((key, i) => { colorByKey[key] = PALETTE[i % PALETTE.length]; labelByKey[key] = canonical[key]; });
-  return { colorByKey, labelByKey };
-}
-function colorFor(map, value){
-  if (!value) return NEUTRAL_COLOR;
-  return map.colorByKey[normalizeHeader(value)] || NEUTRAL_COLOR;
+function canonicalEntityType(explicitType, id) {
+  const value = normalize(explicitType);
+  if (["person", "persona", "e21 person"].includes(value)) return "Person";
+  if (["ship", "vessel", "imbarcazione", "nave"].includes(value)) return "Ship";
+  if (["collective", "group", "gruppo", "equipaggio"].includes(value)) return "Collective";
+  if (["place", "luogo"].includes(value)) return "Place";
+  if (["document", "documento", "fonte"].includes(value)) return "Document";
+  const prefix = normalize(id);
+  if (prefix.startsWith("bst")) return "Ship";
+  if (prefix.startsWith("nin")) return "Collective";
+  if (prefix.startsWith("crs") || prefix.startsWith("slv")) return "Person";
+  return "Other";
 }
 
-/* ---------- Utility ---------- */
-function normalizeHeader(h){
-  return (h || "").toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+function visualEntityType(type) {
+  return ({ Person: "persona", Ship: "imbarcazione", Collective: "gruppo" })[type] || "altro";
 }
-function findField(row, aliases){
-  for (const key in row){
-    const nk = normalizeHeader(key);
-    if (aliases.some(a => normalizeHeader(a) === nk)) return (row[key] || "").toString().trim();
+
+function historicalTemporal(row, section, fallbackLiteral) {
+  const startLiteral = advancedField(row, section, "dateStart");
+  const endLiteral = advancedField(row, section, "dateEnd");
+  const qualifierExplicit = advancedField(row, section, "dateQualifier");
+  const literal = [startLiteral, endLiteral].filter(Boolean).join("/") || fallbackLiteral || "";
+  const startParsed = parseYears(startLiteral);
+  const endParsed = parseYears(endLiteral);
+  const fallbackParsed = parseYears(fallbackLiteral);
+  const lower = startParsed?.min ?? fallbackParsed?.min ?? null;
+  const upper = endParsed?.max ?? startParsed?.max ?? fallbackParsed?.max ?? null;
+  let qualifier = qualifierExplicit;
+  if (!qualifier) {
+    const normalized = normalize(literal);
+    if (/\?|incert|dubbi/.test(normalized)) qualifier = "uncertain";
+    else if (/\bcirca\b|\bca\.?\b|\bc\.?\s*\d/.test(normalized)) qualifier = "approximate";
+    else if (/\bante\b|prima di/.test(normalized)) qualifier = "before";
+    else if (/\bpost\b|dopo/.test(normalized)) qualifier = "after";
+    else qualifier = literal ? "unspecified" : "undated";
   }
-  return "";
+  return {
+    original: literal,
+    start: lower,
+    end: upper,
+    qualifier,
+    kind: startLiteral || endLiteral ? "validity-or-event-explicit" : "legacy-date-kind-unspecified"
+  };
 }
-function parseCSV(url){
-  return new Promise((resolve, reject) => {
-    Papa.parse(url, {
-      download: true, header: true, skipEmptyLines: true,
-      complete: (res) => {
-        if (res.errors && res.errors.length && !(res.data || []).length){
-          reject(new Error(res.errors[0].message || "CSV non valido"));
-          return;
-        }
-        resolve(res.data || []);
-      },
-      error: (err) => reject(new Error(
-        (err && err.message) || "richiesta CSV bloccata dal browser"
-      ))
+
+function normalizeCertainty(value) {
+  const normalized = normalize(value);
+  if (/attestat|certa|certain/.test(normalized)) return "attested";
+  if (/probabil/.test(normalized)) return "probable";
+  if (/incert|dubbi/.test(normalized)) return "uncertain";
+  if (/ipotet|suppost/.test(normalized)) return "hypothetical";
+  return value ? normalized : "unspecified";
+}
+
+function buildCanonicalModel(nodeRows, edgeRows) {
+  qualityIssues = [];
+  const entityMap = new Map();
+  const assertions = [];
+  const relations = [];
+  const sourceMap = new Map();
+  const duplicateCounter = new Map();
+  let legacyEntityCount = 0;
+  let legacyRelationCount = 0;
+  let ambiguousCaptivityCount = 0;
+  let missingSourceCount = 0;
+  let unparsedDateCount = 0;
+
+  function registerSource(sourceId, citation, locator) {
+    if (!sourceId && !citation && !locator) return null;
+    const id = sourceId || `source:${hashString(`${citation}|${locator}`)}`;
+    if (!sourceMap.has(id)) sourceMap.set(id, { id, citation, locator });
+    return id;
+  }
+
+  function addAssertion(entity, property, originalValue, row, section, derivation, temporal) {
+    if (!originalValue) return;
+    const sourceId = registerSource(
+      advancedField(row, section, "sourceId"),
+      field(row, section === "node" ? CONFIG.columnsNodi.fonti : CONFIG.columnsConnessioni.fonti),
+      advancedField(row, section, "sourceLocator")
+    );
+    assertions.push({
+      id: `assertion:${assertions.length + 1}`,
+      subject: entity.id,
+      property,
+      originalValue,
+      normalizedValue: normalize(originalValue),
+      temporal,
+      sourceId,
+      certainty: normalizeCertainty(advancedField(row, section, "certainty")),
+      assertedBy: advancedField(row, section, "assertedBy") || null,
+      editorialNote: advancedField(row, section, "editorialNote") || null,
+      derivation
     });
-  });
-}
-
-// Gli URL CSV pubblicati da Google possono essere reindirizzati verso un host
-// che non espone più gli header CORS. In quel caso XMLHttpRequest (usato da
-// PapaParse) fallisce anche se il foglio è pubblico. L'endpoint Visualization
-// accetta invece una callback JSONP e continua a funzionare dentro un iframe.
-function googleVisualizationUrl(publishedUrl, callbackName){
-  const source = new URL(publishedUrl);
-  const match = source.pathname.match(/^(.*\/spreadsheets\/d\/e\/[^/]+)\/pub$/) ||
-                source.pathname.match(/^(.*\/spreadsheets\/d\/[^/]+)\/(?:edit|view)$/);
-  if (!match) return "";
-  const endpoint = new URL(source.origin + match[1] + "/gviz/tq");
-  endpoint.searchParams.set("gid", source.searchParams.get("gid") || "0");
-  endpoint.searchParams.set("headers", "1");
-  endpoint.searchParams.set("tqx", "out:json;responseHandler:" + callbackName);
-  return endpoint.toString();
-}
-
-function gvizTableToRows(response){
-  if (!response || response.status === "error" || !response.table){
-    const detail = response && response.errors && response.errors[0];
-    throw new Error((detail && (detail.detailed_message || detail.message)) || "risposta Google non valida");
   }
-  const columns = (response.table.cols || []).map((col, index) =>
-    (col && (col.label || col.id)) || ("colonna_" + (index + 1))
-  );
-  return (response.table.rows || []).map(row => {
-    const result = {};
-    columns.forEach((column, index) => {
-      const cell = row.c && row.c[index];
-      result[column] = cell == null ? "" : (cell.f != null ? cell.f : (cell.v != null ? cell.v : ""));
-    });
-    return result;
-  }).filter(row => Object.values(row).some(value => value !== ""));
-}
 
-function parseGoogleSheetJsonp(url){
-  return new Promise((resolve, reject) => {
-    const callbackName = "asmsaSheet_" + Date.now() + "_" + Math.random().toString(36).slice(2);
-    const endpoint = googleVisualizationUrl(url, callbackName);
-    if (!endpoint){ reject(new Error("URL Google non riconosciuto")); return; }
-
-    const script = document.createElement("script");
-    const timeout = setTimeout(() => finish(new Error("Google non ha risposto entro 15 secondi")), 15000);
-    function cleanup(){
-      clearTimeout(timeout);
-      script.remove();
-      try { delete window[callbackName]; } catch (_) { window[callbackName] = undefined; }
+  nodeRows.forEach((row, index) => {
+    const id = field(row, CONFIG.columnsNodi.id);
+    if (!id) {
+      qualityIssues.push({ level: "error", message: `Riga nodi ${index + 2}: identificativo mancante.` });
+      return;
     }
-    function finish(error, rows){
-      cleanup();
-      error ? reject(error) : resolve(rows);
-    }
-    window[callbackName] = response => {
-      try { finish(null, gvizTableToRows(response)); }
-      catch (error) { finish(error); }
-    };
-    script.onerror = () => finish(new Error("endpoint Google Visualization non raggiungibile"));
-    script.src = endpoint;
-    document.head.appendChild(script);
-  });
-}
-
-async function loadSheet(label, url){
-  const isGoogleSheet = /docs\.google\.com\/spreadsheets\/d\/(?:e\/)?[^/]+\/(?:pub|edit|view)/i.test(url);
-  try{
-    // Per Google Sheets usa JSONP: non dipende dagli header CORS.
-    return isGoogleSheet ? await parseGoogleSheetJsonp(url) : await parseCSV(url);
-  }catch(error){
-    throw new Error(label + ": " + error.message);
-  }
-}
-function truncate(s, n){ return (s && s.length > n) ? s.slice(0, n - 1) + "…" : (s || ""); }
-function categoryOf(id){
-  const p = (id || "").toLowerCase();
-  for (const key in CONFIG.categorie){
-    if (CONFIG.categorie[key].match(p)) return key;
-  }
-  return "altro";
-}
-
-/* ---------- Stato globale ---------- */
-let network, nodesDS, edgesDS;
-let nodesRaw = {};      // id -> dati completi del nodo
-let edgesRaw = [];      // elenco completo degli archi
-let neighborsOf = {};   // id -> [{id, tipo, anno}]
-let nazioColors = { colorByKey: {}, labelByKey: {} };   // nazionalità -> colore
-let tipoColors = { colorByKey: {}, labelByKey: {} };    // tipo di legame -> colore
-let usedIcons = {};      // etichetta ruolo/categoria -> icona (nodi effettivamente presenti)
-let usedEdgeIcons = {};  // tipo di legame -> icona (collegamenti effettivamente presenti)
-let physicsOn = true;
-
-/* ---------- Caricamento dati ---------- */
-async function loadData(){
-  if (!CONFIG.nodiUrl || !CONFIG.connessioniUrl){
-    showError("Configurazione mancante", "Inserisci gli URL CSV di CONFIG.nodiUrl e CONFIG.connessioniUrl.");
-    return;
-  }
-  try{
-    const [nodiRows, connRows] = await Promise.all([
-      loadSheet("foglio nodi", CONFIG.nodiUrl),
-      loadSheet("foglio connessioni", CONFIG.connessioniUrl)
-    ]);
-    buildGraph(nodiRows, connRows);
-  }catch(err){
-    showError("Impossibile leggere i fogli", "Verifica che il foglio Google sia condiviso con «Chiunque abbia il link». Dettaglio: " + err.message);
-  }
-}
-
-function showError(title, detail){
-  document.getElementById("loading").outerHTML = `
-    <div class="state error"><strong>${title}</strong><div style="font-size:0.85rem;margin-top:8px;opacity:0.85;">${detail}</div></div>`;
-}
-
-function buildGraph(nodiRows, connRows){
-  // --- Nodi: unione con merge in caso di id duplicati nel foglio ---
-  nodiRows.forEach(r => {
-    const id = findField(r, CONFIG.columnsNodi.id);
-    if (!id) return;
-    const entry = {
-      nome: findField(r, CONFIG.columnsNodi.nome),
-      eta: findField(r, CONFIG.columnsNodi.eta),
-      professione: findField(r, CONFIG.columnsNodi.professione),
-      nazionalita: findField(r, CONFIG.columnsNodi.nazionalita),
-      residenza: findField(r, CONFIG.columnsNodi.residenza),
-      anno: findField(r, CONFIG.columnsNodi.anno),
-      fonti: findField(r, CONFIG.columnsNodi.fonti),
-      tipo: findField(r, CONFIG.columnsNodi.tipo),
-      altreQualifiche: findField(r, CONFIG.columnsNodi.altreQualifiche),
-      note: findField(r, CONFIG.columnsNodi.note)
-    };
-    if (nodesRaw[id]){
-      // Riga duplicata per lo stesso id: unisce i valori distinti invece di sovrascrivere
-      const prev = nodesRaw[id];
-      for (const k in entry){
-        if (entry[k] && prev[k] && !prev[k].includes(entry[k])) prev[k] += " / " + entry[k];
-        else if (entry[k] && !prev[k]) prev[k] = entry[k];
-      }
-    } else {
-      nodesRaw[id] = entry;
-    }
-  });
-
-  // --- Archi: scarta quelli con estremi mancanti o sconosciuti ---
-  let skipped = 0;
-  connRows.forEach((r, idx) => {
-    const from = findField(r, CONFIG.columnsConnessioni.from);
-    const to = findField(r, CONFIG.columnsConnessioni.to);
-    const tipo = findField(r, CONFIG.columnsConnessioni.tipo);
-    const anno = findField(r, CONFIG.columnsConnessioni.anno);
-    const fonti = findField(r, CONFIG.columnsConnessioni.fonti);
-    if (!from || !to || !nodesRaw[from] || !nodesRaw[to]){ skipped++; return; }
-    edgesRaw.push({ id: "e" + idx, from, to, tipo, anno, fonti });
-  });
-
-  // --- Grado di ciascun nodo (per dimensionare i pallini) ---
-  const degree = {};
-  edgesRaw.forEach(e => {
-    degree[e.from] = (degree[e.from] || 0) + 1;
-    degree[e.to] = (degree[e.to] || 0) + 1;
-    (neighborsOf[e.from] = neighborsOf[e.from] || []).push({ id: e.to, tipo: e.tipo, anno: e.anno });
-    (neighborsOf[e.to] = neighborsOf[e.to] || []).push({ id: e.from, tipo: e.tipo, anno: e.anno });
-  });
-
-  // --- Mappe colore dinamiche: nazionalità (nodi) e tipo di legame (archi) ---
-  nazioColors = buildColorMap(Object.values(nodesRaw).map(n => n.nazionalita));
-  tipoColors = buildColorMap(edgesRaw.map(e => e.tipo));
-
-  // --- Dataset per vis-network ---
-  usedIcons = {}; // etichetta -> icona effettivamente in uso (per la legenda)
-  usedEdgeIcons = {};
-  const visNodes = Object.keys(nodesRaw).map(id => {
-    const n = nodesRaw[id];
-    const cat = categoryOf(id);
-    const ringColor = colorFor(nazioColors, n.nazionalita);
-    const { icon, label: iconLabel } = getNodeIcon(n, cat);
-    usedIcons[iconLabel] = icon;
-    // Le imbarcazioni ricevono una massa maggiore: nella simulazione fisica si respingono
-    // di più a vicenda e dagli altri nodi, restando ben distanziate tra loro.
-    const mass = cat === "imbarcazione" ? 6 : 1;
-    return {
+    duplicateCounter.set(id, (duplicateCounter.get(id) || 0) + 1);
+    const explicitType = advancedField(row, "node", "entityType");
+    const derivation = explicitType ? "explicit" : "legacy-adapter";
+    if (derivation === "legacy-adapter") legacyEntityCount++;
+    const entityType = canonicalEntityType(explicitType, id);
+    const preferredLabel = field(row, CONFIG.columnsNodi.nome) || id;
+    const entity = entityMap.get(id) || {
       id,
-      label: truncate(n.nome || id, 26),
-      shape: "circularImage",
-      image: resolveIcon(icon),
-      color: { border: ringColor, highlight: { border: "#221F1A" } },
-      borderWidth: 3,
-      borderWidthSelected: 4,
-      mass,
-      value: degree[id] || 1,
-      title: n.nome || id
+      entityType,
+      preferredLabel,
+      originalLabels: [],
+      aliases: [],
+      derivation,
+      rowIndexes: []
     };
+    entity.rowIndexes.push(index + 2);
+    const originalLabel = advancedField(row, "node", "originalLabel") || preferredLabel;
+    if (originalLabel && !entity.originalLabels.includes(originalLabel)) entity.originalLabels.push(originalLabel);
+    if (entity.entityType !== entityType) {
+      qualityIssues.push({ level: "warning", message: `Entità ${id}: tipi concorrenti “${entity.entityType}” e “${entityType}”.` });
+    }
+    entityMap.set(id, entity);
+
+    const temporal = historicalTemporal(row, "node", field(row, CONFIG.columnsNodi.anno));
+    const role = advancedField(row, "node", "normalizedRole") || field(row, CONFIG.columnsNodi.tipo);
+    const statusExplicit = advancedField(row, "node", "status");
+    addAssertion(entity, "role", role, row, "node", advancedField(row, "node", "normalizedRole") ? "explicit" : "legacy-adapter", temporal);
+    addAssertion(entity, "profession", field(row, CONFIG.columnsNodi.professione), row, "node", "legacy-adapter", temporal);
+    addAssertion(entity, "affiliation-or-provenance", field(row, CONFIG.columnsNodi.nazionalita), row, "node", "legacy-adapter", temporal);
+    addAssertion(entity, "residence", field(row, CONFIG.columnsNodi.residenza), row, "node", "legacy-adapter", temporal);
+    addAssertion(entity, "status", statusExplicit, row, "node", statusExplicit ? "explicit" : "legacy-adapter", temporal);
+
+    if (normalize(id).startsWith("crs") && !normalize(role).includes("corsar")) {
+      addAssertion(entity, "role", "corsaro", row, "node", "legacy-id-prefix", temporal);
+    }
+    if (normalize(id).startsWith("slv") && !statusExplicit) {
+      ambiguousCaptivityCount++;
+      addAssertion(entity, "status", "catturato/schiavo — classificazione legacy non disambiguata", row, "node", "legacy-id-prefix", temporal);
+    }
+    if (temporal.original && temporal.start === null && temporal.end === null) unparsedDateCount++;
   });
-  const visEdges = edgesRaw.map(e => {
-    const label = [e.tipo, e.anno].filter(Boolean).join(" · ");
-    const color = colorFor(tipoColors, e.tipo);
-    const iconKey = normalizeHeader(e.tipo);
-    if (EDGE_ICONS[iconKey]) usedEdgeIcons[e.tipo.trim()] = EDGE_ICONS[iconKey];
-    return {
-      id: e.id, from: e.from, to: e.to,
-      label,
-      title: label,
-      color: { color, highlight: "#221F1A", hover: "#221F1A" }
+
+  edgeRows.forEach((row, index) => {
+    const from = field(row, CONFIG.columnsConnessioni.from);
+    const to = field(row, CONFIG.columnsConnessioni.to);
+    if (!from || !to || !entityMap.has(from) || !entityMap.has(to)) {
+      qualityIssues.push({ level: "error", message: `Riga relazioni ${index + 2}: estremi mancanti o non risolti (${from || "?"} → ${to || "?"}).` });
+      return;
+    }
+    const explicitId = advancedField(row, "edge", "relationId");
+    const explicitPredicate = advancedField(row, "edge", "predicate");
+    const explicitDirected = advancedField(row, "edge", "directed");
+    const derivation = explicitId || explicitPredicate || explicitDirected ? "explicit" : "legacy-adapter";
+    if (derivation === "legacy-adapter") legacyRelationCount++;
+    const sourceId = registerSource(
+      advancedField(row, "edge", "sourceId"),
+      field(row, CONFIG.columnsConnessioni.fonti),
+      advancedField(row, "edge", "sourceLocator")
+    );
+    if (!sourceId) missingSourceCount++;
+    const temporal = historicalTemporal(row, "edge", field(row, CONFIG.columnsConnessioni.anno));
+    if (temporal.original && temporal.start === null && temporal.end === null) unparsedDateCount++;
+    const relation = {
+      id: explicitId || `relation:legacy-${index + 1}`,
+      legacyEdgeId: `e${index}`,
+      subject: from,
+      object: to,
+      predicateOriginal: field(row, CONFIG.columnsConnessioni.tipo),
+      predicateNormalized: normalize(explicitPredicate || field(row, CONFIG.columnsConnessioni.tipo)),
+      directed: isDirected(explicitDirected),
+      temporal,
+      placeId: advancedField(row, "edge", "placeId") || null,
+      placeType: advancedField(row, "edge", "placeType") || null,
+      sourceId,
+      certainty: normalizeCertainty(advancedField(row, "edge", "certainty") || field(row, CONFIG.columnsConnessioni.certezza)),
+      evidence: advancedField(row, "edge", "evidence") || null,
+      assertedBy: advancedField(row, "edge", "assertedBy") || null,
+      editorialNote: advancedField(row, "edge", "editorialNote") || null,
+      derivation
     };
+    relations.push(relation);
   });
 
-  nodesDS = new vis.DataSet(visNodes);
-  edgesDS = new vis.DataSet(visEdges);
+  duplicateCounter.forEach((count, id) => {
+    if (count > 1) qualityIssues.push({ level: "info", message: `Entità ${id}: ${count} righe conservate come asserzioni concorrenti.` });
+  });
+  if (ambiguousCaptivityCount) qualityIssues.push({ level: "warning", message: `${ambiguousCaptivityCount} classificazioni slv_ non distinguono cattura, prigionia e schiavitù.` });
+  if (missingSourceCount) qualityIssues.push({ level: "warning", message: `${missingSourceCount} relazioni non hanno una fonte esplicita.` });
+  if (unparsedDateCount) qualityIssues.push({ level: "warning", message: `${unparsedDateCount} date non sono state convertite in un intervallo numerico.` });
+  if (legacyEntityCount) qualityIssues.push({ level: "info", message: `${legacyEntityCount} righe di entità usano l'adattatore legacy.` });
+  if (legacyRelationCount) qualityIssues.push({ level: "info", message: `${legacyRelationCount} relazioni usano identificativi o predicati legacy.` });
+  if (!PROJECT_META.license) qualityIssues.push({ level: "warning", message: "Licenza del dataset non dichiarata nel blocco PROJECT_META." });
 
-  renderLegend();
-  renderNetwork();
-
-  document.getElementById("loading").style.display = "none";
-  const skipNote = skipped ? ` · ${skipped} collegamenti ignorati (riferimenti a id mancanti)` : "";
-  document.getElementById("count").textContent =
-    `${visNodes.length} nodi · ${visEdges.length} collegamenti${skipNote}`;
-}
-
-/* ---------- Legenda ---------- */
-function renderLegend(){
-  const legend = document.getElementById("legend");
-
-  const ruoliHtml = Object.keys(usedIcons).sort((a, b) => a.localeCompare(b, "it")).map(label => `
-    <span class="item"><img src="${resolveIcon(usedIcons[label])}" alt="" style="width:16px;height:16px;border-radius:50%;">${label}</span>
-  `).join("");
-
-  const nazioHtml = Object.keys(nazioColors.colorByKey).map(key => `
-    <span class="item"><span class="dot" style="background:${nazioColors.colorByKey[key]}"></span>${nazioColors.labelByKey[key]}</span>
-  `).join("") + `<span class="item"><span class="dot" style="background:${NEUTRAL_COLOR}"></span>Non specificata</span>`;
-
-  const legameColoreHtml = Object.keys(tipoColors.colorByKey).map(key => `
-    <span class="item"><span style="display:inline-block;width:14px;height:2px;background:${tipoColors.colorByKey[key]};"></span>${tipoColors.labelByKey[key]}</span>
-  `).join("");
-
-  const legameIconaHtml = Object.keys(usedEdgeIcons).sort((a, b) => a.localeCompare(b, "it")).map(label => `
-    <span class="item"><img src="${resolveIcon(usedEdgeIcons[label])}" alt="" style="width:14px;height:14px;border-radius:50%;">${label}</span>
-  `).join("");
-
-  legend.innerHTML = `
-    <span style="font-size:0.72rem;color:var(--ink-soft);font-style:italic;">Ruolo:</span> ${ruoliHtml}
-    <span style="font-size:0.72rem;color:var(--ink-soft);font-style:italic;margin-left:10px;">Nazionalità:</span> ${nazioHtml}
-    <span style="font-size:0.72rem;color:var(--ink-soft);font-style:italic;margin-left:10px;">Colore legame:</span> ${legameColoreHtml}
-    <span style="font-size:0.72rem;color:var(--ink-soft);font-style:italic;margin-left:10px;">Icona legame:</span> ${legameIconaHtml}
-  `;
-}
-
-/* ---------- Rete ---------- */
-function renderNetwork(){
-  const container = document.getElementById("network");
-
-  const options = {
-    nodes: {
-      shape: "circularImage",
-      scaling: { min: 16, max: 42 },
-      font: { face: "Inter", size: 12, color: "#221F1A" },
-      borderWidth: 3
+  canonicalModel = {
+    metadata: {
+      ...PROJECT_META,
+      generatedAt: new Date().toISOString(),
+      sourceGranularity: "row-level unless assertion-level columns are present",
+      legacyAdapterUsed: legacyEntityCount > 0 || legacyRelationCount > 0
     },
-    edges: {
-      color: { color: "rgba(90,85,70,0.45)", highlight: "#221F1A", hover: "#221F1A" },
-      width: 1.4,
-      smooth: { type: "continuous" },
-      font: { size: 9, color: "#5A5546", strokeWidth: 0, align: "top" },
-      arrows: { to: { enabled: true, scaleFactor: 0.35 } }
-    },
-    physics: {
-      barnesHut: { gravitationalConstant: -3200, springLength: 130, springConstant: 0.045, damping: 0.28, avoidOverlap: 1 },
-      stabilization: { iterations: 250 }
-    },
-    interaction: { hover: true, tooltipDelay: 150, keyboard: true }
+    entities: [...entityMap.values()],
+    assertions,
+    relations,
+    sources: [...sourceMap.values()]
   };
 
-  network = new vis.Network(container, { nodes: nodesDS, edges: edgesDS }, options);
-
-  network.on("click", (params) => {
-    if (params.nodes.length){ openNodePanel(params.nodes[0]); }
-    else if (params.edges.length){ openEdgePanel(params.edges[0]); }
-    else { closePanel(); }
+  Object.values(nodesRaw).forEach(node => {
+    node._canonical = entityMap.get(node.id) || null;
+    node._assertions = assertions.filter(assertion => assertion.subject === node.id);
+    if (node._canonical) {
+      node.entity = visualEntityType(node._canonical.entityType);
+      const style = ENTITY_STYLE[node.entity];
+      nodesDS.update({ id: node.id, shape: style.shape, color: { background: style.color, border: "#211f1a", highlight: { background: style.color, border: "#111" } } });
+    }
   });
-
-  // --- Icone al centro dei collegamenti, in base al tipo (attacco, denaro, miniere, ecc.) ---
-  const edgeIconImages = {};
-  const edgeIconKeys = Object.keys(EDGE_ICONS);
-  Promise.all(edgeIconKeys.map(key => new Promise(resolve => {
-    const img = new Image();
-    img.onload = () => { edgeIconImages[key] = img; resolve(); };
-    img.onerror = resolve;
-    img.src = resolveIcon(EDGE_ICONS[key]);
-  }))).then(() => network.redraw());
-
-  network.on("afterDrawing", (ctx) => {
-    edgesRaw.forEach(e => {
-      const key = normalizeHeader(e.tipo);
-      const img = edgeIconImages[key];
-      if (!img) return;
-      const positions = network.getPositions([e.from, e.to]);
-      const p1 = positions[e.from], p2 = positions[e.to];
-      if (!p1 || !p2) return;
-      const mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
-      const size = 22;
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(mx, my, size * 0.62, 0, Math.PI * 2);
-      ctx.fillStyle = "#F8F5EE";
-      ctx.globalAlpha = 0.95;
-      ctx.fill();
-      ctx.restore();
-      ctx.drawImage(img, mx - size / 2, my - size / 2, size, size);
-    });
+  edgesRaw.forEach(edge => {
+    edge._canonical = relations.find(relation => relation.legacyEdgeId === edge.id) || null;
+    if (edge._canonical) {
+      edge.certezza = edge._canonical.certainty;
+      edge.direzione = edge._canonical.directed ? "sì" : "";
+      edgesDS.update({ id: edge.id, dashes: certaintyStyle(edge._canonical.certainty), arrows: { to: { enabled: edge._canonical.directed, scaleFactor: .45 } } });
+    }
   });
 }
 
-/* ---------- Pannello dettaglio ---------- */
-const panel = document.getElementById("panel");
-const panelBody = document.getElementById("panelBody");
+function populateAdvancedControls() {
+  const certaintySelect = document.getElementById("certaintyFilter");
+  const certaintyValues = [...new Set(canonicalModel.relations.map(relation => relation.certainty))].sort();
+  certaintyValues.forEach(value => option(certaintySelect, value, ({ attested: "Attestata", probable: "Probabile", uncertain: "Incerta", hypothetical: "Ipotetica", unspecified: "Non specificata" })[value] || value));
 
-function openNodePanel(id){
-  const n = nodesRaw[id];
-  if (!n) return;
-  const cat = categoryOf(id);
-  const { label: catLabel } = getNodeIcon(n, cat);
+  const statusSelect = document.getElementById("statusFilter");
+  const statuses = new Map();
+  canonicalModel.assertions.filter(assertion => assertion.property === "status").forEach(assertion => statuses.set(assertion.normalizedValue, assertion.originalValue));
+  [...statuses].sort((a, b) => a[1].localeCompare(b[1], "it")).forEach(([value, label]) => option(statusSelect, value, label));
 
-  const neigh = (neighborsOf[id] || []);
-  const neighHtml = neigh.length ? neigh.map(x => {
-    const relLabel = [x.tipo, x.anno].filter(Boolean).join(" · ");
-    return `
-    <button data-id="${x.id}">
-      ${(nodesRaw[x.id] && nodesRaw[x.id].nome) || x.id}
-      ${relLabel ? `<div class="rel">${relLabel}</div>` : ""}
-    </button>`;
-  }).join("") : "<p style='font-size:0.85rem;color:var(--ink-soft);'>Nessun collegamento registrato.</p>";
+  const placeSelect = document.getElementById("placeFilter");
+  const places = new Map();
+  canonicalModel.assertions.filter(assertion => assertion.property === "residence").forEach(assertion => places.set(assertion.normalizedValue, assertion.originalValue));
+  canonicalModel.relations.filter(relation => relation.placeId).forEach(relation => places.set(normalize(relation.placeId), relation.placeId));
+  [...places].sort((a, b) => a[1].localeCompare(b[1], "it")).forEach(([value, label]) => option(placeSelect, value, label));
 
-  panelBody.innerHTML = `
-    <div class="kind">${catLabel}</div>
-    <h3>${n.nome || id}</h3>
-    <dl>
-      ${n.eta ? `<dt>Età</dt><dd>${n.eta}</dd>` : ""}
-      ${n.professione ? `<dt>Professione</dt><dd>${n.professione}</dd>` : ""}
-      ${n.altreQualifiche ? `<dt>Altre qualifiche</dt><dd>${n.altreQualifiche}</dd>` : ""}
-      ${n.nazionalita ? `<dt>Nazionalità</dt><dd>${n.nazionalita}</dd>` : ""}
-      ${n.residenza ? `<dt>Residenza</dt><dd>${n.residenza}</dd>` : ""}
-      ${n.anno ? `<dt>Anno</dt><dd>${n.anno}</dd>` : ""}
-      ${n.tipo ? `<dt>Tipo</dt><dd>${n.tipo}</dd>` : ""}
-      ${n.fonti ? `<dt>Fonti</dt><dd>${n.fonti}</dd>` : ""}
-      ${n.note ? `<dt>Note</dt><dd>${n.note}</dd>` : ""}
-    </dl>
-    <div class="neighbors">
-      <h4>Collegamenti (${neigh.length})</h4>
-      ${neighHtml}
-    </div>
-  `;
-  wireNeighborButtons();
-  panel.classList.add("open");
-  network.selectNodes([id]);
-  network.focus(id, { scale: 1.1, animation: { duration: 400 } });
+  const usedTypes = new Set(canonicalModel.entities.map(entity => visualEntityType(entity.entityType)));
+  document.getElementById("entityLegend").innerHTML = [...usedTypes].map(key => {
+    const style = ENTITY_STYLE[key];
+    return `<span class="legend-item"><span class="symbol ${key}" style="--symbol-color:${esc(style.color)}"></span>${esc(style.label)}</span>`;
+  }).join("");
 }
 
-function openEdgePanel(edgeId){
-  const e = edgesRaw.find(x => x.id === edgeId);
-  if (!e) return;
-  const a = nodesRaw[e.from], b = nodesRaw[e.to];
-  panelBody.innerHTML = `
-    <div class="kind">Collegamento</div>
-    <h3>${e.tipo || "Relazione"}</h3>
-    <dl>
-      ${e.anno ? `<dt>Anno</dt><dd>${e.anno}</dd>` : ""}
-      ${e.fonti ? `<dt>Fonti</dt><dd>${e.fonti}</dd>` : ""}
-    </dl>
-    <div class="neighbors">
-      <h4>Tra</h4>
-      <button data-id="${e.from}">${(a && a.nome) || e.from}</button>
-      <button data-id="${e.to}">${(b && b.nome) || e.to}</button>
-    </div>
-  `;
-  wireNeighborButtons();
-  panel.classList.add("open");
-  network.selectEdges([edgeId]);
+function renderQualityReport() {
+  const counts = qualityIssues.reduce((acc, issue) => { acc[issue.level] = (acc[issue.level] || 0) + 1; return acc; }, {});
+  document.getElementById("qualityBadge").textContent = String(qualityIssues.length);
+  const groups = ["error", "warning", "info"].map(level => {
+    const issues = qualityIssues.filter(issue => issue.level === level);
+    if (!issues.length) return "";
+    const label = ({ error: "Errori", warning: "Avvisi", info: "Informazioni" })[level];
+    return `<h3 class="quality-${level}">${label} (${issues.length})</h3><ul class="quality-list">${issues.map(issue => `<li>${esc(issue.message)}</li>`).join("")}</ul>`;
+  }).join("");
+  const meta = canonicalModel.metadata;
+  document.getElementById("qualityBody").innerHTML = `<dl class="metadata-grid"><dt>Schema</dt><dd>${esc(meta.schemaVersion)}</dd><dt>Versione app</dt><dd>${esc(meta.appVersion)}</dd><dt>Modello</dt><dd>${esc(meta.modelNote)}</dd><dt>Provenienza</dt><dd>${esc(meta.sourceGranularity)}</dd><dt>Generato</dt><dd>${esc(meta.generatedAt)}</dd><dt>Licenza</dt><dd>${esc(meta.license || "Non dichiarata")}</dd></dl>${groups || "<p>Nessuna anomalia rilevata.</p>"}`;
 }
 
-function wireNeighborButtons(){
-  panelBody.querySelectorAll(".neighbors button").forEach(btn => {
-    btn.addEventListener("click", () => openNodePanel(btn.dataset.id));
+const legacyBuildData = buildData;
+buildData = function enhancedBuildData(nodeRows, edgeRows) {
+  legacyBuildData(nodeRows, edgeRows);
+  buildCanonicalModel(nodeRows, edgeRows);
+  populateAdvancedControls();
+  renderQualityReport();
+  applyView();
+};
+
+const baseCurrentFilters = currentFilters;
+currentFilters = function enhancedCurrentFilters() {
+  return {
+    ...baseCurrentFilters(),
+    status: document.getElementById("statusFilter").value,
+    place: document.getElementById("placeFilter").value,
+    certainty: document.getElementById("certaintyFilter").value,
+    derivation: document.getElementById("derivationFilter").value
+  };
+};
+
+nodeMatches = function enhancedNodeMatches(node, filters) {
+  const searchable = normalize([node.nome, node.id, node.tipo, node.professione, node.nazionalita, node.residenza].join(" "));
+  const roles = (node._assertions || []).filter(assertion => assertion.property === "role").map(assertion => assertion.normalizedValue);
+  const statuses = (node._assertions || []).filter(assertion => assertion.property === "status").map(assertion => assertion.normalizedValue);
+  const places = (node._assertions || []).filter(assertion => assertion.property === "residence").map(assertion => assertion.normalizedValue);
+  const affiliations = (node._assertions || []).filter(assertion => assertion.property === "affiliation-or-provenance").map(assertion => assertion.normalizedValue);
+  const derivations = new Set((node._assertions || []).map(assertion => assertion.derivation));
+  return (!filters.q || searchable.includes(filters.q)) &&
+    (!filters.entity || node.entity === filters.entity) &&
+    (!filters.role || roles.includes(filters.role)) &&
+    (!filters.status || statuses.includes(filters.status)) &&
+    (!filters.place || places.includes(filters.place)) &&
+    (!filters.nationality || affiliations.includes(filters.nationality)) &&
+    (!filters.derivation || node._canonical?.derivation === filters.derivation || derivations.has(filters.derivation));
+};
+
+edgeMatches = function enhancedEdgeMatches(edge, filters) {
+  const relation = edge._canonical;
+  const endpointPlaceMatch = filters.place && [edge.from, edge.to].some(id =>
+    (nodesRaw[id]?._assertions || []).some(assertion => assertion.property === "residence" && assertion.normalizedValue === filters.place)
+  );
+  return (!filters.relation || normalize(edge.tipo) === filters.relation) &&
+    overlaps(edge.years, filters.from, filters.to, filters.includeUndated) &&
+    (!filters.onlySourced || Boolean(relation?.sourceId || edge.fonti)) &&
+    (!filters.place || normalize(relation?.placeId) === filters.place || endpointPlaceMatch) &&
+    (!filters.certainty || relation?.certainty === filters.certainty) &&
+    (!filters.derivation || relation?.derivation === filters.derivation);
+};
+
+applyView = function enhancedApplyView() {
+  if (!nodesDS || !edgesDS) return;
+  const filters = currentFilters();
+  const seed = new Set(Object.values(nodesRaw).filter(node => nodeMatches(node, filters)).map(node => node.id));
+  const nodeFilterActive = Boolean(filters.q || filters.entity || filters.role || filters.status || filters.place || filters.nationality || filters.derivation);
+  const edgeFilterActive = Boolean(filters.relation || filters.certainty || filters.derivation || document.getElementById("yearFrom").value || document.getElementById("yearTo").value || filters.onlySourced || !filters.includeUndated);
+  const qualifyingEdges = edgesRaw.filter(edge => edgeMatches(edge, filters));
+  const shownEdges = nodeFilterActive
+    ? qualifyingEdges.filter(edge => filters.showNeighbors ? seed.has(edge.from) || seed.has(edge.to) : seed.has(edge.from) && seed.has(edge.to))
+    : qualifyingEdges;
+  visibleEdgeIds = new Set(shownEdges.map(edge => edge.id));
+  visibleNodeIds = new Set();
+  shownEdges.forEach(edge => { visibleNodeIds.add(edge.from); visibleNodeIds.add(edge.to); });
+  if (nodeFilterActive && !filters.showNeighbors) seed.forEach(id => visibleNodeIds.add(id));
+  if (!nodeFilterActive && !edgeFilterActive) Object.keys(nodesRaw).forEach(id => visibleNodeIds.add(id));
+  nodesDS.update(Object.values(nodesRaw).map(node => ({ id: node.id, hidden: !visibleNodeIds.has(node.id), label: nodeLabel(node, filters.labelMode) })));
+  edgesDS.update(edgesRaw.map(edge => ({ id: edge.id, hidden: !visibleEdgeIds.has(edge.id) })));
+  selectedNodeId = null;
+  closePanel(false);
+  applyHighlight();
+  updateSummary(filters);
+  renderTable();
+  if (network && visibleNodeIds.size) network.fit({ animation: matchMedia("(prefers-reduced-motion:reduce)").matches ? false : { duration: 300 } });
+};
+
+const baseUpdateSummary = updateSummary;
+updateSummary = function enhancedUpdateSummary(filters) {
+  baseUpdateSummary(filters);
+  const additions = [];
+  if (filters.status) additions.push(document.getElementById("statusFilter").selectedOptions[0].textContent);
+  if (filters.place) additions.push(document.getElementById("placeFilter").selectedOptions[0].textContent);
+  if (filters.certainty) additions.push(document.getElementById("certaintyFilter").selectedOptions[0].textContent);
+  if (filters.derivation) additions.push(document.getElementById("derivationFilter").selectedOptions[0].textContent);
+  if (additions.length) {
+    const status = document.getElementById("filterStatus");
+    status.textContent = status.textContent === "Nessun filtro attivo" ? additions.join(" · ") : `${status.textContent} · ${additions.join(" · ")}`;
+  }
+};
+
+openNodePanel = function enhancedOpenNodePanel(id) {
+  const node = nodesRaw[id];
+  if (!node) return;
+  const entity = node._canonical;
+  const assertions = node._assertions || [];
+  const neighbors = (neighborsOf[id] || []).filter(item => visibleNodeIds.has(item.id) && visibleEdgeIds.has(item.edge.id));
+  const assertionHtml = assertions.length ? `<div class="neighbors"><h3>Asserzioni documentarie (${assertions.length})</h3>${assertions.map(assertion => `<div class="neighbor"><strong>${esc(assertion.property)}</strong>: ${esc(assertion.originalValue)}<small>${esc(assertion.temporal?.original || "data non specificata")} · certezza: ${esc(assertion.certainty)} · ${esc(assertion.derivation)}${assertion.sourceId ? ` · fonte ${esc(assertion.sourceId)}` : ""}</small></div>`).join("")}</div>` : "";
+  openPanel(`<div class="panel-kind">${esc(entity?.entityType || "Entity")} · ${node.degree} partner unici nel corpus</div><h2 id="panelTitle">${esc(node.nome || id)}</h2><dl>${detail("Identificativo stabile", id)}${detail("Etichetta originale", entity?.originalLabels?.join(" / "))}${detail("Ruolo legacy", node.tipo)}${detail("Professione", node.professione)}${detail("Appartenenza/provenienza attestata", node.nazionalita)}${detail("Residenza attestata", node.residenza)}${detail("Data non qualificata", node.anno)}${detail("Fonti di riga", node.fonti)}${detail("Note", node.note)}</dl>${assertionHtml}<div class="neighbors"><h3>Collegamenti visibili (${neighbors.length})</h3>${neighbors.length ? neighbors.map(item => `<button class="neighbor" data-id="${esc(item.id)}">${esc(nodesRaw[item.id]?.nome || item.id)}<small>${esc([item.edge.tipo, item.edge.anno].filter(Boolean).join(" · "))}</small></button>`).join("") : "<p>Nessun collegamento visibile con i filtri attivi.</p>"}</div>`);
+};
+
+openEdgePanel = function enhancedOpenEdgePanel(id) {
+  const edge = edgesRaw.find(item => item.id === id);
+  if (!edge) return;
+  const relation = edge._canonical;
+  openPanel(`<div class="panel-kind">Asserzione relazionale · ${esc(relation?.derivation || "legacy")}</div><h2 id="panelTitle">${esc(relation?.predicateOriginal || edge.tipo || "Relazione non specificata")}</h2><dl>${detail("ID relazione", relation?.id)}${detail("Soggetto", nodesRaw[edge.from]?.nome || edge.from)}${detail("Oggetto", nodesRaw[edge.to]?.nome || edge.to)}${detail("Direzione", relation?.directed ? "Dichiarata" : "Non dichiarata / non orientata")}${detail("Data originale", relation?.temporal?.original || edge.anno || "Non datata")}${detail("Qualificatore temporale", relation?.temporal?.qualifier)}${detail("Certezza", relation?.certainty || "Non specificata")}${detail("Fonte", relation?.sourceId || edge.fonti || "Non indicata")}${detail("Evidenza", relation?.evidence)}${detail("Responsabile editoriale", relation?.assertedBy)}${detail("Nota editoriale", relation?.editorialNote)}</dl><div class="neighbors"><button class="neighbor" data-id="${esc(edge.from)}">Apri ${esc(nodesRaw[edge.from]?.nome || edge.from)}</button><button class="neighbor" data-id="${esc(edge.to)}">Apri ${esc(nodesRaw[edge.to]?.nome || edge.to)}</button></div>`);
+};
+
+/* =====================================================================
+   ESPORTAZIONI FAIR E INTEROPERABILI
+   ===================================================================== */
+function safeFilePart(value) {
+  return String(value).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9_-]+/g, "-").replace(/^-|-$/g, "").toLowerCase();
+}
+
+function downloadText(filename, content, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function csvCell(value) {
+  let text = value == null ? "" : typeof value === "object" ? JSON.stringify(value) : String(value);
+  if (/^[=+\-@]/.test(text)) text = `'${text}`;
+  return `"${text.replace(/"/g, '""')}"`;
+}
+
+function toCsv(rows, columns) {
+  return [columns.map(column => csvCell(column)).join(","), ...rows.map(row => columns.map(column => csvCell(row[column])).join(","))].join("\r\n");
+}
+
+function exportNormalizedCsv() {
+  const entityRows = canonicalModel.entities.map(entity => ({
+    id: entity.id,
+    entity_type: entity.entityType,
+    preferred_label: entity.preferredLabel,
+    original_labels: entity.originalLabels.join(" | "),
+    derivation: entity.derivation,
+    source_rows: entity.rowIndexes.join(" | ")
+  }));
+  const relationRows = canonicalModel.relations.map(relation => ({
+    relation_id: relation.id,
+    subject: relation.subject,
+    predicate_original: relation.predicateOriginal,
+    predicate_normalized: relation.predicateNormalized,
+    object: relation.object,
+    directed: relation.directed,
+    date_original: relation.temporal.original,
+    date_start: relation.temporal.start,
+    date_end: relation.temporal.end,
+    date_qualifier: relation.temporal.qualifier,
+    certainty: relation.certainty,
+    source_id: relation.sourceId,
+    evidence: relation.evidence,
+    asserted_by: relation.assertedBy,
+    editorial_note: relation.editorialNote,
+    derivation: relation.derivation
+  }));
+  downloadText("arcipelago-corsaro-entities.csv", toCsv(entityRows, Object.keys(entityRows[0] || { id: "", entity_type: "" })), "text/csv;charset=utf-8");
+  setTimeout(() => downloadText("arcipelago-corsaro-relations.csv", toCsv(relationRows, Object.keys(relationRows[0] || { relation_id: "", subject: "", object: "" })), "text/csv;charset=utf-8"), 250);
+}
+
+function exportJsonLd() {
+  const crmType = { Person: "crm:E21_Person", Ship: "crm:E22_Human-Made_Object", Collective: "crm:E74_Group", Place: "crm:E53_Place", Document: "crm:E31_Document", Other: "crm:E1_CRM_Entity" };
+  const graph = [
+    ...canonicalModel.entities.map(entity => ({
+      "@id": `${PROJECT_META.datasetId}#entity/${encodeURIComponent(entity.id)}`,
+      "@type": crmType[entity.entityType] || "crm:E1_CRM_Entity",
+      "rdfs:label": entity.preferredLabel,
+      "asmsa:originalLabel": entity.originalLabels,
+      "asmsa:derivation": entity.derivation
+    })),
+    ...canonicalModel.assertions.map(assertion => ({
+      "@id": `${PROJECT_META.datasetId}#${assertion.id}`,
+      "@type": "asmsa:Assertion",
+      "asmsa:subject": { "@id": `${PROJECT_META.datasetId}#entity/${encodeURIComponent(assertion.subject)}` },
+      "asmsa:property": assertion.property,
+      "asmsa:originalValue": assertion.originalValue,
+      "asmsa:normalizedValue": assertion.normalizedValue,
+      "asmsa:temporalExtent": assertion.temporal,
+      "asmsa:certainty": assertion.certainty,
+      "asmsa:derivation": assertion.derivation,
+      ...(assertion.sourceId ? { "prov:wasDerivedFrom": { "@id": `${PROJECT_META.datasetId}#source/${encodeURIComponent(assertion.sourceId)}` } } : {})
+    })),
+    ...canonicalModel.relations.map(relation => ({
+      "@id": `${PROJECT_META.datasetId}#relation/${encodeURIComponent(relation.id)}`,
+      "@type": "asmsa:RelationAssertion",
+      "asmsa:subject": { "@id": `${PROJECT_META.datasetId}#entity/${encodeURIComponent(relation.subject)}` },
+      "asmsa:object": { "@id": `${PROJECT_META.datasetId}#entity/${encodeURIComponent(relation.object)}` },
+      "asmsa:predicateOriginal": relation.predicateOriginal,
+      "asmsa:predicateNormalized": relation.predicateNormalized,
+      "asmsa:directed": relation.directed,
+      "asmsa:temporalExtent": relation.temporal,
+      "asmsa:certainty": relation.certainty,
+      "asmsa:derivation": relation.derivation,
+      ...(relation.sourceId ? { "prov:wasDerivedFrom": { "@id": `${PROJECT_META.datasetId}#source/${encodeURIComponent(relation.sourceId)}` } } : {})
+    })),
+    ...canonicalModel.sources.map(source => ({
+      "@id": `${PROJECT_META.datasetId}#source/${encodeURIComponent(source.id)}`,
+      "@type": "crm:E31_Document",
+      "rdfs:label": source.citation || source.id,
+      "asmsa:locator": source.locator || null
+    }))
+  ];
+  const document = {
+    "@context": { crm: "http://www.cidoc-crm.org/cidoc-crm/", prov: "http://www.w3.org/ns/prov#", rdfs: "http://www.w3.org/2000/01/rdf-schema#", asmsa: `${PROJECT_META.datasetId}#vocab/` },
+    "@id": PROJECT_META.datasetId,
+    "@type": "prov:Entity",
+    "rdfs:label": PROJECT_META.title,
+    "asmsa:profileNote": PROJECT_META.modelNote,
+    "asmsa:schemaVersion": PROJECT_META.schemaVersion,
+    "@graph": graph
+  };
+  downloadText("arcipelago-corsaro.jsonld", JSON.stringify(document, null, 2), "application/ld+json;charset=utf-8");
+}
+
+function xmlEscape(value) {
+  return String(value ?? "").replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" })[character]);
+}
+
+function exportGraphml() {
+  const nodes = canonicalModel.entities.filter(entity => visibleNodeIds.has(entity.id));
+  const relations = canonicalModel.relations.filter(relation => {
+    const edge = edgesRaw.find(item => item._canonical?.id === relation.id);
+    return edge && visibleEdgeIds.has(edge.id);
   });
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<graphml xmlns="http://graphml.graphdrawing.org/xmlns"><key id="label" for="node" attr.name="label" attr.type="string"/><key id="entity_type" for="node" attr.name="entity_type" attr.type="string"/><key id="predicate" for="edge" attr.name="predicate" attr.type="string"/><key id="certainty" for="edge" attr.name="certainty" attr.type="string"/><key id="source" for="edge" attr.name="source" attr.type="string"/><graph id="arcipelago-corsaro" edgedefault="undirected">${nodes.map(entity => `<node id="${xmlEscape(entity.id)}"><data key="label">${xmlEscape(entity.preferredLabel)}</data><data key="entity_type">${xmlEscape(entity.entityType)}</data></node>`).join("")}${relations.map(relation => `<edge id="${xmlEscape(relation.id)}" source="${xmlEscape(relation.subject)}" target="${xmlEscape(relation.object)}" directed="${relation.directed}"><data key="predicate">${xmlEscape(relation.predicateOriginal)}</data><data key="certainty">${xmlEscape(relation.certainty)}</data><data key="source">${xmlEscape(relation.sourceId || "")}</data></edge>`).join("")}</graph></graphml>`;
+  downloadText("arcipelago-corsaro-view.graphml", xml, "application/graphml+xml;charset=utf-8");
 }
-function closePanel(){ panel.classList.remove("open"); network && network.unselectAll(); }
-document.getElementById("panelClose").addEventListener("click", closePanel);
 
-/* ---------- Ricerca ---------- */
-document.getElementById("search").addEventListener("input", (e) => {
-  const q = normalizeHeader(e.target.value);
-  if (!nodesDS) return;
-  const updates = Object.keys(nodesRaw).map(id => {
-    const match = !q || normalizeHeader(nodesRaw[id].nome || id).includes(q);
-    return {
-      id,
-      opacity: match ? 1 : 0.22,
-      font: { color: match ? "#221F1A" : "rgba(90,85,70,0.3)" }
-    };
-  });
-  nodesDS.update(updates);
+function exportFairManifest() {
+  const manifest = {
+    ...canonicalModel.metadata,
+    generatedAt: new Date().toISOString(),
+    sourceEndpoints: [CONFIG.nodiUrl, CONFIG.connessioniUrl],
+    recordCounts: { entities: canonicalModel.entities.length, assertions: canonicalModel.assertions.length, relations: canonicalModel.relations.length, sources: canonicalModel.sources.length },
+    exports: ["entities CSV", "relations CSV", "JSON-LD local profile", "GraphML current projection"],
+    interoperability: { profile: PROJECT_META.schemaVersion, cidocCrm: "indicative mapping only", provenance: "PROV-O via prov:wasDerivedFrom" },
+    qualityIssueCount: qualityIssues.length,
+    license: PROJECT_META.license,
+    reuseWarning: "Le metriche e la struttura della rete descrivono il corpus documentario e i filtri applicati, non direttamente potere o importanza storica."
+  };
+  downloadText("arcipelago-corsaro-fair-manifest.json", JSON.stringify(manifest, null, 2), "application/json;charset=utf-8");
+}
+const filterIds = [
+  "entityFilter", "roleFilter", "nationalityFilter", "statusFilter", "placeFilter",
+  "relationFilter", "certaintyFilter", "derivationFilter",
+  "yearFrom", "yearTo", "labelMode", "showNeighbors",
+  "includeUndated", "onlySourced"
+];
+filterIds.forEach(id => document.getElementById(id).addEventListener("change", applyView));
+
+let searchTimer;
+document.getElementById("search").addEventListener("input", () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(applyView, 160);
 });
 
-/* ---------- Controlli ---------- */
-document.getElementById("physicsToggle").addEventListener("click", (e) => {
+document.getElementById("resetFilters").addEventListener("click", () => {
+  ["entityFilter", "roleFilter", "nationalityFilter", "statusFilter", "placeFilter", "relationFilter", "certaintyFilter", "derivationFilter", "yearFrom", "yearTo"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("labelMode").value = "important";
+  document.getElementById("showNeighbors").checked = true;
+  document.getElementById("includeUndated").checked = true;
+  document.getElementById("onlySourced").checked = false;
+  document.getElementById("search").value = "";
+  applyView();
+});
+
+document.getElementById("physicsToggle").addEventListener("click", () => {
   physicsOn = !physicsOn;
   network.setOptions({ physics: { enabled: physicsOn } });
-  e.target.textContent = "Fisica: " + (physicsOn ? "on" : "off");
-  e.target.classList.toggle("active", physicsOn);
+  updatePhysicsButton();
 });
-document.getElementById("resetView").addEventListener("click", () => {
-  network && network.fit({ animation: true });
+document.getElementById("resetView").addEventListener("click", () => network?.fit({ animation: matchMedia("(prefers-reduced-motion:reduce)").matches ? false : { duration: 350 } }));
+document.getElementById("clearSelection").addEventListener("click", () => { selectedNodeId = null; closePanel(); applyHighlight(); });
+document.getElementById("exportCsv").addEventListener("click", exportNormalizedCsv);
+document.getElementById("exportJsonLd").addEventListener("click", exportJsonLd);
+document.getElementById("exportGraphml").addEventListener("click", exportGraphml);
+document.getElementById("exportManifest").addEventListener("click", exportFairManifest);
+panelClose.addEventListener("click", () => { selectedNodeId = null; closePanel(); applyHighlight(); });
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && panel.classList.contains("open")) {
+    selectedNodeId = null;
+    closePanel();
+    applyHighlight();
+  }
 });
 
 loadData();
