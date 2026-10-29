@@ -1,14 +1,8 @@
 <!doctype html>
-<html lang="it">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Rete di prestiti di Felice Nin Conte del Castillo (1725)</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rete di prestiti di Felice Nin Conte del Castillo (1725)</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
     :root {
       --ink:#1f2b3a;
       --ink-soft:#3a4a5c;
@@ -117,139 +111,300 @@
       #status { font-size:.72rem; }
       .app { min-height:340px; }
     }
-  </style>
-</head>
-<body>
-  <main class="app">
-    <header>
-      <div class="header-text">
-        <h1>Mappa crediti NIN</h1>
-        <p class="subtitle">Affari e crediti geolocalizzati</p>
-      </div>
-      <div id="status" role="status">Caricamento…</div>
-    </header>
-    <div id="map" aria-label="Mappa interattiva dei crediti NIN"></div>
-    <div id="message" class="message" role="alert" hidden></div>
-  </main>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script>
-    const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRxZ1JcJy6VdGQnt3oy0v_xm4tqQSfombk-lw9rS0eQiPDg7_tO-GHxdFPaOR0wHqwdDyCRgYbZZPAZ/pub?gid=1913274688&single=true&output=csv';
-
-    // Colonne del foglio (indice a partire da 0): B=Nome, L=Affare, N=Data. Le coordinate
-    // vengono cercate tra E, F, G ma non vengono mai mostrate in interfaccia.
-    const COL_NOME = 1, COL_AFFARE = 11, COL_DATA = 12;
-
-    const map = L.map('map', {
-      scrollWheelZoom:true, touchZoom:true, dragging:true, doubleClickZoom:true,
-      boxZoom:true, keyboard:true, zoomControl:true, tap:false
-    }).setView([42.2,12.5],5);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom:19, subdomains:'abc',
-      attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      className:'warm-tiles'
-    }).addTo(map);
-
-    const statusEl = document.querySelector('#status');
-    const messageEl = document.querySelector('#message');
-    const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-    const number = value => {
-      const normalized = String(value ?? '').trim().replace(',', '.');
-      return normalized === '' ? NaN : Number(normalized);
-    };
-    const coordinatePair = (cells, labels) => {
-      const values = cells.map(number);
-      const latIndex=labels.findIndex(v=>/lat/i.test(v));
-      const lonIndex=labels.findIndex(v=>/(lon|lng|long)/i.test(v));
-      if (latIndex>=0 && lonIndex>=0 && Number.isFinite(values[latIndex]) && Number.isFinite(values[lonIndex])) return [values[latIndex],values[lonIndex]];
-      for (let a=0; a<values.length; a++) for (let b=0; b<values.length; b++) {
-        if (a === b) continue;
-        if (Math.abs(values[a]) <= 90 && Math.abs(values[b]) <= 180 && Number.isFinite(values[a]) && Number.isFinite(values[b])) return [values[a], values[b]];
+  
+:root { --paper:#fff; --paper-line:#e1e5e9; --map-bg:#e8edf0; --gold:#b27626; --gold-light:#edbc70; --muted:#657383; }
+.app { grid-template-rows:auto auto minmax(360px,1fr); }
+header { box-shadow:none; border-bottom:1px solid #39495a; }
+#status { white-space:normal; text-align:right; }
+.neutral-tiles { filter:grayscale(1) saturate(0) contrast(.88) brightness(1.07); }
+.toolbar { background:#f6f8fa; padding:10px 16px; font-size:.8rem; border-bottom:1px solid #d8dfe6; max-height:42vh; overflow:auto; }
+.toolbar summary { cursor:pointer; font-weight:600; padding:4px 0; }
+.row { display:flex; flex-wrap:wrap; align-items:end; gap:10px; margin:10px 0; }
+label { display:flex; flex-direction:column; gap:4px; }
+input,select,button { font:inherit; padding:7px 9px; border:1px solid #bec9d4; border-radius:6px; background:white; color:#243445; }
+input[type=url] { width:min(550px,70vw); }
+input[type=file] { max-width:270px; }
+button { cursor:pointer; font-weight:600; }
+button:hover { background:#e6edf3; } button:disabled { opacity:.5; cursor:wait; }
+.hint,#diagnostics,#boundary-status { color:#516171; line-height:1.5; margin:6px 0; }
+#diagnostics { white-space:pre-wrap; overflow-wrap:anywhere; }
+.message { position:static; max-width:none; margin:8px 0; box-shadow:none; background:#fff4df; border:1px solid #e0ba76; }
+#map { min-height:360px; }
+.legend { max-width:240px; font-size:.72rem; }
+@media(max-width:560px) { .toolbar { padding:7px 10px; } .row { gap:7px; } #status { max-width:42%; } }
+</style></head><body><main class="app">
+<header><div class="header-text"><h1>Mappa crediti NIN</h1><p class="subtitle">Felice Nin Conte del Castillo · 1725</p></div><div id="status" role="status" aria-live="polite">Caricamento…</div></header>
+<section class="toolbar" aria-label="Importazione dati e cartografia">
+<details id="settings"><summary>Dati CSV e impostazioni della mappa</summary>
+<div class="row"><label>CSV pubblicato sul web<input id="csv-url" type="url"></label><button id="reload">Carica URL</button><label>Oppure apri un CSV locale<input id="csv-file" type="file" accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values"></label></div>
+<div class="row"><label>Codifica<select id="encoding"><option value="auto">Automatica</option><option value="utf-8">UTF-8</option><option value="windows-1252">Latin1 / Windows-1252</option><option value="utf-16le">UTF-16 LE</option><option value="utf-16be">UTF-16 BE</option></select></label>
+<label>Separatore<select id="delimiter"><option value="auto">Automatico</option><option value=",">Virgola</option><option value=";">Punto e virgola</option><option value="tab">Tabulazione</option></select></label>
+<label>Intestazioni<select id="header-mode"><option value="auto">Automatiche</option><option value="yes">Prima riga utile</option><option value="no">Assenti</option></select></label><button id="reparse">Rileggi il file</button></div>
+<p class="hint">Coordinate in gradi decimali WGS84 (EPSG:4326). Sono accettati anche decimali con virgola. Se mancano etichette univoche, scegli le colonne: l'ordine non viene indovinato.</p>
+<div class="row" id="columns"></div><button id="apply">Applica colonne</button>
+<details><summary>Diagnostica importazione</summary><p id="diagnostics" role="status">Nessun file letto.</p></details>
+<hr><div class="row"><label>Paesi GISCO (codici separati da virgola)<input id="countries" value="IT,FR,ES,MT,TN,DZ"></label><button id="load-borders">Carica confini</button><label>Confini propri GeoJSON WGS84<input id="geojson-file" type="file" accept=".json,.geojson,application/geo+json,application/json"></label></div>
+<p id="boundary-status" role="status">Confini in caricamento…</p>
+<p class="hint">Confini attuali GISCO/Eurostat 2024, scala 1:1.000.000: riferimento geografico, non ricostruzione del 1725. Per analisi locali di maggiore precisione, carica geometrie ufficiali più dettagliate. I punti conservano le coordinate originali del CSV.</p>
+</details><div id="message" class="message" role="alert" hidden></div></section>
+<div id="map" aria-label="Mappa interattiva dei crediti NIN"></div></main>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script id="csv-core">
+'use strict';
+// Nessuna dipendenza esterna per leggere il CSV. Record con riga fisica originale.
+const CsvCore = (() => {
+  const norm = v => String(v ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+  const aliases = {
+    lat:['lat','latitude','latitudine','latitudinedecimale','latwgs84','latitudewgs84','latitudinewgs84','y','ycoord'],
+    lon:['lon','lng','long','longitude','longitudine','longitudinedecimale','lonwgs84','longitudewgs84','longitudinewgs84','x','xcoord'],
+    pair:['coordinate','coordinates','coord','latlon','latlng','latitudinelongitudine','posizione'],
+    nome:['nome','nominativo','name','debitore','nomecognome','cognomenome','nominativodebitore'],
+    affare:['affare','affari','descrizione','oggetto','negozio','tipologiaaffare','operazione'],
+    data:['data','date','datadocumento','datadellatto','dataatto','dataaffare']
+  };
+  function decode(buffer, requested='auto') {
+    const b=new Uint8Array(buffer); let encoding=requested;
+    if(encoding==='auto') {
+      if(b[0]===255 && b[1]===254) encoding='utf-16le';
+      else if(b[0]===254 && b[1]===255) encoding='utf-16be';
+      else {
+        try { return {text:new TextDecoder('utf-8',{fatal:true}).decode(b).replace(/^\uFEFF/,''),encoding:'UTF-8'}; }
+        catch { encoding='windows-1252'; }
       }
-      return null;
-    };
-    function showError(text) { statusEl.textContent='Dati non disponibili'; messageEl.textContent=text; messageEl.hidden=false; }
-
-    function buildPopup(entries) {
-      const count = entries.length;
-      const items = entries.map(e => `
-        <div class="popup-entry">
-          <div class="popup-name">${escapeHtml(e.nome || 'Senza nome')}</div>
-          ${e.affare ? `<div class="popup-affare">${escapeHtml(e.affare)}</div>` : ''}
-          ${e.data ? `<div class="popup-date">${escapeHtml(e.data)}</div>` : ''}
-        </div>`).join('');
-      return `
-        ${count > 1 ? `<div class="popup-count">${count} affari registrati in questo luogo</div>` : ''}
-        <div class="popup-list">${items}</div>`;
     }
+    return {text:new TextDecoder(encoding,{fatal:true}).decode(b).replace(/^\uFEFF/,''), encoding};
+  }
+  function parse(text, delimiter) {
+    const records=[]; let cells=[],cell='',quoted=false,closed=false,line=1,start=1,bad='';
+    const flush=()=>{
+      cells.push(cell); if(cells.some(x=>x.trim()!=='')) records.push({cells,line:start,error:bad});
+      cells=[];cell='';closed=false;bad='';start=line+1;
+    };
+    for(let i=0;i<text.length;i++) {
+      const c=text[i];
+      if(quoted) {
+        if(c==='"') { if(text[i+1]==='"'){cell+='"';i++;} else {quoted=false;closed=true;} }
+        else {cell+=c;if(c==='\n' || (c==='\r' && text[i+1]!=='\n'))line++;}
+      } else if(c===delimiter) {cells.push(cell);cell='';closed=false;}
+      else if(c==='\n' || c==='\r') {if(c==='\r' && text[i+1]==='\n')i++;flush();line++;}
+      else if(c==='"' && cell.trim()==='' && !closed) {cell='';quoted=true;}
+      else {if(closed && !/\s/.test(c))bad='Caratteri dopo la chiusura delle virgolette'; if(c==='"')bad='Virgolette in campo non quotato'; cell+=c;}
+    }
+    if(quoted)throw Error(`Virgolette non chiuse: record iniziato alla riga ${start}. Correggere il CSV prima di importarlo.`);
+    flush();return records;
+  }
+  function widthMode(records) {
+    const counts=new Map(); for(const r of records)if(!r.error && r.cells.length>1)counts.set(r.cells.length,(counts.get(r.cells.length)||0)+1);
+    return [...counts].sort((a,b)=>b[1]-a[1] || b[0]-a[0])[0] || [0,0];
+  }
+  function detect(text, forced='auto') {
+    let directive=''; const m=text.match(/^\s*sep=([,;\t])[^\S\r\n]*(?:\r\n|\r|\n)/i);
+    if(m) { directive=m[1];text=text.slice(m[0].length); }
+    const offset=m?(m[0].match(/\n/g)||[]).length || 1:0;
+    const separators=forced==='auto'?(directive?[directive]:[',',';','\t']):[forced==='tab'?'\t':forced];
+    const candidates=[];let failure;
+    for(const d of separators)try {
+      const records=parse(text,d); const [width,count]=widthMode(records);
+      // Consistenza prima della larghezza: decimali con virgola non devono prevalere sui campi veri.
+      const useful=records.filter(r=>r.cells.length>1).length;
+      const headerBonus=Math.max(0,...records.slice(0,50).map(r=>headerScore(r.cells)))*12;
+      candidates.push({delimiter:d,records,score:width?count/Math.max(1,useful)*100+Math.min(width,30)+Math.min(count,100)*.1+headerBonus:-1});
+    } catch(e){failure=e;}
+    candidates.sort((a,b)=>b.score-a.score);const best=candidates[0];
+    if(!best || best.score<0)throw failure || Error('Separatore non riconosciuto: scegli virgola, punto e virgola o tabulazione.');
+    best.records.forEach(r=>r.line+=offset);return best;
+  }
+  const indices=(cells,key)=>cells.map((v,i)=>aliases[key].includes(norm(v))?i:-1).filter(i=>i>=0);
+  function headerScore(cells) {
+    const keys=Object.keys(aliases).filter(k=>indices(cells,k).length);
+    return keys.length>=2 ? keys.length:0;
+  }
+  function table(text,delimiter='auto',mode='auto') {
+    if(/^\s*(?:<!doctype\s+html|<html\b|<head\b|<body\b)/i.test(text))throw Error('Il server ha restituito HTML invece del CSV. Verifica pubblicazione, URL e permessi del foglio.');
+    const result=detect(text,delimiter); let headerIndex=-1;
+    if(mode==='yes')headerIndex=result.records.findIndex(r=>r.cells.length>1 && !r.error);
+    if(mode==='auto') {
+      let best=0;result.records.slice(0,50).forEach((r,i)=>{ const s=r.error?0:headerScore(r.cells);if(s>best){best=s;headerIndex=i;} });
+    }
+    const width=headerIndex>=0?result.records[headerIndex].cells.length:widthMode(result.records)[0];
+    const headers=headerIndex>=0?result.records[headerIndex].cells:[];
+    const rows=headerIndex>=0?result.records.slice(headerIndex+1):result.records;
+    const map={};
+    for(const key of Object.keys(aliases)) {const found=indices(headers,key);map[key]=found.length===1?found[0]:-1;}
+    // Compatibilità con il foglio originale: B=nome, L=affare, N=data (indice 13).
+    for(const [key,i] of Object.entries({nome:1,affare:11,data:13}))if(map[key]<0 && width>i)map[key]=i;
+    return {...result,headers,width,rows,map,headerLine:headerIndex>=0?result.records[headerIndex].line:null,preamble:headerIndex>0?headerIndex:0};
+  }
+  function number(v) {
+    const s=String(v??'').trim().replace(/\u2212/g,'-');
+    if(!/^[+-]?(?:\d+(?:[.,]\d+)?|[.,]\d+)$/.test(s))return NaN;
+    return Number(s.replace(',','.'));
+  }
+  function valid(lat,lon) {return Number.isFinite(lat)&&Number.isFinite(lon)&&Math.abs(lat)<=90&&Math.abs(lon)<=180;}
+  function pair(value) {
+    const s=String(value??'').trim();
+    // WKT e GeoJSON usano longitudine, latitudine; una coppia semplice usa lat, lon.
+    const wkt=s.match(/^POINT\s*\(\s*([+\-\d.]+)\s+([+\-\d.]+)\s*\)$/i);
+    if(wkt){const lon=number(wkt[1]),lat=number(wkt[2]);return valid(lat,lon)?[lat,lon]:null;}
+    if(s.startsWith('{'))try {const g=JSON.parse(s);if(g.type==='Point'&&Array.isArray(g.coordinates)){const [lon,lat]=g.coordinates;return typeof lat==='number'&&typeof lon==='number'&&valid(lat,lon)?[lat,lon]:null;}}catch{}
+    const m=s.replace(/^\[/,'').replace(/\]$/,'').match(/^\s*([+-]?(?:\d+(?:[.,]\d+)?))\s*[;|]\s*([+-]?(?:\d+(?:[.,]\d+)?))\s*$/) || s.match(/^\s*([+-]?\d+(?:\.\d+)?)\s*(?:,|\s)\s*([+-]?\d+(?:\.\d+)?)\s*$/);
+    if(!m)return null;const lat=number(m[1]),lon=number(m[2]);return valid(lat,lon)?[lat,lon]:null;
+  }
+  function entries(t,mapping=t.map) {
+    const entries=[],issues=[];const m=mapping;
+    if((m.lat<0 || m.lon<0) && m.pair<0)throw Error('Coordinate non identificate: seleziona latitudine e longitudine, oppure una colonna con coppie di coordinate, e premi «Applica colonne».');
+    if(m.lat>=0 && m.lon>=0 && m.lat===m.lon)throw Error('Latitudine e longitudine devono corrispondere a due colonne distinte.');
+    for(const r of t.rows) {
+      if(r.error){issues.push({line:r.line,reason:r.error});continue;}
+      if(r.cells.length!==t.width){issues.push({line:r.line,reason:`${r.cells.length} campi invece di ${t.width}`});continue;}
+      let p;
+      if(m.lat>=0&&m.lon>=0){const lat=number(r.cells[m.lat]),lon=number(r.cells[m.lon]);p=valid(lat,lon)?[lat,lon]:null;}
+      else p=pair(r.cells[m.pair]);
+      if(!p){issues.push({line:r.line,reason:'Coordinate mancanti, non numeriche o fuori intervallo'});continue;}
+      entries.push({pair:p,nome:(r.cells[m.nome]??'').trim(),affare:(r.cells[m.affare]??'').trim(),data:(r.cells[m.data]??'').trim()});
+    }
+    return {entries,issues};
+  }
+  return {decode,parse,detect,table,entries,number,pair,valid};
+})();
+if(typeof module!=='undefined')module.exports=CsvCore;
 
-    Papa.parse(CSV_URL, {
-      download:true, skipEmptyLines:true,
-      complete(result) {
-        if (!result.data?.length) return showError('Il foglio non contiene righe leggibili. Verifica che sia pubblicato sul web.');
-        const header = result.data[0];
-        const coordLabels = header.slice(4,7).map((v,i) => v || `Colonna ${String.fromCharCode(69+i)}`);
-        const groups=new Map(); let skipped=0;
-        result.data.slice(1).forEach(row => {
-          const coordCells = row.slice(4,7);
-          const pair = coordinatePair(coordCells, coordLabels);
-          if (!pair) { skipped++; return; }
-          const key = `${pair[0].toFixed(5)},${pair[1].toFixed(5)}`;
-          if (!groups.has(key)) groups.set(key, { pair, entries: [] });
-          groups.get(key).entries.push({
-            nome: (row[COL_NOME] ?? '').toString().trim(),
-            affare: (row[COL_AFFARE] ?? '').toString().trim(),
-            data: (row[COL_DATA] ?? '').toString().trim()
-          });
-        });
+</script><script>
+'use strict';
+const CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vRxZ1JcJy6VdGQnt3oy0v_xm4tqQSfombk-lw9rS0eQiPDg7_tO-GHxdFPaOR0wHqwdDyCRgYbZZPAZ/pub?gid=1913274688&single=true&output=csv';
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function notify(message) {$('message').textContent=message;$('message').hidden=!message;if(message)$('settings').open=true;}
+$('csv-url').value=CSV_URL;
+if(typeof L==='undefined') {
+  $('status').textContent='Libreria mappa non disponibile';
+  notify('Impossibile caricare Leaflet dal CDN. Verifica la connessione o le regole CSP del sito.');
+} else start();
+function start() {
+  const map=L.map('map',{scrollWheelZoom:true,preferCanvas:true}).setView([40.2,9],6);
+  const markers=L.layerGroup().addTo(map),borders=L.layerGroup().addTo(map);
+  map.createPane('boundaries');map.getPane('boundaries').style.zIndex=410;map.getPane('boundaries').style.pointerEvents='none';
+  const base=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    maxZoom:19,className:'neutral-tiles',
+    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(map);
+  let tileError=false;
+  base.on('tileerror',()=>{if(!tileError){tileError=true;$('boundary-status').textContent+=' · Sfondo OSM non disponibile; verificare la connessione.';}});
+  L.control.layers(null,{'Confini vettoriali':borders,'Affari e crediti':markers},{collapsed:true}).addTo(map);
+  L.control.scale({imperial:false}).addTo(map);
+  const legend=L.control({position:'bottomright'});
+  legend.onAdd=()=>{const div=L.DomUtil.create('div','legend');div.innerHTML='<span class="legend-dot"></span>Dimensione e numero: affari nello stesso punto.<br>Confini attuali, non storici.';return div;};legend.addTo(map);
+  let viewBounds=null;
+  const reset=L.control({position:'topleft'});reset.onAdd=()=>{const div=L.DomUtil.create('div','leaflet-bar reset-control');const a=L.DomUtil.create('a','',div);a.href='#';a.title='Mostra tutti gli affari';a.setAttribute('aria-label',a.title);a.textContent='↺';L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);if(viewBounds)map.fitBounds(viewBounds,{padding:[35,35],maxZoom:13});});L.DomEvent.disableClickPropagation(div);return div;};reset.addTo(map);
+  if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>map.invalidateSize()).observe($('map'));
+  $('settings').addEventListener('toggle',()=>requestAnimationFrame(()=>map.invalidateSize()));
+  let raw=null,table=null,decoded=null,source='',loadVersion=0,request=null,borderVersion=0;
+  const labels={lat:'Latitudine',lon:'Longitudine',pair:'Coppia lat/lon (alternativa)',nome:'Nome',affare:'Affare',data:'Data'};
+  function columnLetter(n) {let s='';for(n++;n>0;n=Math.floor((n-1)/26))s=String.fromCharCode(65+(n-1)%26)+s;return s;}
+  function columns() {
+    $('columns').replaceChildren();
+    for(const [key,label] of Object.entries(labels)) {
+      const wrap=document.createElement('label');wrap.textContent=label;
+      const select=document.createElement('select');select.id='col-'+key;select.add(new Option('— Non selezionata —','-1'));
+      for(let i=0;i<table.width;i++) {
+        const sample=table.rows.find(r=>r.cells.length===table.width && !r.error)?.cells[i]??'';
+        select.add(new Option(`${columnLetter(i)} · ${table.headers[i]||sample.slice(0,35)||'Senza etichetta'}`,String(i)));
+      }
+      select.value=String(table.map[key]);wrap.append(select);$('columns').append(wrap);
+    }
+  }
+  function mapping(){return Object.fromEntries(Object.keys(labels).map(k=>[k,Number($('col-'+k).value)]));}
+  function diagnostic(result) {
+    const d=table.delimiter==='\t'?'tabulazione':table.delimiter;
+    const h=table.headerLine?`intestazione alla riga ${table.headerLine}`:'senza intestazione';
+    $('diagnostics').textContent=`${source}\nCodifica: ${decoded.encoding}; separatore: ${d}; ${h}; ${table.width} colonne.\n${table.preamble} righe preliminari escluse.\n`+
+      (result?`${result.entries.length} record validi, ${result.issues.length} righe escluse.\n`+result.issues.slice(0,100).map(x=>`Riga ${x.line}: ${x.reason}`).join('\n')+(result.issues.length>100?'\n… Ulteriori errori omessi.':''):'Selezionare le colonne delle coordinate.');
+  }
+  function popup(entries) {
+    return `<div class="popup-count">${entries.length} affari in questo luogo</div><div class="popup-list">`+entries.map(e=>`<div class="popup-entry"><div class="popup-name">${esc(e.nome||'Senza nome')}</div>${e.affare?`<div class="popup-affare">${esc(e.affare)}</div>`:''}${e.data?`<div class="popup-date">${esc(e.data)}</div>`:''}</div>`).join('')+'</div>';
+  }
+  function render() {
+    if(!table)return;
+    try {
+      const result=CsvCore.entries(table,mapping());diagnostic(result);
+      if(!result.entries.length)throw Error('Nessuna riga con coordinate valide. Consulta la diagnostica e verifica le colonne selezionate.');
+      const groups=new Map();
+      for(const e of result.entries){const key=JSON.stringify(e.pair);if(!groups.has(key))groups.set(key,{pair:e.pair,entries:[]});groups.get(key).entries.push(e);}
+      // Coordinate conservate integralmente: nessun arrotondamento o spostamento del punto.
+      let max=1;for(const g of groups.values())max=Math.max(max,g.entries.length);
+      markers.clearLayers();const bounds=[];
+      for(const g of groups.values()) {
+        const count=g.entries.length,size=Math.round(26+22*Math.sqrt((count-1)/Math.max(1,max-1)));
+        const icon=L.divIcon({className:'',html:`<div class="credit-marker"><div class="bubble">${count>1?count:''}</div></div>`,iconSize:[size,size],iconAnchor:[size/2,size+6],popupAnchor:[0,-size-4]});
+        const marker=L.marker(g.pair,{icon,riseOnHover:true,title:g.entries[0].nome||'Affare'}).addTo(markers);
+        marker.bindPopup(popup(g.entries),{maxWidth:300});
+        const tooltip=document.createElement('span');tooltip.textContent=(g.entries[0].nome||g.entries[0].affare||'Affare')+(count>1?` e altri ${count-1}`:'');
+        marker.bindTooltip(tooltip,{direction:'top',offset:[0,-size*.55],className:'credit-tooltip'});bounds.push(g.pair);
+      }
+      viewBounds=L.latLngBounds(bounds);map.fitBounds(viewBounds,{padding:[35,35],maxZoom:13});
+      $('status').textContent=`${result.entries.length} affari · ${groups.size} luoghi`;
+      notify(result.issues.length?`${result.issues.length} righe escluse: i motivi e i numeri di riga sono nella diagnostica.`:'');
+    } catch(e){markers.clearLayers();viewBounds=null;$('status').textContent='Importazione da verificare';notify(e.message);}
+  }
+  function reparse() {
+    if(!raw){notify('Carica prima un CSV da URL o dal computer.');return;}
+    markers.clearLayers();viewBounds=null;table=null;$('columns').replaceChildren();
+    try {decoded=CsvCore.decode(raw,$('encoding').value);table=CsvCore.table(decoded.text,$('delimiter').value,$('header-mode').value);columns();diagnostic();render();}
+    catch(e){$('status').textContent='CSV non leggibile';$('diagnostics').textContent=e.message;notify(e.message);}
+  }
+  async function fetchWithTimeout(url,signal) {
+    const controller=new AbortController();const abort=()=>controller.abort();signal?.addEventListener('abort',abort,{once:true});
+    const timer=setTimeout(()=>controller.abort(),25000);
+    try {const response=await fetch(url,{signal:controller.signal,mode:'cors',credentials:'omit'});if(!response.ok)throw Error(`Risposta HTTP ${response.status}`);return await response.arrayBuffer();}
+    finally {clearTimeout(timer);signal?.removeEventListener('abort',abort);}
+  }
+  async function loadURL() {
+    const version=++loadVersion;request?.abort();request=new AbortController();$('status').textContent='Caricamento CSV…';notify('');
+    raw=null;table=null;markers.clearLayers();viewBounds=null;$('columns').replaceChildren();$('diagnostics').textContent='Caricamento…';
+    try {
+      const url=new URL($('csv-url').value);if(!['https:','http:'].includes(url.protocol))throw Error('Usa un URL HTTP o HTTPS.');
+      const buffer=await fetchWithTimeout(url.href,request.signal);if(version!==loadVersion)return;
+      if(buffer.byteLength>30*1024*1024)throw Error('CSV troppo grande: limite 30 MB.');
+      raw=buffer;source='CSV da URL';reparse();
+    }catch(e){if(version!==loadVersion)return;$('status').textContent='CSV remoto non disponibile';notify(`Impossibile scaricare il CSV (${e.name==='AbortError'?'timeout o richiesta annullata':e.message}). Verifica pubblicazione del foglio, URL e CORS. Puoi aprire una copia locale del CSV.`);$('diagnostics').textContent=e.message;}
+  }
+  $('reload').onclick=loadURL;$('reparse').onclick=reparse;$('apply').onclick=render;
+  $('csv-file').onchange=async e=>{
+    const file=e.target.files[0];if(!file)return;const version=++loadVersion;request?.abort();raw=null;table=null;markers.clearLayers();viewBounds=null;$('columns').replaceChildren();
+    try {if(file.size>30*1024*1024)throw Error('CSV troppo grande: limite 30 MB.');const buffer=await file.arrayBuffer();if(version!==loadVersion)return;raw=buffer;source=file.name;reparse();}
+    catch(err){notify(err.message);$('status').textContent='CSV non leggibile';}
+  };
+  const attribution='Confini: <a href="https://ec.europa.eu/eurostat/web/gisco/geodata/administrative-units/countries">Eurostat/GISCO</a> 2024';
+  function boundaryLayer(g) {
+    if(!g || !['Feature','FeatureCollection','Polygon','MultiPolygon','LineString','MultiLineString','GeometryCollection'].includes(g.type))throw Error('GeoJSON non valido o tipo non supportato.');
+    if(g.crs && !/(?:4326|CRS84)$/i.test(g.crs.properties?.name||''))throw Error('Riprojettare il GeoJSON in WGS84 (EPSG:4326) prima del caricamento.');
+    let count=0;
+    const coords=c=>{if(!Array.isArray(c)||!c.length)throw Error('Geometria vuota o non valida.');if(typeof c[0]==='number'){if(c.length<2 || typeof c[1]!=='number' || !CsvCore.valid(c[1],c[0]))throw Error('Coordinate GeoJSON non valide: attesi [longitudine, latitudine] in gradi.');count++;}else c.forEach(coords);};
+    const walk=o=>{if(!o)throw Error('Geometria nulla.');if(o.type==='FeatureCollection')o.features.forEach(walk);else if(o.type==='Feature')walk(o.geometry);else if(o.type==='GeometryCollection')o.geometries.forEach(walk);else if(['Polygon','MultiPolygon','LineString','MultiLineString'].includes(o.type))coords(o.coordinates);else throw Error('Usa poligoni o linee per i confini.');};
+    walk(g);if(!count)throw Error('Nessuna geometria da disegnare.');
+    return L.geoJSON(g,{pane:'boundaries',smoothFactor:0,interactive:false,style:{color:'#465e71',weight:1.3,opacity:.9,fill:false,lineCap:'round',lineJoin:'round'}});
+  }
+  async function loadBorders() {
+    const version=++borderVersion;const codes=[...new Set($('countries').value.toUpperCase().split(/[,;\s]+/).filter(Boolean))];
+    if(!codes.length || codes.length>15 || codes.some(x=>! /^[A-Z]{2}$/.test(x))){$('boundary-status').textContent='Inserisci da 1 a 15 codici paese di due lettere.';return;}
+    $('boundary-status').textContent='Caricamento confini GISCO…';
+    const results=await Promise.allSettled(codes.map(async code=>{
+      const url=`https://gisco-services.ec.europa.eu/distribution/v2/countries/distribution/${code}-region-01m-4326-2024.geojson`;
+      const bytes=await fetchWithTimeout(url);return boundaryLayer(JSON.parse(new TextDecoder().decode(bytes)));
+    }));
+    if(version!==borderVersion)return;
+    const ok=results.filter(r=>r.status==='fulfilled');const failed=codes.filter((_,i)=>results[i].status==='rejected');
+    if(ok.length){borders.clearLayers();for(const r of ok)r.value.addTo(borders);map.attributionControl.removeAttribution(attribution);map.attributionControl.addAttribution(attribution);}
+    $('boundary-status').textContent=ok.length?`Confini GISCO caricati: ${codes.filter((_,i)=>results[i].status==='fulfilled').join(', ')}. Scala 1:1.000.000, nessuna semplificazione aggiuntiva.`:(borders.getLayers().length?'Caricamento GISCO fallito; i confini precedenti sono stati conservati.':'Confini GISCO non disponibili. Nessuna geometria di precisione caricata; resta lo sfondo OSM. Puoi caricare un GeoJSON locale.');
+    if(failed.length)$('boundary-status').textContent+=` Paesi non caricati: ${failed.join(', ')} (rete, CORS o file non disponibile).`;
+  }
+  $('load-borders').onclick=loadBorders;
+  $('geojson-file').onchange=async e=>{
+    const file=e.target.files[0];if(!file)return;const version=++borderVersion;
+    try {if(file.size>60*1024*1024)throw Error('GeoJSON troppo grande: limite 60 MB.');const g=JSON.parse(await file.text());if(version!==borderVersion)return;const layer=boundaryLayer(g);borders.clearLayers();layer.addTo(borders);map.attributionControl.removeAttribution(attribution);$('boundary-status').textContent=`Confini locali: ${file.name}. Verificare fonte, data, scala e licenza del file. L'accuratezza dipende dalla geometria originale.`;}
+    catch(err){if(version===borderVersion)$('boundary-status').textContent=`GeoJSON non caricato: ${err.message}`;}
+  };
+  loadURL();loadBorders();
+}
 
-        const bounds=[]; let total=0; let maxCount=1;
-        groups.forEach(group => { maxCount=Math.max(maxCount, group.entries.length); });
-
-        groups.forEach(group => {
-          const entries = group.entries;
-          const count = entries.length;
-          total += count; bounds.push(group.pair);
-          const size = Math.round(26 + 22*Math.sqrt((count-1)/Math.max(1,maxCount-1)));
-          const icon = L.divIcon({
-            className:'',
-            html:`<div class="credit-marker"><div class="bubble">${count>1?count:''}</div></div>`,
-            iconSize:[size,size], iconAnchor:[size/2,size+6], popupAnchor:[0,-(size+4)]
-          });
-          const marker = L.marker(group.pair,{icon,riseOnHover:true}).addTo(map);
-          marker.bindPopup(buildPopup(entries), {maxWidth:290});
-          const tooltipLabel = entries[0].nome || entries[0].affare || 'Affare';
-          marker.bindTooltip(count>1 ? `${tooltipLabel} e altri ${count-1}` : tooltipLabel, {
-            direction:'top', offset:[0,-(size*0.55)], opacity:0.96, className:'credit-tooltip'
-          });
-        });
-
-        if (!bounds.length) return showError('Nelle colonne E, F e G non ho trovato una coppia di coordinate valida (latitudine e longitudine).');
-        map.fitBounds(bounds,{padding:[28,28],maxZoom:14});
-        statusEl.textContent=`${total} affari · ${bounds.length} luoghi${skipped ? ` · ${skipped} righe ignorate` : ''}`;
-
-        const legend=L.control({position:'bottomright'});
-        legend.onAdd=()=>{ const div=L.DomUtil.create('div','legend'); div.innerHTML='<span class="legend-dot"></span>La dimensione indica il numero di affari registrati in quel luogo'; return div; };
-        legend.addTo(map);
-
-        const ResetControl = L.Control.extend({
-          options:{position:'topleft'},
-          onAdd(){
-            const container=L.DomUtil.create('div','leaflet-bar reset-control');
-            const link=L.DomUtil.create('a',' ',container);
-            link.href='#'; link.title='Torna alla vista iniziale'; link.innerHTML='&#8634;';
-            L.DomEvent.on(link,'click',e=>{ L.DomEvent.preventDefault(e); map.fitBounds(bounds,{padding:[28,28],maxZoom:14}); });
-            return container;
-          }
-        });
-        map.addControl(new ResetControl());
-
-        setTimeout(()=>map.invalidateSize(),100);
-      },
-      error() { showError('Non riesco a leggere il CSV. Controlla la pubblicazione del foglio e le autorizzazioni CORS.'); }
-    });
-    new ResizeObserver(()=>map.invalidateSize()).observe(document.querySelector('#map'));
-  </script>
-</body>
-</html>
+</script></body></html>
