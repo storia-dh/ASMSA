@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Torri Costiere — Connessioni Territoriali</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f5f1ea;
+    --surface: #ffffff;
+    --text: #1c1a16;
+    --text-muted: #6b6456;
+    --border: #d4ccbc;
+    --accent: #8b5e3c;
+    --accent-light: #f0e4d4;
+    --torre: #c94a2a;
+    --porto: #1a6b9a;
+    --salina: #2a8a5a;
+    --peschera: #7a4f9e;
+    --visiva: #d4821a;
+    --funzionale: #c94a2a;
+    --sans: 'Georgia', serif;
+  }
+  body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  header {
+    background: var(--text);
+    color: #f5f1ea;
+    padding: 0 1.5rem;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  header h1 {
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: normal;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .header-sub {
+    font-size: 11px;
+    color: #a09882;
+    letter-spacing: 0.05em;
+  }
+  .main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+  #sidebar {
+    width: 320px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .sidebar-section {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-section h2 {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+  }
+  .config-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .config-row label {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .config-row input[type="text"] {
+    font-size: 12px;
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    width: 100%;
+    color: var(--text);
+    background: #faf9f6;
+  }
+  .config-row input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .btn-load {
+    width: 100%;
+    padding: 8px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    margin-top: 0.25rem;
+  }
+  .btn-load:hover { background: #7a5030; }
+  .btn-local {
+    width: 100%;
+    padding: 7px;
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    margin-top: 0.25rem;
+    letter-spacing: 0.03em;
+  }
+  .btn-local:hover { background: var(--accent-light); }
+  #file-inputs { display: none; }
+  .status-bar {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+    min-height: 16px;
+  }
+  .status-bar.error { color: #c94a2a; }
+  .status-bar.ok { color: #2a8a5a; }
+
+  .torre-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem;
+  }
+  .torre-item {
+    padding: 0.65rem 0.75rem;
+    border-radius: 5px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    margin-bottom: 3px;
+    transition: all 0.15s;
+  }
+  .torre-item:hover {
+    background: var(--accent-light);
+    border-color: #ddd0c0;
+  }
+  .torre-item.active {
+    background: var(--accent-light);
+    border-color: var(--accent);
+  }
+  .torre-item-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .torre-item-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .torre-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--torre);
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  #detail-panel {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 1rem;
+    display: none;
+    max-height: 200px;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+  #detail-panel.visible { display: block; }
+  #detail-panel h3 {
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: normal;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+  }
+  .conn-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 5px 0;
+    border-bottom: 1px solid #f0ebe2;
+    font-size: 11px;
+  }
+  .conn-item:last-child { border-bottom: none; }
+  .conn-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 500;
+    flex-shrink: 0;
+    letter-spacing: 0.03em;
+  }
+  .badge-porto { background: #d4eaf5; color: #1a6b9a; }
+  .badge-salina { background: #d4f0e4; color: #2a5a3a; }
+  .badge-peschera { background: #ead4f5; color: #5a2a7e; }
+  .badge-torre { background: #f5d4d0; color: #8a2a1a; }
+  .conn-detail { color: var(--text-muted); line-height: 1.4; }
+  .cert-alta { color: #2a8a5a; }
+  .cert-media { color: #d4821a; }
+  .cert-bassa { color: #c94a2a; }
+
+  #map { flex: 1; }
+
+  .legend {
+    position: absolute;
+    bottom: 28px;
+    right: 10px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    z-index: 1000;
+    font-size: 11px;
+    line-height: 1.8;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .legend-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .legend-row { display: flex; align-items: center; gap: 6px; }
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .legend-square {
+    width: 10px;
+    height: 10px;
+    flex-shrink: 0;
+  }
+  .legend-line {
+    width: 18px;
+    height: 2px;
+    flex-shrink: 0;
+  }
+  .sep { height: 1px; background: var(--border); margin: 6px 0; }
+
+  .empty-state {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .empty-state .icon { font-size: 28px; margin-bottom: 0.5rem; opacity: 0.4; }
+
+  .local-files-note {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 0.4rem;
+    line-height: 1.4;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Torri Costiere — Connessioni Territoriali</h1>
+  <span class="header-sub">Studio delle relazioni visive e funzionali</span>
+</header>
+
+<div class="main">
+  <div id="sidebar">
+
+    <div class="sidebar-section">
+      <h2>Sorgente dati</h2>
+
+      <div class="config-row">
+        <label>URL base GitHub Raw (opzionale)</label>
+        <input type="text" id="github-url" placeholder="https://raw.githubusercontent.com/utente/repo/main/" />
+      </div>
+      <button class="btn-load" onclick="loadFromGithub()">↓ Carica da GitHub</button>
+      <button class="btn-local" onclick="document.getElementById('file-inputs').style.display='block'">↑ Carica file locali</button>
+
+      <div id="file-inputs">
+        <div class="config-row" style="margin-top:0.5rem;">
+          <label>torri.csv</label>
+          <input type="file" id="f-torri" accept=".csv">
+        </div>
+        <div class="config-row">
+          <label>infrastrutture.csv</label>
+          <input type="file" id="f-infr" accept=".csv">
+        </div>
+        <div class="config-row">
+          <label>connessioni.csv</label>
+          <input type="file" id="f-conn" accept=".csv">
+        </div>
+        <button class="btn-load" onclick="loadFromFiles()">↓ Carica file</button>
+      </div>
+
+      <div class="local-files-note">
+        I file CSV devono avere i campi standard (vedi documentazione). La mappa si aggiorna automaticamente.
+      </div>
+      <div id="status" class="status-bar"></div>
+    </div>
+
+    <div class="sidebar-section" style="flex-shrink:0;">
+      <h2>Torri</h2>
+    </div>
+
+    <div class="torre-list" id="torre-list">
+      <div class="empty-state">
+        <div class="icon">🗼</div>
+        Carica i dati per visualizzare le torri e le loro connessioni
+      </div>
+    </div>
+
+    <div id="detail-panel">
+      <h3 id="detail-title"></h3>
+      <div id="detail-connections"></div>
+    </div>
+
+  </div>
+
+  <div style="position:relative;flex:1;display:flex;">
+    <div id="map"></div>
+    <div class="legend" id="legend" style="display:none;">
+      <div class="legend-title">Legenda</div>
+      <div class="legend-row"><div class="legend-dot" style="background:#c94a2a;"></div> Torre</div>
+      <div class="legend-row"><div class="legend-square" style="background:#1a6b9a;border-radius:2px;"></div> Porto</div>
+      <div class="legend-row"><div class="legend-square" style="background:#2a8a5a;border-radius:2px;"></div> Salina</div>
+      <div class="legend-row"><div class="legend-square" style="background:#7a4f9e;border-radius:2px;"></div> Peschera</div>
+      <div class="sep"></div>
+      <div class="legend-row"><div class="legend-line" style="background:#c94a2a;"></div> Connessione visiva+funzionale</div>
+      <div class="legend-row"><div class="legend-line" style="background:#d4821a; border-top: 2px dashed #d4821a; height:0;width:18px;"></div> Connessione visiva</div>
+      <div class="legend-row"><div class="legend-line" style="background:#888;border-top:1px dashed #888;height:0;width:18px;"></div> Certezza media/ipotesi</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script>
+
+let map, torri = [], infrastrutture = [], connessioni = [];
+let markers = [], lines = [], activeTorre = null;
+let layerTorri, layerInfr, layerLines;
+
+map = L.map('map').setView([39.12, 9.07], 11);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution: '© OpenStreetMap © CartoDB',
+  subdomains: 'abcd', maxZoom: 19
+}).addTo(map);
+
+layerTorri = L.layerGroup().addTo(map);
+layerInfr = L.layerGroup().addTo(map);
+layerLines = L.layerGroup().addTo(map);
+
+function parseCSV(text) {
+  const result = Papa.parse(text.trim(), { header: true, skipEmptyLines: true });
+  return result.data;
+}
+
+function setStatus(msg, type) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status-bar ' + (type || '');
+}
+
+async function loadFromGithub() {
+  const base = document.getElementById('github-url').value.trim();
+  if (!base) { setStatus('Inserisci URL base GitHub Raw', 'error'); return; }
+  const url = base.endsWith('/') ? base : base + '/';
+  setStatus('Caricamento in corso…');
+  try {
+    const [t, i, c] = await Promise.all([
+      fetch(url + 'torri.csv').then(r => r.text()),
+      fetch(url + 'infrastrutture.csv').then(r => r.text()),
+      fetch(url + 'connessioni.csv').then(r => r.text()),
+    ]);
+    torri = parseCSV(t);
+    infrastrutture = parseCSV(i);
+    connessioni = parseCSV(c);
+    render();
+    setStatus(`✓ Caricati: ${torri.length} torri, ${infrastrutture.length} infrastrutture, ${connessioni.length} connessioni`, 'ok');
+  } catch(e) {
+    setStatus('Errore caricamento: ' + e.message, 'error');
+  }
+}
+
+function readFile(input) {
+  return new Promise((res, rej) => {
+    if (!input.files[0]) { res(null); return; }
+    const r = new FileReader();
+    r.onload = e => res(e.target.result);
+    r.onerror = rej;
+    r.readAsText(input.files[0]);
+  });
+}
+
+async function loadFromFiles() {
+  const [t, i, c] = await Promise.all([
+    readFile(document.getElementById('f-torri')),
+    readFile(document.getElementById('f-infr')),
+    readFile(document.getElementById('f-conn')),
+  ]);
+  if (!t || !i || !c) { setStatus('Seleziona tutti e 3 i file CSV', 'error'); return; }
+  torri = parseCSV(t);
+  infrastrutture = parseCSV(i);
+  connessioni = parseCSV(c);
+  render();
+  setStatus(`✓ Caricati: ${torri.length} torri, ${infrastrutture.length} infrastrutture, ${connessioni.length} connessioni`, 'ok');
+}
+
+function makeTorreIcon(active) {
+  return L.divIcon({
+    html: `<div style="width:14px;height:14px;background:${active?'#8b1a00':'#c94a2a'};border:2px solid ${active?'#fff':'rgba(255,255,255,0.8)'};border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.4);"></div>`,
+    className: '', iconSize: [14,14], iconAnchor: [7,7]
+  });
+}
+
+function makeInfrIcon(tipo) {
+  const colors = { porto: '#1a6b9a', salina: '#2a8a5a', peschera: '#7a4f9e' };
+  const col = colors[tipo] || '#888';
+  return L.divIcon({
+    html: `<div style="width:11px;height:11px;background:${col};border:2px solid rgba(255,255,255,0.9);border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>`,
+    className: '', iconSize: [11,11], iconAnchor: [5,5]
+  });
+}
+
+function render() {
+  layerTorri.clearLayers();
+  layerInfr.clearLayers();
+  layerLines.clearLayers();
+  activeTorre = null;
+
+  const list = document.getElementById('torre-list');
+  list.innerHTML = '';
+
+  const bounds = [];
+
+  torri.forEach(t => {
+    if (!t.lat || !t.lon) return;
+    const lat = parseFloat(t.lat), lon = parseFloat(t.lon);
+    bounds.push([lat, lon]);
+    const m = L.marker([lat, lon], { icon: makeTorreIcon(false) }).addTo(layerTorri);
+    m.bindTooltip(`<strong>${t.nome}</strong><br><small>${t.comune} — ${t.periodo}</small>`, { direction: 'top', offset: [0,-8] });
+    m.on('click', () => selectTorre(t));
+
+    const item = document.createElement('div');
+    item.className = 'torre-item';
+    item.id = 'li-' + t.id;
+    item.innerHTML = `<div class="torre-item-name"><span class="torre-dot"></span>${t.nome}</div><div class="torre-item-sub">${t.comune} · ${t.periodo}</div>`;
+    item.onclick = () => selectTorre(t);
+    list.appendChild(item);
+    t._marker = m;
+  });
+
+  infrastrutture.forEach(i => {
+    if (!i.lat || !i.lon) return;
+    const lat = parseFloat(i.lat), lon = parseFloat(i.lon);
+    bounds.push([lat, lon]);
+    const m = L.marker([lat, lon], { icon: makeInfrIcon(i.tipo) }).addTo(layerInfr);
+    m.bindTooltip(`<strong>${i.nome}</strong><br><small>${i.tipo} — ${i.comune}</small>`, { direction: 'top', offset: [0,-8] });
+    i._marker = m;
+  });
+
+  if (bounds.length > 0) {
+    map.fitBounds(bounds, { padding: [40, 40] });
+  }
+
+  document.getElementById('legend').style.display = 'block';
+}
+
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2)
+          + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180)
+          * Math.sin(dLon/2) * Math.sin(dLon/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function selectTorre(torre) {
+  if (activeTorre) {
+    const prev = torri.find(t => t.id === activeTorre.id);
+    if (prev && prev._marker) prev._marker.setIcon(makeTorreIcon(false));
+    document.querySelectorAll('.torre-item').forEach(el => el.classList.remove('active'));
+  }
+
+  activeTorre = torre;
+  if (torre._marker) torre._marker.setIcon(makeTorreIcon(true));
+
+  const li = document.getElementById('li-' + torre.id);
+  if (li) { li.classList.add('active'); li.scrollIntoView({ block: 'nearest' }); }
+
+  layerLines.clearLayers();
+  layerInfr.clearLayers();
+
+  infrastrutture.forEach(i => {
+    if (!i.lat || !i.lon) return;
+    const m = L.marker([parseFloat(i.lat), parseFloat(i.lon)], { icon: makeInfrIcon(i.tipo), opacity: 0.25 }).addTo(layerInfr);
+    m.bindTooltip(`<strong>${i.nome}</strong><br><small>${i.tipo} — ${i.comune}</small>`, { direction: 'top', offset: [0,-8] });
+    i._marker = m;
+  });
+
+  const connTorre = connessioni.filter(c => c.id_torre === torre.id);
+  const connectedIds = new Set();
+
+  connTorre.forEach(c => {
+    const target = infrastrutture.find(i => i.id === c.id_infrastruttura)
+                || torri.find(t => t.id === c.id_infrastruttura);
+    if (!target || !target.lat) return;
+
+    connectedIds.add(c.id_infrastruttura);
+
+    const isDashed = c.tipo_relazione === 'visiva' || c.certezza === 'bassa';
+    const isMed = c.certezza === 'media';
+    const color = c.tipo_relazione === 'visiva+funzionale' ? '#c94a2a' : '#d4821a';
+    const opacity = c.certezza === 'alta' ? 0.85 : c.certezza === 'media' ? 0.55 : 0.3;
+    const weight = c.certezza === 'alta' ? 2.5 : 1.5;
+
+    const line = L.polyline(
+      [[parseFloat(torre.lat), parseFloat(torre.lon)], [parseFloat(target.lat), parseFloat(target.lon)]],
+      { color, weight, opacity, dashArray: isDashed || isMed ? '6,4' : null }
+    ).addTo(layerLines);
+
+    const t1lat = parseFloat(torre.lat), t1lon = parseFloat(torre.lon);
+    const t2lat = parseFloat(target.lat), t2lon = parseFloat(target.lon);
+    const distCalc = haversine(t1lat, t1lon, t2lat, t2lon).toFixed(2);
+    const midLat = (t1lat + t2lat) / 2;
+    const midLon = (t1lon + t2lon) / 2;
+    L.tooltip({ permanent: true, direction: 'center', className: 'line-label' })
+      .setContent(`<span style="font-size:9px;background:white;padding:1px 4px;border-radius:2px;color:#555;white-space:nowrap;">↔ ${distCalc} km</span>`)
+      .setLatLng([midLat, midLon])
+      .addTo(layerLines);
+
+    if (target._marker) target._marker.setOpacity(1);
+  });
+
+  layerInfr.eachLayer(l => {
+    const infr = infrastrutture.find(i => i._marker === l);
+    if (infr && connectedIds.has(infr.id)) l.setOpacity(1);
+  });
+
+  showDetail(torre, connTorre);
+
+  map.setView([parseFloat(torre.lat), parseFloat(torre.lon)], 13, { animate: true });
+}
+
+function showDetail(torre, connTorre) {
+  const panel = document.getElementById('detail-panel');
+  const title = document.getElementById('detail-title');
+  const connDiv = document.getElementById('detail-connections');
+
+  title.textContent = torre.nome + (torre.note_ricerca ? ' — ' + torre.note_ricerca : '');
+  connDiv.innerHTML = '';
+
+  if (connTorre.length === 0) {
+    connDiv.innerHTML = '<div style="font-size:12px;color:#aaa;">Nessuna connessione registrata per questa torre.</div>';
+  } else {
+    connTorre.forEach(c => {
+      const target = infrastrutture.find(i => i.id === c.id_infrastruttura)
+                  || torri.find(t => t.id === c.id_infrastruttura);
+      const tipo = target ? (target.tipo || 'torre') : '?';
+      const nome = target ? target.nome : c.id_infrastruttura;
+      const certClass = 'cert-' + (c.certezza || 'bassa');
+
+      let distStr = '—';
+      if (target && target.lat && target.lon && torre.lat && torre.lon) {
+        const dc = haversine(parseFloat(torre.lat), parseFloat(torre.lon), parseFloat(target.lat), parseFloat(target.lon));
+        distStr = dc.toFixed(2) + ' km';
+        if (c.distanza_km && Math.abs(dc - parseFloat(c.distanza_km)) > 0.15) {
+          distStr += ` <span title="valore nel CSV: ${c.distanza_km} km" style="color:#aaa;font-size:10px;">(CSV: ${c.distanza_km} km)</span>`;
+        }
+      } else if (c.distanza_km) {
+        distStr = c.distanza_km + ' km';
+      }
+
+      const div = document.createElement('div');
+      div.className = 'conn-item';
+      div.innerHTML = `
+        <span class="conn-badge badge-${tipo}">${tipo}</span>
+        <div class="conn-detail">
+          <strong>${nome}</strong> · ↔ ${distStr} ·
+          <span class="${certClass}">${c.certezza}</span> ·
+          ${c.tipo_relazione}
+          ${c.fonti ? `<br><em style="color:#aaa;">${c.fonti}</em>` : ''}
+          ${c.note ? `<br>${c.note}` : ''}
+        </div>`;
+      connDiv.appendChild(div);
+    });
+  }
+
+  panel.classList.add('visible');
+}
+
+const DEMO_TORRI = `id,nome,localita,comune,lat,lon,stato_conservazione,periodo,note_ricerca
+T001,Torre del Poetto,Poetto,Cagliari,39.2065,9.1472,buono,XVI sec,Torre a pianta circolare
+T002,Torre di Punta Zavorra,Punta Zavorra,Capoterra,39.1544,9.0231,discreto,XVI sec,In rapporto visivo con T001
+T003,Torre di Sant'Efisio,Nora,Pula,38.9940,9.0122,rovine,XVI sec,Vicina al sito di Nora`;
+
+const DEMO_INFR = `id,tipo,nome,localita,comune,lat,lon,periodo,note
+P001,porto,Porto Antico di Nora,Nora,Pula,38.9935,9.0118,Romano-medievale,Porto storico
+P002,porto,Porto di Cagliari,Marina,Cagliari,39.2161,9.1160,Medievale,Porto principale
+S001,salina,Saline di Molentargius,Molentargius,Quartu,39.2230,9.1693,Medievale,Grande salina
+S002,salina,Saline di Capoterra,Su Stangioni,Capoterra,39.1498,9.0155,XVI sec,Rapporto con T002`;
+
+const DEMO_CONN = `id_torre,id_infrastruttura,tipo_relazione,distanza_km,visibilita,certezza,fonti,note
+T001,S001,visiva+funzionale,2.1,diretta,alta,ASCa filza 23,Sorvegliava il traffico verso la salina
+T001,P002,visiva+funzionale,3.4,diretta,alta,ASCa filza 23,Rapporto con porto principale
+T002,S002,visiva+funzionale,0.8,diretta,alta,ASCa filza 31,Torre a difesa della salina
+T002,T001,visiva,6.3,diretta,media,ASCa filza 31,Rapporto visivo tra torri
+T003,P001,visiva+funzionale,0.3,diretta,alta,Zucca 1992,Torre a guardia del porto di Nora`;
+
+torri = parseCSV(DEMO_TORRI);
+infrastrutture = parseCSV(DEMO_INFR);
+connessioni = parseCSV(DEMO_CONN);
+render();
+setStatus('Dati di esempio caricati — carica i tuoi CSV per iniziare', '');
+</script>
+</body>
+</html>

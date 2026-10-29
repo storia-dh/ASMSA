@@ -1,0 +1,1647 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Torri Costiere — Connessioni Territoriali v17</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+  :root {
+    --bg:#f5f1ea; --surface:#fff; --text:#1c1a16; --text-muted:#6b6456;
+    --border:#d4ccbc; --accent:#8b5e3c; --accent-light:#f0e4d4;
+    --torre:#c94a2a; --sans:'Georgia',serif;
+    --col-porto:#1a6b9a; --col-salina:#2a8a5a; --col-peschera:#7a4f9e;
+    --col-tonnara:#b8860b; --col-fonte:#888;
+  }
+  html,body { width:100%; height:100%; overflow:hidden;
+    font-family:'Helvetica Neue',Arial,sans-serif; background:var(--bg); color:var(--text); }
+
+  #topbar { height:42px; background:var(--text); color:#f5f1ea;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 1.2rem; flex-shrink:0; }
+  #topbar .title { font-family:var(--sans); font-size:13px; letter-spacing:.08em; text-transform:uppercase; }
+  #topbar .sub { font-size:10px; color:#a09882; }
+
+  #shell { display:flex; width:100%; height:calc(100% - 42px); }
+
+  /* sidebar */
+  #sidebar { width:300px; flex-shrink:0; background:var(--surface);
+    border-right:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; }
+  .s-section { padding:.8rem; border-bottom:1px solid var(--border); flex-shrink:0; }
+  .s-label { font-size:9px; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--text-muted); margin-bottom:.55rem; }
+
+  .tab-row { display:flex; gap:3px; margin-bottom:.6rem; }
+  .tab { flex:1; padding:4px 2px; font-size:10px; border:1px solid var(--border);
+    border-radius:3px; background:transparent; color:var(--text-muted); cursor:pointer; }
+  .tab.active { background:var(--accent); color:white; border-color:var(--accent); }
+  .tab-panel { display:none; } .tab-panel.visible { display:block; }
+
+  .field { margin-bottom:.45rem; }
+  .field label { font-size:10px; color:var(--text-muted); display:block; margin-bottom:3px; }
+  .field input[type="text"] { width:100%; font-size:11px; padding:5px 7px;
+    border:1px solid var(--border); border-radius:3px; background:#faf9f6; color:var(--text); }
+  .field input[type="text"]:focus { outline:none; border-color:var(--accent); }
+  .field input[type="file"] { font-size:10px; color:var(--text-muted); width:100%; }
+  .hint { font-size:9.5px; color:var(--text-muted); line-height:1.4; margin-bottom:.45rem;
+    padding:4px 7px; background:#faf9f5; border-left:2px solid var(--border); border-radius:2px; }
+
+  .btn-load { width:100%; padding:7px; background:var(--accent); color:white;
+    border:none; border-radius:3px; font-size:11px; cursor:pointer; }
+  .btn-load:hover { background:#7a5030; }
+  .btn-secondary { width:100%; padding:6px; background:transparent; color:var(--accent);
+    border:1px solid var(--accent); border-radius:3px; font-size:11px; cursor:pointer; margin-top:4px; }
+  .btn-secondary:hover { background:var(--accent-light); }
+
+  #status { font-size:10px; color:var(--text-muted); margin-top:.4rem; min-height:14px; }
+  #status.ok { color:#2a8a5a; } #status.error { color:#c94a2a; }
+  #status.warn { color:#a45b00; }
+  .tower-marker-wrapper { background:transparent!important; border:none!important; overflow:visible!important; }
+  .tower-marker-dot { width:18px; height:18px; border-radius:50%; background:#d12f18; border:3px solid #fff; box-shadow:0 0 0 2px #8b1a00,0 2px 8px rgba(0,0,0,.7); }
+  .tower-marker-dot::after { content:''; display:block; width:4px; height:4px; margin:4px auto 0; border-radius:50%; background:#fff; }
+  .tower-marker-dot.active { width:22px; height:22px; background:#7d1200; box-shadow:0 0 0 3px #fff,0 2px 10px rgba(0,0,0,.8); }
+
+  /* torre groups */
+  #list-head { padding:6px 12px 4px; font-size:9px; font-weight:700;
+    letter-spacing:.12em; text-transform:uppercase; color:var(--text-muted);
+    border-bottom:1px solid var(--border); flex-shrink:0; }
+  #torre-list { flex:1; overflow-y:auto; padding:4px; }
+
+  .group-label { font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--text-muted); padding:6px 8px 3px; margin-top:4px; }
+  .torre-item { padding:5px 8px; border-radius:4px; cursor:pointer;
+    border:1px solid transparent; margin-bottom:2px; transition:all .12s; }
+  .torre-item:hover  { background:var(--accent-light); border-color:#ddd0c0; }
+  .torre-item.active { background:var(--accent-light); border-color:var(--accent); }
+  .ti-name { font-size:12px; font-weight:500; }
+  .ti-sub  { font-size:10px; color:var(--text-muted); margin-top:1px; }
+  .torre-dot { display:inline-block; width:7px; height:7px; border-radius:50%;
+    background:var(--torre); margin-right:5px; vertical-align:middle; }
+
+  /* detail + fonti tabs */
+  #detail-panel { display:none; border-top:1px solid var(--border);
+    flex-shrink:0; max-height:230px; overflow:hidden; flex-direction:column; }
+  #detail-panel.visible { display:flex; }
+  .detail-tabs { display:flex; border-bottom:1px solid var(--border); flex-shrink:0; }
+  .detail-tab { flex:1; padding:5px; font-size:10px; border:none; background:transparent;
+    color:var(--text-muted); cursor:pointer; border-bottom:2px solid transparent; }
+  .detail-tab.active { color:var(--accent); border-bottom-color:var(--accent); font-weight:600; }
+  .detail-pane { display:none; overflow-y:auto; padding:8px 10px; flex:1; }
+  .detail-pane.visible { display:block; }
+  #detail-title { font-size:11px; font-weight:600; margin-bottom:5px; color:var(--text); }
+
+  .conn-item { display:flex; align-items:flex-start; gap:6px;
+    padding:4px 0; border-bottom:1px solid #f0ebe2; font-size:10px; }
+  .conn-item:last-child { border-bottom:none; }
+  .conn-badge { padding:1px 5px; border-radius:3px; font-size:9px; font-weight:600;
+    flex-shrink:0; white-space:nowrap; }
+  .badge-porto    { background:#d4eaf5; color:var(--col-porto); }
+  .badge-salina   { background:#d4f0e4; color:#2a5a3a; }
+  .badge-peschera { background:#ead4f5; color:#5a2a7e; }
+  .badge-torre    { background:#f5d4d0; color:#8a2a1a; }
+  .badge-tonnara  { background:#fdf3d0; color:#8b6200; }
+  .badge-corallo  { background:#ffe2dc; color:#a63d2f; }
+  .conn-detail { color:var(--text-muted); line-height:1.4; }
+  .cert-alta { color:#2a8a5a; } .cert-media { color:#d4821a; } .cert-bassa { color:#c94a2a; }
+
+  /* fonti panel */
+  .fonte-item { padding:5px 0; border-bottom:1px solid #f0ebe2; font-size:10px; }
+  .fonte-item:last-child { border-bottom:none; }
+  .fonte-tipo { font-size:9px; font-weight:600; padding:1px 5px; border-radius:3px;
+    display:inline-block; margin-bottom:3px; }
+  .ft-portolano     { background:#fdf3d0; color:#8b6200; }
+  .ft-attacco_corsaro { background:#f5d4d0; color:#8a2a1a; }
+  .fonte-title { font-weight:600; color:var(--text); }
+  .fonte-meta  { color:var(--text-muted); line-height:1.5; margin-top:2px; }
+
+  /* map */
+  #map-wrap { flex:1; position:relative; }
+  #map { width:100%; height:100%; }
+  #legend { display:none; position:absolute; bottom:24px; right:8px; background:white;
+    border:1px solid var(--border); border-radius:5px; padding:8px 10px; z-index:1000;
+    font-size:10px; line-height:1.75; box-shadow:0 2px 6px rgba(0,0,0,.1); }
+  .leg-title { font-size:9px; text-transform:uppercase; letter-spacing:.1em;
+    color:var(--text-muted); font-weight:700; margin-bottom:4px; }
+  .leg-row { display:flex; align-items:center; gap:5px; }
+  .leg-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+  .leg-sq  { width:14px; height:14px; border-radius:3px; flex-shrink:0; border:2px solid #fff; outline:1px solid rgba(28,26,22,.55); box-shadow:0 1px 3px rgba(0,0,0,.3); }
+  .leg-sep { height:1px; background:var(--border); margin:4px 0; }
+  .leg-tri { width:17px; height:17px; background:var(--col-tonnara); flex-shrink:0;
+    clip-path:polygon(50% 0,100% 100%,0 100%); filter:drop-shadow(0 1px 2px rgba(0,0,0,.45)); }
+  .leg-icon { width:20px; height:20px; flex-shrink:0; display:inline-flex; align-items:center; justify-content:center; }
+  .leg-icon svg { width:20px; height:20px; overflow:visible; }
+  .infr-marker, .tower-symbol { transition:transform .12s ease, filter .12s ease; transform-origin:center; }
+  .leaflet-marker-icon:hover .infr-marker, .leaflet-marker-icon:hover .tower-symbol { transform:scale(1.16); filter:drop-shadow(0 3px 6px rgba(0,0,0,.68)); }
+
+  .leaflet-tooltip.distance-tooltip {
+    background:#fff; color:#29251f; border:1px solid #bfb5a5;
+    border-radius:4px; box-shadow:0 2px 8px rgba(0,0,0,.18);
+    padding:5px 7px; font-size:10px; line-height:1.35;
+  }
+  .leaflet-tooltip.distance-tooltip::before { border-top-color:#bfb5a5; }
+
+  .empty { padding:1.5rem 1rem; text-align:center;
+    color:var(--text-muted); font-size:11px; line-height:1.5; }
+  .empty .ico { font-size:24px; opacity:.35; margin-bottom:6px; }
+
+  /* helper overlay */
+  #sheets-helper { display:none; position:fixed; inset:0;
+    background:rgba(0,0,0,.5); z-index:2000; align-items:center; justify-content:center; }
+  #sheets-helper.open { display:flex; }
+  .helper-box { background:white; border-radius:8px; padding:1.4rem;
+    width:500px; max-width:95vw; max-height:90vh; overflow-y:auto;
+    box-shadow:0 8px 32px rgba(0,0,0,.2); }
+  .helper-box h2 { font-size:14px; color:var(--accent); margin-bottom:.25rem; }
+  .helper-box p  { font-size:11px; color:var(--text-muted); line-height:1.5; margin-bottom:.7rem; }
+  .h-field { margin-bottom:.6rem; }
+  .h-field label { font-size:10px; font-weight:600; color:var(--text-muted);
+    text-transform:uppercase; letter-spacing:.08em; display:block; margin-bottom:3px; }
+  .h-field input { width:100%; font-size:11px; padding:5px 7px;
+    border:1px solid var(--border); border-radius:3px; }
+  .h-field input:focus { outline:none; border-color:var(--accent); }
+  .h-row { display:flex; gap:8px; margin-top:.75rem; }
+  .h-row button { flex:1; padding:7px; border-radius:4px; font-size:11px; cursor:pointer; }
+  .btn-save   { background:var(--accent); color:white; border:none; }
+  .btn-save:hover { background:#7a5030; }
+  .btn-cancel { background:transparent; color:var(--text-muted); border:1px solid var(--border); }
+  .h-note { font-size:9.5px; color:#a09882; margin-top:.5rem; line-height:1.45;
+    padding:5px 7px; background:#faf9f5; border-radius:3px; }
+  code.url-ex { font-size:9px; background:#f5f1ea; padding:3px 6px; border-radius:3px;
+    display:block; margin:.3rem 0; word-break:break-all; }
+
+  /* citation */
+  #citation-box { display:none; margin-top:.5rem; padding:6px 8px;
+    background:#eef6ff; border:1px solid #bdd5ee; border-radius:4px; }
+  #citation-text { font-size:10px; color:#1a4a6a; line-height:1.4; margin-bottom:4px; }
+  .btn-copy-sm { font-size:9px; padding:2px 6px; border:1px solid #bdd5ee;
+    border-radius:2px; background:white; color:#1a6b9a; cursor:pointer; }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <span class="title">Torri Costiere — Connessioni Territoriali <small style="opacity:.55">v17</small></span>
+  <span class="sub" id="topbar-sub"></span>
+</div>
+
+<div id="shell">
+  <div id="sidebar">
+    <div class="s-section">
+      <div class="s-label">Sorgente dati</div>
+      <div class="tab-row">
+        <button class="tab active" id="tbtn-sheets" onclick="switchTab('sheets')">Google Sheets</button>
+        <button class="tab"        id="tbtn-zenodo" onclick="switchTab('zenodo')">Zenodo</button>
+        <button class="tab"        id="tbtn-local"  onclick="switchTab('local')">Locale</button>
+      </div>
+
+      <div id="tab-sheets" class="tab-panel visible">
+        <div class="hint">Legge le schede <strong>export_*</strong> pubblicate nel tuo Sheets. I dati si aggiornano ad ogni ricarica.</div>
+        <div class="field">
+          <label>ID foglio Google Sheets</label>
+          <input type="text" id="sheets-id" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms">
+        </div>
+        <button class="btn-load" onclick="loadFromSheets()">↓ Carica da Google Sheets</button>
+        <button class="btn-secondary" onclick="openHelper()">⚙ Configurazione schede</button>
+      </div>
+
+      <div id="tab-zenodo" class="tab-panel">
+        <div class="field">
+          <label>DOI Zenodo</label>
+          <input type="text" id="zenodo-doi" placeholder="10.5281/zenodo.XXXXXXX">
+        </div>
+        <button class="btn-load" onclick="loadFromZenodo()">↓ Carica da Zenodo</button>
+        <div id="citation-box">
+          <div id="citation-text"></div>
+          <button class="btn-copy-sm" onclick="copyCitation()">Copia citazione</button>
+        </div>
+      </div>
+
+      <div id="tab-local" class="tab-panel">
+        <div class="field"><label>torri.csv</label><input type="file" id="f-torri" accept=".csv"></div>
+        <div class="field"><label>infrastrutture.csv</label><input type="file" id="f-infr" accept=".csv"></div>
+        <div class="field"><label>connessioni.csv</label><input type="file" id="f-conn" accept=".csv"></div>
+        <div class="field"><label>fonti.csv (opz.)</label><input type="file" id="f-fonti" accept=".csv"></div>
+        <button class="btn-load" onclick="loadFromFiles()">↓ Carica file</button>
+      </div>
+
+      <div id="status"></div>
+    </div>
+
+    <div id="list-head">Torri</div>
+    <div id="torre-list">
+      <div class="empty"><div class="ico">🗼</div>Carica i dati per esplorare le connessioni</div>
+    </div>
+
+    <div id="detail-panel">
+      <div class="detail-tabs">
+        <button class="detail-tab active" onclick="switchDetailTab('conn')">Connessioni</button>
+        <button class="detail-tab"        onclick="switchDetailTab('fonti')">Fonti e attacchi</button>
+      </div>
+      <div id="dpane-conn"  class="detail-pane visible">
+        <div id="detail-title"></div>
+        <div id="detail-connections"></div>
+      </div>
+      <div id="dpane-fonti" class="detail-pane">
+        <div id="detail-fonti"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="map-wrap">
+    <div id="map"></div>
+    <div id="legend">
+      <div class="leg-title">Legenda</div>
+      <div id="tower-type-legend"></div>
+      <div class="leg-row"><span class="leg-icon">⚓</span> Porto / scalo</div>
+      <div class="leg-row"><span class="leg-icon"><svg viewBox="0 0 32 32"><path d="M5 24Q10 19 13 15Q16 10 19 15Q22 19 27 24Z" fill="#f7fbff" stroke="#2a8a5a" stroke-width="2.4"/><path d="M7 24h18" stroke="#2a8a5a" stroke-width="2.4"/></svg></span> Salina</div>
+      <div class="leg-row"><span class="leg-icon"><svg viewBox="0 0 32 32"><ellipse cx="17" cy="14" rx="7" ry="4" fill="#7a4f9e"/><path d="M10 14 6 10.5v7Z" fill="#7a4f9e"/><path d="M5 23c3-2 6-2 9 0s6 2 9 0 5-2 8 0" fill="none" stroke="#6ea8c7" stroke-width="2"/></svg></span> Peschiera</div>
+      <div class="leg-row"><span class="leg-icon">🐟</span> Tonnara</div>
+      <div class="leg-row"><span class="leg-icon">🪸</span> Corallo</div>
+      <div class="leg-row"><div class="leg-sq" style="background:#888;transform:rotate(45deg);margin:0 3px"></div> ID senza prefisso riconosciuto</div>
+      <div class="leg-sep"></div>
+      <div class="leg-row"><div style="width:18px;height:3px;background:#1769aa;flex-shrink:0"></div> 3 torri più vicine</div>
+      <div class="leg-row"><div style="width:18px;height:0;border-top:3px dashed #d4821a;flex-shrink:0"></div> Infrastruttura visibile</div>
+      <div style="font-size:9px;color:#888;margin-top:4px;line-height:1.3">Passa il mouse sulle linee per vedere la distanza.</div>
+    </div>
+  </div>
+</div>
+
+<!-- HELPER OVERLAY -->
+<div id="sheets-helper">
+  <div class="helper-box">
+    <h2>Configurare Google Sheets</h2>
+    <p>Incolla l'ID del tuo foglio e verifica i nomi delle schede export.</p>
+
+    <div class="h-field">
+      <label>ID foglio (dalla URL)</label>
+      <code class="url-ex">docs.google.com/spreadsheets/d/<strong style="color:#c94a2a">← questo →</strong>/edit</code>
+      <input type="text" id="h-id" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms">
+    </div>
+    <div class="h-field">
+      <label>Scheda torri</label>
+      <input type="text" id="h-torri" value="export_torri">
+    </div>
+    <div class="h-field">
+      <label>Scheda infrastrutture</label>
+      <input type="text" id="h-infr" value="export_infrastrutture">
+    </div>
+    <div class="h-field">
+      <label>Scheda connessioni</label>
+      <input type="text" id="h-conn" value="export_connessioni">
+    </div>
+    <div class="h-field">
+      <label>Scheda fonti (portolani + corsari) — opzionale</label>
+      <input type="text" id="h-fonti" value="export_fonti">
+    </div>
+    <div class="h-note">
+      Assicurati che ogni scheda export sia <strong>pubblicata come CSV</strong>:<br>
+      File → Condividi → Pubblica sul web → seleziona la scheda → CSV → Pubblica.
+    </div>
+    <div class="h-row">
+      <button class="btn-cancel" onclick="closeHelper()">Annulla</button>
+      <button class="btn-save"   onclick="saveHelper()">Salva e carica</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script>
+'use strict';
+
+/* ── state ── */
+let torri=[], infrastrutture=[], connessioni=[], fonti=[];
+let activeTorre=null;
+let layerTorri, layerInfr, layerLines;
+let currentCitation='';
+let cfg = {
+  id:'',
+  sheetTorri:'export_torri',
+  sheetInfr:'export_infrastrutture',
+  sheetConn:'export_connessioni',
+  sheetFonti:'export_fonti'
+};
+
+/* ── map init ── */
+const map = L.map('map').setView([39.5, 9.0], 7);
+// Mantiene le torri sempre visibili sopra le infrastrutture.
+map.createPane('connectionPane');
+map.getPane('connectionPane').style.zIndex='410';
+map.createPane('infrastructurePane');
+map.getPane('infrastructurePane').style.zIndex='620';
+map.createPane('towerPane');
+map.getPane('towerPane').style.zIndex='660';
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+  {attribution:'© OpenStreetMap · CartoDB', subdomains:'abcd', maxZoom:19}).addTo(map);
+layerTorri = L.layerGroup().addTo(map);
+layerInfr  = L.layerGroup().addTo(map);
+layerLines = L.layerGroup().addTo(map);
+
+/* ── tab switches ── */
+function switchTab(n) {
+  ['sheets','zenodo','local'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('visible', t===n);
+    document.getElementById('tbtn-'+t).classList.toggle('active',  t===n);
+  });
+}
+function switchDetailTab(n) {
+  document.querySelectorAll('.detail-tab').forEach((b,i)=>
+    b.classList.toggle('active', ['conn','fonti'][i]===n));
+  document.getElementById('dpane-conn').classList.toggle('visible',  n==='conn');
+  document.getElementById('dpane-fonti').classList.toggle('visible', n==='fonti');
+}
+
+/* ── utilities e normalizzazione dati ── */
+function normalizeKey(value){
+  return String(value ?? '')
+    .replace(/^\uFEFF/, '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+}
+
+function normalizeIdentifier(value){
+  let text=String(value ?? '').replace(/^\uFEFF/, '').trim();
+  if(!text) return '';
+  // Se l'identificativo e una URI, usa l'ultima parte significativa.
+  try {
+    if(/^https?:\/\//i.test(text)){
+      const u=new URL(text);
+      text=decodeURIComponent((u.hash||u.pathname).replace(/^#|\/$/g,'').split('/').pop()||text);
+    }
+  } catch(_) {}
+  return text
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[\s_]+/g,'-')
+    .replace(/[^a-z0-9-]+/g,'-')
+    .replace(/-+/g,'-')
+    .replace(/^-|-$/g,'');
+}
+
+function getField(row, aliases){
+  if(!row) return '';
+  const byKey={};
+  Object.entries(row).forEach(([key,value])=>{ byKey[normalizeKey(key)]=value; });
+  for(const alias of aliases){
+    const value=byKey[normalizeKey(alias)];
+    if(value!==undefined && value!==null && String(value).trim()!=='') return value;
+  }
+  return '';
+}
+
+function cleanDisplayText(value){
+  let text=String(value ?? '').replace(/^\uFEFF/,'').trim();
+  if(!text) return '';
+  text=text.replace(/^['"]|['"]$/g,'').trim();
+  text=text.replace(/['"]?@[a-z]{2,3}(?:-[A-Z]{2})?$/,'').trim();
+  return text;
+}
+
+function looksLikeUsableName(value){
+  const text=cleanDisplayText(value);
+  if(!text || /^(null|undefined|nan|n\/a|nd|-)$/i.test(text)) return false;
+  if(/^https?:\/\//i.test(text)) return false;
+  if(/^[-+]?\d+(?:[.,]\d+)?$/.test(text)) return false;
+  return text.length>1;
+}
+
+function normalizeSearchText(value){
+  return String(value ?? '')
+    .replace(/[\u200B-\u200D\u2060\uFEFF]/g,'')
+    .replace(/[−–—]/g,'-')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+
+function extractTerritorialCode(value){
+  const text=normalizeSearchText(value);
+  // Cerca il codice anche dentro URI, URN, stringhe RDF o valori preceduti da altri caratteri.
+  const match=text.match(/(?:^|[^a-z0-9])t[\s._:/#-]*(srd|cat|crs)(?:[\s._:/#-]*([a-z0-9-]+))?/i);
+  if(!match) return '';
+  const area=match[1].toLowerCase();
+  const suffix=(match[2]||'').replace(/^-+|-+$/g,'');
+  return `t-${area}${suffix?'-'+suffix:''}`;
+}
+
+function findTerritorialCodeInRow(row){
+  const priority=[
+    'codice_torre','id_torre','torre_id','codice','identifier',
+    'dcterms:identifier','dc:identifier','@id','id','uri','url'
+  ];
+  for(const alias of priority){
+    const code=extractTerritorialCode(getField(row,[alias]));
+    if(code) return code;
+  }
+  for(const value of Object.values(row||{})){
+    const code=extractTerritorialCode(value);
+    if(code) return code;
+  }
+  return '';
+}
+
+function findEntityIdentifier(row,entityType,index){
+  if(entityType==='torre'){
+    const territorial=findTerritorialCodeInRow(row);
+    if(territorial) return territorial;
+  }
+  const aliases=entityType==='torre'
+    ? ['codice_torre','id_torre','torre_id','codice','dcterms:identifier','dc:identifier','identifier','@id','id']
+    : ['codice_infrastruttura','id_infrastruttura','infrastruttura_id','codice','dcterms:identifier','dc:identifier','identifier','@id','id'];
+  for(const alias of aliases){
+    const value=getField(row,[alias]);
+    if(value!==undefined && value!==null && String(value).trim()) return String(value).trim();
+  }
+  return `${entityType}-${index+1}`;
+}
+
+function findEntityName(row,entityType,fallbackId){
+  const aliases=[
+    'nome','nome_completo','nome_ufficiale','nome_corrente','nome_attuale',
+    `nome_${entityType}`,'denominazione','denominazione_attuale','denominazione_storica',
+    'label','rdfs:label','skos:prefLabel','skos:pref_label','schema:name','schema.org:name',
+    'dcterms:title','dc:title','crm:P102_has_title','crm_p102_has_title','titolo','title',
+    entityType
+  ];
+  for(const alias of aliases){
+    const value=getField(row,[alias]);
+    if(looksLikeUsableName(value)) return cleanDisplayText(value);
+  }
+  // Ultimo tentativo: qualunque colonna il cui nome indichi chiaramente una denominazione.
+  for(const [key,value] of Object.entries(row||{})){
+    const k=normalizeKey(key);
+    if(/(?:^|_)(nome|name|title|titolo|denominazione|label)(?:_|$)/.test(k) && looksLikeUsableName(value)){
+      return cleanDisplayText(value);
+    }
+  }
+  return cleanDisplayText(fallbackId) || 'Senza nome';
+}
+
+function getTowerGroup(torre){
+  const code=findTerritorialCodeInRow(torre);
+  if(code.startsWith('t-srd')) return 'srd';
+  if(code.startsWith('t-cat')) return 'cat';
+  if(code.startsWith('t-crs')) return 'crs';
+
+  const id=normalizeIdentifier(torre?.id);
+  if(/(?:^|-)srd(?:-|$)/.test(id)) return 'srd';
+  if(/(?:^|-)cat(?:-|$)/.test(id)) return 'cat';
+  if(/(?:^|-)crs(?:-|$)/.test(id)) return 'crs';
+
+  const area=normalizeKey(getField(torre,[
+    'territorio','area','regione','isola','ambito','sistema_territoriale','paese','stato'
+  ]));
+  if(area.includes('sardegn') || area==='sardinia' || area.includes('sard')) return 'srd';
+  if(area.includes('corsic') || area==='corse') return 'crs';
+  if(area.includes('corona_d_aragona') || area.includes('aragona') || area.includes('catal')) return 'cat';
+  return 'other';
+}
+
+function parseCoordinate(value){
+  if(value===undefined || value===null) return NaN;
+  if(typeof value==='number') return Number.isFinite(value) ? value : NaN;
+
+  let text=String(value)
+    .replace(/^\uFEFF/,'')
+    .replace(/[\u00A0\u202F]/g,' ')
+    .replace(/[−–—]/g,'-')
+    .trim();
+  if(!text || /^(null|undefined|nan|n\/a|nd|s\.d\.|-)$/i.test(text)) return NaN;
+
+  // Notazione scientifica, per esempio 3.91854E1.
+  const scientific=text.replace(',','.').match(/^[+-]?\d+(?:\.\d+)?[eE][+-]?\d+$/);
+  if(scientific){
+    const n=Number(scientific[0]);
+    return Number.isFinite(n) ? n : NaN;
+  }
+
+  const upper=text.toUpperCase();
+  const negative=/(?:^|[^A-Z])[SWO](?:$|[^A-Z])/i.test(upper); // S, W oppure O(vest)
+  const numericParts=(text.match(/[+-]?\d+(?:[.,]\d+)?/g)||[])
+    .map(v=>Number(v.replace(',','.')))
+    .filter(Number.isFinite);
+
+  // DMS con simboli/direzione oppure tre gruppi numerici separati da spazi.
+  const explicitDms=/[°º'′’"″]|(?:^|[^A-Z])[NSEWO](?:$|[^A-Z])/i.test(text);
+  const spacedDms=!explicitDms && numericParts.length===3 && /\s/.test(text);
+  if((explicitDms || spacedDms) && numericParts.length){
+    let result=Math.abs(numericParts[0]);
+    if(numericParts.length>1 && Math.abs(numericParts[1])<60) result+=Math.abs(numericParts[1])/60;
+    if(numericParts.length>2 && Math.abs(numericParts[2])<60) result+=Math.abs(numericParts[2])/3600;
+    if(numericParts[0]<0 || negative) result=-result;
+    return result;
+  }
+
+  // Conserva soltanto i caratteri numerici utili.
+  text=text.replace(/[^0-9+\-.,]/g,'');
+  if(!text) return NaN;
+
+  if(text.includes(',') && text.includes('.')){
+    // L'ultimo separatore e considerato quello decimale.
+    if(text.lastIndexOf(',')>text.lastIndexOf('.')){
+      text=text.replace(/\./g,'').replace(/,/g,'.');
+    }else{
+      text=text.replace(/,/g,'');
+    }
+  }else if((text.match(/,/g)||[]).length===1){
+    text=text.replace(',','.');
+  }else if((text.match(/,/g)||[]).length>1){
+    const last=text.lastIndexOf(',');
+    text=text.slice(0,last).replace(/,/g,'')+'.'+text.slice(last+1);
+  }
+
+  const number=Number(text);
+  return Number.isFinite(number) ? number : NaN;
+}
+
+function coordinateEntries(row,axis){
+  if(!row) return [];
+  const aliases=axis==='lat'
+    ? ['lat','geo:lat','geo_lat','latitude','latitudine','coord_lat','coordinata_latitudine','y']
+    : ['lon','lng','long','geo:long','geo_long','longitude','longitudine','coord_lon','coord_lng','coordinata_longitudine','x'];
+  const wanted=new Set(aliases.map(normalizeKey));
+  const exact=[],extended=[];
+  Object.entries(row).forEach(([rawKey,value])=>{
+    const key=normalizeKey(rawKey);
+    if(wanted.has(key)) exact.push({key,rawKey,value});
+    else {
+      const match=axis==='lat'
+        ? (key.startsWith('lat_') || key.endsWith('_lat') || key.includes('latitude') || key.includes('latitudine'))
+        : (key.startsWith('lon_') || key.endsWith('_lon') || key.includes('longitude') || key.includes('longitudine'));
+      if(match) extended.push({key,rawKey,value});
+    }
+  });
+  return [...exact,...extended];
+}
+
+function coordinateCandidates(row,axis){
+  const candidates=[];
+  coordinateEntries(row,axis).forEach(entry=>{
+    const parsed=parseCoordinate(entry.value);
+    if(Number.isFinite(parsed)) candidates.push({value:parsed,source:entry.rawKey,raw:entry.value});
+  });
+  return candidates;
+}
+
+function findCombinedCoordinateCandidates(row){
+  if(!row) return [];
+  const results=[];
+  const keys=['coordinates','coordinate','coordinate_geografiche','geopoint','geo_point','wkt','geometry','geometria'];
+  for(const [rawKey,value] of Object.entries(row)){
+    if(!keys.includes(normalizeKey(rawKey)) || value===undefined || value===null) continue;
+    const text=String(value).trim();
+    if(!text) continue;
+
+    // WKT usa l'ordine longitudine latitudine: POINT (9.12 39.22).
+    const point=text.match(/POINT\s*\(\s*([^\s,;]+)[\s,;]+([^\s,;]+)\s*\)/i);
+    if(point){
+      const lon=parseCoordinate(point[1]),lat=parseCoordinate(point[2]);
+      if(Number.isFinite(lat)&&Number.isFinite(lon)) results.push({lat,lon,source:rawKey});
+    }
+
+    const split=text.split(/\s*[;|/]\s*/);
+    if(split.length===2){
+      const a=parseCoordinate(split[0]),b=parseCoordinate(split[1]);
+      if(Number.isFinite(a)&&Number.isFinite(b)){
+        results.push({lat:a,lon:b,source:rawKey});
+        results.push({lat:b,lon:a,source:rawKey+' (invertite)'});
+      }
+    }
+
+    const nums=text.match(/[+-]?\d+(?:[.,]\d+)?/g)||[];
+    if(nums.length===2){
+      const a=parseCoordinate(nums[0]),b=parseCoordinate(nums[1]);
+      if(Number.isFinite(a)&&Number.isFinite(b)){
+        results.push({lat:a,lon:b,source:rawKey});
+        results.push({lat:b,lon:a,source:rawKey+' (invertite)'});
+      }
+    }
+  }
+  return results;
+}
+
+const REGION_BOUNDS={
+  srd:{lat:[38.65,41.35],lon:[7.75,10.35]},
+  crs:{lat:[41.25,43.15],lon:[8.45,9.65]},
+  cat:{lat:[35.0,44.8],lon:[-2.5,5.5]}
+};
+
+function insideBounds(lat,lon,bounds){
+  return !!bounds && lat>=bounds.lat[0] && lat<=bounds.lat[1] && lon>=bounds.lon[0] && lon<=bounds.lon[1];
+}
+
+function scaledValues(value){
+  if(!Number.isFinite(value)) return [];
+  const values=[value];
+  // Recupera coordinate che hanno perso il separatore decimale: 3921234 -> 39.21234.
+  for(let p=1;p<=7;p++) values.push(value/(10**p));
+  return [...new Set(values.filter(Number.isFinite))];
+}
+
+function inferRowRegion(row,entityType,id){
+  if(entityType==='torre'){
+    const temp={...row,id};
+    return getTowerGroup(temp);
+  }
+  const area=normalizeKey(getField(row,['territorio','area','regione','isola','ambito','localita','località','comune']));
+  if(area.includes('sardegn')) return 'srd';
+  if(area.includes('corsic')) return 'crs';
+  return 'other';
+}
+
+function getCoordinates(row,entityType='altro',id=''){
+  // Prima scelta: colonne canoniche dell'export.
+  const latAliases=['lat','geo:lat','geo_lat','latitude','latitudine','coord_lat','coordinata_latitudine','y'];
+  const lonAliases=['lon','lng','long','geo:long','geo_long','longitude','longitudine','coord_lon','coord_lng','coordinata_longitudine','x'];
+
+  let lat=NaN, lon=NaN, latSource='', lonSource='';
+
+  for(const alias of latAliases){
+    const entries=coordinateEntries(row,'lat').filter(e=>normalizeKey(e.rawKey)===normalizeKey(alias));
+    for(const entry of entries){
+      const value=parseCoordinate(entry.value);
+      if(Number.isFinite(value)){ lat=value; latSource=entry.rawKey; break; }
+    }
+    if(Number.isFinite(lat)) break;
+  }
+
+  for(const alias of lonAliases){
+    const entries=coordinateEntries(row,'lon').filter(e=>normalizeKey(e.rawKey)===normalizeKey(alias));
+    for(const entry of entries){
+      const value=parseCoordinate(entry.value);
+      if(Number.isFinite(value)){ lon=value; lonSource=entry.rawKey; break; }
+    }
+    if(Number.isFinite(lon)) break;
+  }
+
+  // Fallback: prima coppia numerica trovata nelle colonne compatibili.
+  if(!Number.isFinite(lat)){
+    const candidate=coordinateCandidates(row,'lat')[0];
+    if(candidate){ lat=candidate.value; latSource=candidate.source; }
+  }
+  if(!Number.isFinite(lon)){
+    const candidate=coordinateCandidates(row,'lon')[0];
+    if(candidate){ lon=candidate.value; lonSource=candidate.source; }
+  }
+
+  // Corregge soltanto l'inversione evidente lat/lon, senza riscalare i dati.
+  if(Number.isFinite(lat) && Number.isFinite(lon) && Math.abs(lat)<=20 && Math.abs(lon)>=30 && Math.abs(lon)<=50){
+    [lat,lon]=[lon,lat];
+    [latSource,lonSource]=[lonSource,latSource];
+  }
+
+  const valid=Number.isFinite(lat) && Number.isFinite(lon) && lat>=-90 && lat<=90 && lon>=-180 && lon<=180;
+  return {
+    lat,lon,valid,
+    source:[latSource,lonSource].filter(Boolean).join(' + '),
+    region:inferRowRegion(row,entityType,id),
+    rawLat:getField(row,latAliases),
+    rawLon:getField(row,lonAliases)
+  };
+}
+
+const INFRASTRUCTURE_PREFIX_TYPES = {
+  prt:  'porto',
+  psch: 'peschera',
+  sal:  'salina',
+  tonn: 'tonnara',
+  crl:  'corallo'
+};
+
+const INFRASTRUCTURE_TYPE_LABELS = {
+  porto:'Porto / scalo',
+  peschera:'Peschiera',
+  salina:'Salina',
+  tonnara:'Tonnara',
+  corallo:'Corallo',
+  altro:'Altra infrastruttura'
+};
+
+/*
+ * La tipologia dell'infrastruttura dipende esclusivamente dal prefisso ID:
+ * prt_ = porto; psch_ = peschiera; sal_ = salina;
+ * tonn_ = tonnara; crl_ = corallo.
+ */
+function infrastructureTypeFromId(value){
+  let id=String(value ?? '').replace(/^\uFEFF/,'').trim().toLowerCase();
+  if(!id) return 'altro';
+  try {
+    if(/^https?:\/\//i.test(id)){
+      const u=new URL(id);
+      id=decodeURIComponent((u.hash||u.pathname).replace(/^#|\/$/g,'').split('/').pop()||id);
+    }
+  } catch(_) {}
+  id=id
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[\s.-]+/g,'_')
+    .replace(/[^a-z0-9_]/g,'_')
+    .replace(/_+/g,'_')
+    .replace(/^_+|_+$/g,'');
+  const match=id.match(/^(prt|psch|sal|tonn|crl)(?:_|$)/);
+  return match ? INFRASTRUCTURE_PREFIX_TYPES[match[1]] : 'altro';
+}
+
+function canonicalInfrastructureType(value){
+  const key=normalizeKey(value);
+  if(Object.values(INFRASTRUCTURE_PREFIX_TYPES).includes(key) || key==='altro') return key;
+  return infrastructureTypeFromId(value);
+}
+
+function inferInfrastructureType(row,id=''){
+  return infrastructureTypeFromId(id || findEntityIdentifier(row,'infrastruttura',0));
+}
+
+function resolveInfrastructureType(itemOrType){
+  if(itemOrType && typeof itemOrType==='object'){
+    return infrastructureTypeFromId(itemOrType.id || findEntityIdentifier(itemOrType,'infrastruttura',0));
+  }
+  return canonicalInfrastructureType(itemOrType);
+}
+
+function infrastructureTypeLabel(itemOrType){
+  const canonical=resolveInfrastructureType(itemOrType);
+  return INFRASTRUCTURE_TYPE_LABELS[canonical] || INFRASTRUCTURE_TYPE_LABELS.altro;
+}
+
+function normalizeGeographicRows(rows,entityType){
+  return (rows||[]).map((row,index)=>{
+    const id=String(findEntityIdentifier(row,entityType,index)).trim();
+    const coordinates=getCoordinates(row,entityType,id);
+    const nome=findEntityName(row,entityType,id);
+    const localita=String(getField(row,['localita','località','luogo','comune','oc:location']) || '').trim();
+    const periodo=String(getField(row,['periodo','datazione','epoca','cronologia']) || '').trim();
+    // Per le torri il tipo proviene dalla colonna C di export_torri (intestazione "tipo").
+    // Object.values(row)[2] è un fallback prudente nel caso l'intestazione venga alterata.
+    const columnC=entityType==='torre' ? (getField(row,['tipo']) || Object.values(row||{})[2] || '') : '';
+    const rawTipo=entityType==='infrastruttura'
+      ? getField(row,['tipo','tipologia','categoria','tipo_infrastruttura'])
+      : columnC;
+    const tipo=entityType==='infrastruttura' ? infrastructureTypeFromId(id) : String(rawTipo||'').trim();
+    const tipoTorreOriginale=entityType==='torre' ? String(rawTipo||'').trim() : '';
+    const tipoTorre=entityType==='torre' ? canonicalTowerType(tipoTorreOriginale) : '';
+
+    return {
+      ...row,
+      id,
+      nome,
+      localita: row.localita || localita,
+      periodo: row.periodo || periodo,
+      tipo: entityType==='infrastruttura' ? tipo : (tipoTorreOriginale || 'torre'),
+      tipoOriginale: entityType==='infrastruttura' ? String(rawTipo||'').trim() : '',
+      tipoTorre,
+      tipoTorreOriginale,
+      lat: coordinates.lat,
+      lon: coordinates.lon,
+      coordinateValide: coordinates.valid,
+      coordinateFonte: coordinates.source || '',
+      coordinateRegione: coordinates.region || '',
+      coordinateRawLat: coordinates.rawLat ?? '',
+      coordinateRawLon: coordinates.rawLon ?? ''
+    };
+  });
+}
+
+function normalizeConnectionRows(rows){
+  return (rows||[]).map(row=>({
+    ...row,
+    id_torre:String(getField(row,['id_torre','torre_id','source_torre','da_torre'])||'').trim(),
+    id_infrastruttura:String(getField(row,['id_infrastruttura','infrastruttura_id','target','destinazione'])||'').trim(),
+    tipo_relazione:String(getField(row,['tipo_relazione','tipo_connessione','relazione','visibilita','visibilità','linea_di_vista','connessione_visiva'])||'').trim().toLowerCase(),
+    certezza:String(getField(row,['certezza','livello_certezza'])||'').trim().toLowerCase(),
+    distanza_km:parseCoordinate(getField(row,['distanza_km','distanza','distance_km'])),
+    fonti:getField(row,['fonti','fonte','riferimento']),
+    note:getField(row,['note','descrizione'])
+  }));
+}
+
+function prepareData(){
+  torri=normalizeGeographicRows(torri,'torre');
+  infrastrutture=normalizeGeographicRows(infrastrutture,'infrastruttura');
+  connessioni=normalizeConnectionRows(connessioni);
+  fonti=normalizeGeographicRows(fonti,'fonte');
+  const stats={
+    torriValide:torri.filter(t=>t.coordinateValide).length,
+    infrValide:infrastrutture.filter(i=>i.coordinateValide).length,
+    srdTotali:torri.filter(t=>getTowerGroup(t)==='srd').length,
+    srdValide:torri.filter(t=>getTowerGroup(t)==='srd'&&t.coordinateValide).length
+  };
+  console.log(`Coordinate valide: ${stats.torriValide}/${torri.length} torri; Sardegna ${stats.srdValide}/${stats.srdTotali}; ${stats.infrValide}/${infrastrutture.length} infrastrutture`);
+  console.log('Esempio torri normalizzate:',torri.slice(0,8).map(t=>({id:t.id,nome:t.nome,gruppo:getTowerGroup(t),lat:t.lat,lon:t.lon,fonte:t.coordinateFonte})));
+  const invalidTorri=torri.filter(t=>!t.coordinateValide);
+  const invalidInfr=infrastrutture.filter(i=>!i.coordinateValide);
+  if(invalidTorri.length) console.warn('Torri senza coordinate valide:',invalidTorri.map(t=>({id:t.id,nome:t.nome,lat:t.lat,lon:t.lon})));
+  if(invalidInfr.length) console.warn('Infrastrutture senza coordinate valide:',invalidInfr.map(i=>({id:i.id,nome:i.nome,lat:i.lat,lon:i.lon})));
+  if(torri.length && stats.torriValide===0){
+    console.error('Nessuna coordinata torre riconosciuta. Intestazioni disponibili:',Object.keys(torri[0]||{}),'Prima riga:',torri[0]);
+  }
+  if(infrastrutture.length && stats.infrValide===0){
+    console.error('Nessuna coordinata infrastruttura riconosciuta. Intestazioni disponibili:',Object.keys(infrastrutture[0]||{}),'Prima riga:',infrastrutture[0]);
+  }
+  return stats;
+}
+
+const CSV_HEADER_NAMES = new Set([
+  'id','nome','tipo','localita','comune','lat','lon','periodo','note_ricerca','fonti','arco_id','url',
+  'id_torre','torre_id','id_infrastruttura','infrastruttura_id','tipo_relazione','tipo_connessione',
+  'certezza','distanza_km','note','titolo','data','autore','descrizione','citazione'
+]);
+
+function cleanCSVCell(value){
+  return String(value ?? '').replace(/^\uFEFF/,'').trim();
+}
+
+function csvHeaderScore(row){
+  if(!Array.isArray(row)) return 0;
+  const names=row.map(value=>normalizeKey(cleanCSVCell(value)));
+  return names.reduce((score,name)=>score+(CSV_HEADER_NAMES.has(name)?1:0),0);
+}
+
+function uniqueCSVHeaders(row){
+  const used=new Map();
+  return row.map((value,index)=>{
+    let header=cleanCSVCell(value) || `_col_${index+1}`;
+    const base=header;
+    const count=(used.get(base)||0)+1;
+    used.set(base,count);
+    if(count>1) header=`${base}_${count}`;
+    return header;
+  });
+}
+
+/*
+ * Parser matriciale robusto per gli export VSTACK di Google Sheets.
+ * Con headers=0 la riga esplicita {"id"\"nome"...} resta nei dati:
+ * la individuiamo e la promuoviamo a intestazione, senza perdere t-srd_001.
+ */
+const parseCSV = text => {
+  const cleaned=String(text ?? '').replace(/^\uFEFF/,'').trim();
+  if(!cleaned) return [];
+
+  const parsed=Papa.parse(cleaned,{
+    header:false,
+    skipEmptyLines:'greedy'
+  });
+  if(parsed.errors && parsed.errors.length){
+    console.warn('Avvisi lettura CSV:',parsed.errors.slice(0,20),
+      parsed.errors.length>20?`(+${parsed.errors.length-20} altri)`:''
+    );
+  }
+
+  const matrix=(parsed.data||[])
+    .map(row=>Array.isArray(row)?row.map(cleanCSVCell):[cleanCSVCell(row)])
+    .filter(row=>row.some(value=>value!==''));
+  if(!matrix.length) return [];
+
+  // Cerca la vera riga di intestazione nei primi record. È normalmente la
+  // prima riga del VSTACK, ma GViz può anteporre etichette A/B/C oppure Col1/Col2.
+  let headerIndex=-1;
+  let bestScore=-1;
+  const limit=Math.min(matrix.length,6);
+  for(let index=0;index<limit;index++){
+    const score=csvHeaderScore(matrix[index]);
+    if(score>bestScore){ bestScore=score; headerIndex=index; }
+  }
+
+  // Una vera intestazione deve contenere almeno due campi riconoscibili.
+  // Per file CSV standard questo corrisponde semplicemente alla prima riga.
+  if(bestScore<2){
+    headerIndex=0;
+    console.warn('Intestazione CSV non riconosciuta con certezza; uso la prima riga:',matrix[0]);
+  }
+
+  const headers=uniqueCSVHeaders(matrix[headerIndex]);
+  const rows=[];
+  for(const values of matrix.slice(headerIndex+1)){
+    if(!values.some(value=>value!=='')) continue;
+    const row={};
+    headers.forEach((header,index)=>{ row[header]=values[index] ?? ''; });
+    // Conserva eventuali campi eccedenti per la diagnosi, senza spostare le colonne note.
+    if(values.length>headers.length) row.__extra=values.slice(headers.length);
+    rows.push(row);
+  }
+
+  console.log(`CSV: intestazione alla riga ${headerIndex+1}; ${headers.length} colonne; ${rows.length} record`,headers);
+  return rows;
+};
+
+function setStatus(msg,type){
+  const el=document.getElementById('status');
+  el.textContent=msg; el.className=type||'';
+}
+function dataSummary(prefix='✓'){
+  const srd=torri.filter(t=>getTowerGroup(t)==='srd');
+  const srdMap=srd.filter(t=>t.coordinateValide).length;
+  const type=srd.length&&srdMap===0?'warn':'ok';
+  return {
+    text:`${prefix} ${torri.length} torri · Sardegna ${srdMap}/${srd.length} in mappa · ${infrastrutture.length} infr. · ${connessioni.length} conn.${fonti.length?` · ${fonti.length} fonti`:''}`,
+    type
+  };
+}
+function sheetsURL(sheet){
+  /*
+   * headers=0 impedisce a GViz di "indovinare" decine di righe di intestazione.
+   * La riga esplicita prodotta da VSTACK viene poi riconosciuta da parseCSV().
+   * In questo modo il primo record reale (t-srd_001) non viene usato come header.
+   */
+  const query=encodeURIComponent('select *');
+  return `https://docs.google.com/spreadsheets/d/${cfg.id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheet)}&headers=0&tq=${query}`;
+}
+
+/* ── Google Sheets loader ── */
+async function loadFromSheets(){
+  const id=document.getElementById('sheets-id').value.trim();
+  if(!id){setStatus('Inserisci l\'ID del foglio','error');return;}
+  cfg.id=id; setStatus('Connessione a Google Sheets…');
+  try {
+    // required sheets
+    const [t,i,c] = await Promise.all([
+      fetch(sheetsURL(cfg.sheetTorri)).then(r=>{if(!r.ok)throw new Error(`Scheda "${cfg.sheetTorri}" non pubblicata`);return r.text();}),
+      fetch(sheetsURL(cfg.sheetInfr)).then(r=>{if(!r.ok)throw new Error(`Scheda "${cfg.sheetInfr}" non pubblicata`);return r.text();}),
+      fetch(sheetsURL(cfg.sheetConn)).then(r=>{if(!r.ok)throw new Error(`Scheda "${cfg.sheetConn}" non pubblicata`);return r.text();}),
+    ]);
+    torri=parseCSV(t); infrastrutture=parseCSV(i); connessioni=parseCSV(c);
+
+    // optional: fonti (portolani + corsari)
+    try {
+      const f=await fetch(sheetsURL(cfg.sheetFonti)).then(r=>r.ok?r.text():null);
+      fonti = f ? parseCSV(f) : [];
+    } catch(_){ fonti=[]; }
+
+    const stats=render();
+    const now=new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('topbar-sub').textContent=`Google Sheets · ${torri.length} torri · aggiornato ${now}`;
+    { const summary=dataSummary(); setStatus(summary.text,summary.type); }
+  } catch(e){ setStatus('Errore: '+e.message,'error'); }
+}
+
+/* ── helper ── */
+function openHelper(){
+  document.getElementById('h-id').value    = cfg.id;
+  document.getElementById('h-torri').value = cfg.sheetTorri;
+  document.getElementById('h-infr').value  = cfg.sheetInfr;
+  document.getElementById('h-conn').value  = cfg.sheetConn;
+  document.getElementById('h-fonti').value = cfg.sheetFonti;
+  document.getElementById('sheets-helper').classList.add('open');
+}
+function closeHelper(){ document.getElementById('sheets-helper').classList.remove('open'); }
+function saveHelper(){
+  cfg.id         = document.getElementById('h-id').value.trim();
+  cfg.sheetTorri = document.getElementById('h-torri').value.trim();
+  cfg.sheetInfr  = document.getElementById('h-infr').value.trim();
+  cfg.sheetConn  = document.getElementById('h-conn').value.trim();
+  cfg.sheetFonti = document.getElementById('h-fonti').value.trim();
+  document.getElementById('sheets-id').value = cfg.id;
+  closeHelper(); if(cfg.id) loadFromSheets();
+}
+document.getElementById('sheets-helper').addEventListener('click',e=>{if(e.target===e.currentTarget)closeHelper();});
+
+/* ── Zenodo loader ── */
+async function loadFromZenodo(){
+  const raw=document.getElementById('zenodo-doi').value.trim();
+  if(!raw){setStatus('Inserisci DOI','error');return;}
+  const clean=raw.replace(/^https?:\/\/(doi\.org|zenodo\.org\/records?\/)/,'');
+  const m=clean.match(/zenodo\.(\d+)/i);
+  if(!m){setStatus('Formato DOI non riconosciuto','error');return;}
+  setStatus('Contatto Zenodo…');
+  try{
+    const meta=await fetch(`https://zenodo.org/api/records/${m[1]}`).then(r=>{
+      if(!r.ok)throw new Error('Record non trovato');return r.json();
+    });
+    const authors=(meta.metadata.creators||[]).map(c=>c.name).join(', ');
+    const year=(meta.metadata.publication_date||'').slice(0,4);
+    currentCitation=`${authors} (${year}). ${meta.metadata.title}. Zenodo. https://doi.org/${clean}`;
+    document.getElementById('citation-text').textContent=currentCitation;
+    document.getElementById('citation-box').style.display='block';
+    const files=meta.files||[];
+    const find=n=>files.find(f=>f.key&&f.key.toLowerCase().endsWith(n));
+    const fT=find('torri.csv'),fI=find('infrastrutture.csv'),fC=find('connessioni.csv');
+    if(!fT||!fI||!fC){setStatus('CSV non trovati nel record','error');return;}
+    const [t,i,c]=await Promise.all([fetch(fT.links.self).then(r=>r.text()),fetch(fI.links.self).then(r=>r.text()),fetch(fC.links.self).then(r=>r.text())]);
+    torri=parseCSV(t);infrastrutture=parseCSV(i);connessioni=parseCSV(c);fonti=[];
+    const stats=render();
+    { const summary=dataSummary(); setStatus(summary.text,summary.type); }
+  }catch(e){setStatus('Errore: '+e.message,'error');}
+}
+function copyCitation(){
+  navigator.clipboard.writeText(currentCitation).then(()=>{
+    const b=document.querySelector('.btn-copy-sm'),o=b.textContent;
+    b.textContent='✓ Copiata';setTimeout(()=>b.textContent=o,1800);
+  });
+}
+
+/* ── local files ── */
+const readFile=inp=>new Promise((res,rej)=>{
+  if(!inp.files[0]){res(null);return;}
+  const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsText(inp.files[0]);
+});
+async function loadFromFiles(){
+  const [t,i,c,f]=await Promise.all([
+    readFile(document.getElementById('f-torri')),
+    readFile(document.getElementById('f-infr')),
+    readFile(document.getElementById('f-conn')),
+    readFile(document.getElementById('f-fonti')),
+  ]);
+  if(!t||!i||!c){setStatus('Seleziona almeno i 3 CSV principali','error');return;}
+  torri=parseCSV(t);infrastrutture=parseCSV(i);connessioni=parseCSV(c);fonti=f?parseCSV(f):[];
+  const stats=render();
+  { const summary=dataSummary(); setStatus(summary.text,summary.type); }
+}
+
+/* ── icons ── */
+const TOWER_TYPE_STYLES = {
+  torrezilla: {
+    label:'Torrezilla',
+    description:'Piccola torre di osservazione, circa 7 m',
+    color:'#d95a3a',
+    size:20
+  },
+  senzilla: {
+    label:'Senzilla',
+    description:'Torre media da difesa leggera, circa 10 m',
+    color:'#b43d24',
+    size:25
+  },
+  torre_de_armas: {
+    label:'De Armas',
+    description:'Torre de Armas: grande torre da difesa pesante, circa 17 m',
+    color:'#7d160d',
+    size:32
+  },
+  non_classificata: {
+    label:'Tipologia non classificata',
+    description:'Tipo assente o non riconosciuto nella colonna C',
+    color:'#6f6860',
+    size:22
+  }
+};
+
+/* Il valore viene letto esclusivamente dalla colonna C (tipo) di export_torri. */
+function canonicalTowerType(value){
+  const type=normalizeKey(value);
+  if(/torrezill/.test(type)) return 'torrezilla';
+  if(/senzill/.test(type)) return 'senzilla';
+  if(/de_armas|torre_de_armi|gagliard/.test(type)) return 'torre_de_armas';
+  return 'non_classificata';
+}
+
+function towerTypeLabel(torre){
+  const canonical=torre?.tipoTorre || canonicalTowerType(torre?.tipoTorreOriginale || torre?.tipo);
+  return (TOWER_TYPE_STYLES[canonical] || TOWER_TYPE_STYLES.non_classificata).label;
+}
+
+function towerTypeDescription(torre){
+  const canonical=torre?.tipoTorre || canonicalTowerType(torre?.tipoTorreOriginale || torre?.tipo);
+  return (TOWER_TYPE_STYLES[canonical] || TOWER_TYPE_STYLES.non_classificata).description;
+}
+
+function towerSymbolSvg(canonical,active=false,sizeOverride=null){
+  const style=TOWER_TYPE_STYLES[canonical] || TOWER_TYPE_STYLES.non_classificata;
+  const size=sizeOverride || (active ? style.size+5 : style.size);
+  const col=style.color;
+  const ring=active ? '#fff' : '#fff';
+  const outline=active ? '#32100b' : '#4c201a';
+  let symbol='';
+
+  if(canonical==='torrezilla'){
+    // Piccolo punto di osservazione: cerchio piccolo.
+    symbol=`<circle cx="18" cy="18" r="6.2" fill="${col}" stroke="${outline}" stroke-width="1.5"/>
+      <circle cx="18" cy="18" r="1.8" fill="#fff"/>`;
+  }else if(canonical==='senzilla'){
+    // Torre media: rombo, chiaramente distinto dal cerchio.
+    symbol=`<path d="M18 7.2 28.8 18 18 28.8 7.2 18Z" fill="${col}" stroke="${outline}" stroke-width="1.7"/>
+      <path d="M13.2 18h9.6M18 13.2v9.6" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>`;
+  }else if(canonical==='torre_de_armas'){
+    // Torre maggiore: sagoma merlata, più grande e massiccia.
+    symbol=`<path d="M7.3 10.5h4.2V7.2h4.2v3.3h4.6V7.2h4.2v3.3h4.2v18.2H7.3Z" fill="${col}" stroke="${outline}" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M13 28.7v-7.2c0-3 2.1-5.1 5-5.1s5 2.1 5 5.1v7.2" fill="#fff" opacity=".92"/>
+      <rect x="10.5" y="13" width="3.3" height="3.6" rx=".5" fill="#fff"/><rect x="22.2" y="13" width="3.3" height="3.6" rx=".5" fill="#fff"/>`;
+  }else{
+    symbol=`<circle cx="18" cy="18" r="8" fill="#fff" stroke="${col}" stroke-width="3" stroke-dasharray="3 2"/>
+      <path d="M14 14l8 8m0-8-8 8" stroke="${col}" stroke-width="2" stroke-linecap="round"/>`;
+  }
+
+  return `<div class="tower-symbol" style="width:${size}px;height:${size}px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.7))">
+    <svg viewBox="0 0 36 36" width="${size}" height="${size}" aria-hidden="true" focusable="false">
+      <circle cx="18" cy="18" r="16" fill="${ring}" stroke="${active?'#fff':outline}" stroke-width="${active?2.8:1.8}"/>
+      ${symbol}
+    </svg>
+  </div>`;
+}
+
+function makeTowerIcon(torre,active=false){
+  const canonical=torre?.tipoTorre || canonicalTowerType(torre?.tipoTorreOriginale || torre?.tipo);
+  const style=TOWER_TYPE_STYLES[canonical] || TOWER_TYPE_STYLES.non_classificata;
+  const size=active ? style.size+5 : style.size;
+  return L.divIcon({
+    html:towerSymbolSvg(canonical,active,size),
+    className:'',
+    iconSize:[size,size],
+    iconAnchor:[size/2,size/2],
+    tooltipAnchor:[0,-size/2-4]
+  });
+}
+
+function setTowerMarkerActive(torre,active){
+  if(!torre?._mk || typeof torre._mk.setIcon!=='function') return;
+  torre._mk.setIcon(makeTowerIcon(torre,active));
+  if(active && typeof torre._mk.setZIndexOffset==='function') torre._mk.setZIndexOffset(2500);
+  else if(typeof torre._mk.setZIndexOffset==='function') torre._mk.setZIndexOffset(1200);
+}
+
+function renderTowerTypeLegend(){
+  const host=document.getElementById('tower-type-legend');
+  if(!host) return;
+  host.innerHTML='';
+  const present=[...new Set(torri.filter(t=>t.coordinateValide).map(t=>t.tipoTorre||'non_classificata'))];
+  const order=['torrezilla','senzilla','torre_de_armas','non_classificata'];
+  order.filter(key=>present.includes(key)).forEach(key=>{
+    const style=TOWER_TYPE_STYLES[key];
+    const row=document.createElement('div');
+    row.className='leg-row';
+    row.title=style.description;
+    row.innerHTML=`<span style="width:25px;height:25px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">${towerSymbolSvg(key,false,23)}</span> ${style.label}`;
+    host.appendChild(row);
+  });
+}
+
+const INFR_COLORS = {
+  porto:'#1a6b9a', salina:'#2a8a5a', peschera:'#7a4f9e', tonnara:'#b8860b',
+  corallo:'#e76f51', faro:'#d6a100', fortificazione:'#8b5e3c', centro_abitato:'#555', altro:'#888'
+};
+
+function makeSvgInfrIcon(title,strokeColor,svgBody,size=30){
+  return L.divIcon({
+    html:`<div class="infr-marker" title="${title}" style="width:${size}px;height:${size}px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.62))">
+      <svg viewBox="0 0 32 32" width="${size}" height="${size}" aria-hidden="true" focusable="false">
+        <circle cx="16" cy="16" r="14" fill="#fff" stroke="${strokeColor}" stroke-width="2.4"/>
+        ${svgBody}
+      </svg>
+    </div>`,
+    className:'',iconSize:[size,size],iconAnchor:[size/2,size/2],tooltipAnchor:[0,-size/2-4]
+  });
+}
+
+function makeInfrIcon(itemOrType){
+  const canonical=resolveInfrastructureType(itemOrType);
+  const col=INFR_COLORS[canonical]||INFR_COLORS.altro;
+  const outerShadow='0 3px 8px rgba(0,0,0,.72)';
+  const darkOutline='1px solid rgba(28,26,22,.85)';
+
+  if(canonical==='tonnara'){
+    return makeSvgInfrIcon('Tonnara — tonno',col,`
+      <ellipse cx="17" cy="16" rx="9" ry="5.7" fill="${col}" stroke="#4d3500" stroke-width="1.2"/>
+      <path d="M8 16 3 11v10Z" fill="${col}" stroke="#4d3500" stroke-width="1.1"/>
+      <path d="M15 10.8 18 7l2.2 4.5M15 21.2 18 25l2.2-4.5" fill="${col}" stroke="#4d3500" stroke-width="1" stroke-linejoin="round"/>
+      <circle cx="22" cy="14.5" r="1.25" fill="#fff"/><circle cx="22" cy="14.5" r=".55" fill="#222"/>
+      <path d="M11.5 13.2c1.4 1.7 1.4 3.9 0 5.6" fill="none" stroke="#fff" stroke-width="1.25" stroke-linecap="round"/>
+    `,36);
+  }
+
+  if(canonical==='corallo'){
+    return makeSvgInfrIcon('Corallo',col,`
+      <path d="M16 27V11m0 5-6-5m6 8 7-6m-7 9-5 3m5-12 4-5m-10 3V7m13 6V9" fill="none" stroke="${col}" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="10" cy="7" r="2" fill="${col}"/><circle cx="20" cy="8" r="2" fill="${col}"/><circle cx="23" cy="9" r="1.7" fill="${col}"/><circle cx="11" cy="25" r="1.7" fill="${col}"/>
+    `,36);
+  }
+
+  if(canonical==='salina'){
+    return makeSvgInfrIcon('Salina — cumulo di sale',col,`
+      <path d="M5 24Q10 19 13 15Q16 10 19 15Q22 19 27 24Z" fill="#f7fbff" stroke="${col}" stroke-width="2.4"/>
+      <path d="M7 24h18" stroke="${col}" stroke-width="2.4" stroke-linecap="round"/>
+      <circle cx="12" cy="20" r="1.15" fill="${col}"/><circle cx="16" cy="16" r="1.15" fill="${col}"/><circle cx="20" cy="20" r="1.15" fill="${col}"/>
+      <path d="M9 27h14" stroke="#7fb7d4" stroke-width="1.5" stroke-linecap="round"/>
+    `,36);
+  }
+
+  if(canonical==='porto'){
+    return makeSvgInfrIcon('Porto / scalo — ancora',col,`
+      <circle cx="16" cy="7" r="2.7" fill="none" stroke="${col}" stroke-width="2.4"/>
+      <path d="M16 10v13M11 13h10M7 19c1.5 5.4 4.8 8 9 8s7.5-2.6 9-8M7 19h5M25 19h-5" fill="none" stroke="${col}" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="m7 19 2.5-2.5M25 19l-2.5-2.5" fill="none" stroke="${col}" stroke-width="2" stroke-linecap="round"/>
+    `,36);
+  }
+
+  if(canonical==='peschera'){
+    return makeSvgInfrIcon('Peschiera',col,`
+      <path d="M5 21c3-2.5 5.5-2.5 8.5 0s5.5 2.5 8.5 0 5.5-2.5 8 0" fill="none" stroke="${col}" stroke-width="2" stroke-linecap="round"/>
+      <ellipse cx="16.5" cy="14" rx="6.5" ry="3.8" fill="${col}" stroke="#4b2d63" stroke-width="1.1"/>
+      <path d="M10.2 14 6.4 10.8v6.4Z" fill="${col}" stroke="#4b2d63" stroke-width="1"/>
+      <circle cx="20" cy="13" r=".8" fill="#fff"/>
+      <path d="M6 25c3-1.8 5.5-1.8 8.5 0s5.5 1.8 8.5 0 5.2-1.8 7.5 0" fill="none" stroke="#6ea8c7" stroke-width="1.6" stroke-linecap="round"/>
+    `,36);
+  }
+
+  if(canonical==='faro'){
+    return L.divIcon({
+      html:`<div class="infr-marker" title="Faro" style="width:27px;height:27px;background:${col};border:3px solid #fff;outline:${darkOutline};border-radius:50%;box-shadow:${outerShadow};display:flex;align-items:center;justify-content:center"><div style="width:8px;height:8px;background:#fff;border-radius:50%"></div></div>`,
+      className:'',iconSize:[27,27],iconAnchor:[13.5,13.5],tooltipAnchor:[0,-19]
+    });
+  }
+
+  if(canonical==='fortificazione' || canonical==='altro'){
+    return L.divIcon({
+      html:`<div class="infr-marker" title="${canonical==='altro'?'Tipologia non riconosciuta':canonical}" style="width:23px;height:23px;background:${col};border:3px solid #fff;outline:${darkOutline};transform:rotate(45deg);box-shadow:${outerShadow}"></div>`,
+      className:'',iconSize:[28,28],iconAnchor:[14,14],tooltipAnchor:[0,-19]
+    });
+  }
+
+  if(canonical==='centro_abitato'){
+    return L.divIcon({
+      html:`<div class="infr-marker" title="Centro abitato" style="width:25px;height:25px;background:${col};border:3px solid #fff;outline:${darkOutline};border-radius:50%;box-shadow:${outerShadow}"></div>`,
+      className:'',iconSize:[25,25],iconAnchor:[12.5,12.5],tooltipAnchor:[0,-18]
+    });
+  }
+
+  return L.divIcon({
+    html:`<div class="infr-marker" title="${canonical}" style="width:24px;height:24px;background:${col};border:3px solid #fff;outline:${darkOutline};border-radius:5px;box-shadow:${outerShadow}"></div>`,
+    className:'',iconSize:[24,24],iconAnchor:[12,12],tooltipAnchor:[0,-17]
+  });
+}
+
+/* ── haversine ── */
+function hav(la1,lo1,la2,lo2){
+  const R=6371,dLa=(la2-la1)*Math.PI/180,dLo=(lo2-lo1)*Math.PI/180;
+  const a=Math.sin(dLa/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dLo/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+/* ── render all markers ── */
+function safeDomId(value){
+  return 'li-'+String(value ?? '').replace(/[^a-zA-Z0-9_-]+/g,'_');
+}
+
+function render(){
+  const stats=prepareData();
+  layerTorri.clearLayers();layerInfr.clearLayers();layerLines.clearLayers();
+  torri.forEach(t=>{ t._mk=null; });
+  infrastrutture.forEach(i=>{ i._mk=null; });
+  activeTorre=null;
+  const list=document.getElementById('torre-list');
+  list.innerHTML='';
+  const bounds=[];
+
+  // Raggruppamento usando sia il codice territoriale sia i campi geografici.
+  const groups={srd:[],cat:[],crs:[],other:[]};
+  torri.forEach(t=>groups[getTowerGroup(t)].push(t));
+  const srdMap=groups.srd.filter(t=>t.coordinateValide).length;
+  document.getElementById('list-head').textContent=`Torri · ${torri.length} · Sardegna ${srdMap}/${groups.srd.length} in mappa`;
+
+  const groupLabels={srd:'Sardegna',cat:'Corona d\'Aragona',crs:'Corsica',other:'Altre'};
+  let renderedTorri=0;
+  Object.entries(groups).forEach(([gk,gtorri])=>{
+    if(!gtorri.length) return;
+    const gl=document.createElement('div');
+    gl.className='group-label';
+    gl.textContent=groupLabels[gk];
+    list.appendChild(gl);
+
+    gtorri.forEach(t=>{
+      const nome=t.nome||t.id||'?';
+      const el=document.createElement('div');
+      el.className='torre-item';
+      el.id=safeDomId(t.id||nome);
+      const group=getTowerGroup(t);
+      const sub=[towerTypeLabel(t),t.localita,t.periodo].filter(Boolean).join(' · ');
+      const geoIssue=!t.coordinateValide ? 'coordinate non valide' : '';
+      el.innerHTML=`<div class="ti-name"><span class="torre-dot"></span>${nome}</div><div class="ti-sub">${sub}${geoIssue?(sub?' · ':'')+geoIssue:''}</div>`;
+      el.onclick=()=>selectTorre(t);
+      list.appendChild(el);
+
+      // La torre rimane nella lista anche se non possiede coordinate valide.
+      if(!t.coordinateValide) return;
+      bounds.push([t.lat,t.lon]);
+      try {
+        const mk=L.marker([t.lat,t.lon],{
+          icon:makeTowerIcon(t,false),pane:'towerPane',zIndexOffset:1200
+        }).addTo(layerTorri);
+        mk.bindTooltip(`<strong>${nome}</strong><br><small>${towerTypeLabel(t)} — ${towerTypeDescription(t)}${t.localita?' — '+t.localita:''}${t.periodo?' — '+t.periodo:''}</small><br><small>${t.lat.toFixed(5)}, ${t.lon.toFixed(5)}</small>`,{direction:'top',offset:[0,-8]});
+        mk.on('mouseover',()=>{ if(typeof mk.setZIndexOffset==='function') mk.setZIndexOffset(2600); });
+        mk.on('mouseout',()=>{ if(t!==activeTorre && typeof mk.setZIndexOffset==='function') mk.setZIndexOffset(1200); });
+        mk.on('click',()=>selectTorre(t));
+        t._mk=mk;
+        renderedTorri++;
+      } catch(error) {
+        console.error('Impossibile disegnare la torre',t.id,t.nome,error);
+      }
+    });
+  });
+
+  // Guardia di regressione: nessuna torre valida può restare senza marker.
+  torri.filter(t=>t.coordinateValide && !t._mk).forEach(t=>{
+    const mk=L.marker([t.lat,t.lon],{
+      icon:makeTowerIcon(t,false),pane:'towerPane',zIndexOffset:1200
+    }).addTo(layerTorri);
+    mk.bindTooltip(`<strong>${t.nome||t.id||'Torre'}</strong><br><small>${towerTypeLabel(t)} — ${towerTypeDescription(t)}</small>`,{direction:'top'});
+    mk.on('click',()=>selectTorre(t));
+    t._mk=mk;
+    renderedTorri++;
+    console.warn('Marker di riserva creato per',t.id,t.nome);
+  });
+
+  infrastrutture.forEach(i=>{
+    if(!i.coordinateValide) return;
+    bounds.push([i.lat,i.lon]);
+    const mk=L.marker([i.lat,i.lon],{icon:makeInfrIcon(i),pane:'infrastructurePane'}).addTo(layerInfr);
+    mk.bindTooltip(`<strong>${i.nome||'?'}</strong><br><small>${infrastructureTypeLabel(i)} — ${i.localita||''}</small>`,{direction:'top',offset:[0,-8]});
+    i._mk=mk;
+  });
+
+  renderTowerTypeLegend();
+
+  if(bounds.length) map.fitBounds(bounds,{padding:[30,30],maxZoom:11});
+  else map.setView([39.5,9.0],7);
+  map.invalidateSize();
+  document.getElementById('legend').style.display=stats.torriValide||stats.infrValide?'block':'none';
+  const srdRendered=groups.srd.filter(t=>t._mk).length;
+  const typeCounts=infrastrutture.reduce((acc,item)=>{acc[item.tipo]=(acc[item.tipo]||0)+1;return acc;},{});
+  const typeSummary=['porto','salina','peschera','tonnara','corallo','faro','fortificazione','centro_abitato','altro']
+    .filter(k=>typeCounts[k]).map(k=>`${k} ${typeCounts[k]}`).join(' · ');
+  document.getElementById('list-head').textContent=`Torri · ${torri.length} · visualizzate ${renderedTorri} · Sardegna ${srdRendered}/${groups.srd.length}`;
+  console.info('Tipi infrastruttura da prefisso ID:',typeSummary);
+  console.table(infrastrutture.slice(0,20).map(i=>({id:i.id,nome:i.nome,tipo_da_id:i.tipo})));
+  console.info('Tipi torre dalla colonna C:',torri.reduce((acc,t)=>{acc[t.tipoTorre]=(acc[t.tipoTorre]||0)+1;return acc;},{}));
+  console.table(groups.srd.slice(0,20).map(t=>({
+    id:t.id,nome:t.nome,lat_raw:t.coordinateRawLat,lon_raw:t.coordinateRawLon,
+    lat:t.lat,lon:t.lon,valide:t.coordinateValide,renderizzata:!!t._mk,fonte:t.coordinateFonte
+  })));
+  const bari=torri.find(t=>normalizeIdentifier(t.id)==='t-srd-001');
+  console.info('Controllo Torre di Barì:',bari?{id:bari.id,nome:bari.nome,lat:bari.lat,lon:bari.lon,valida:bari.coordinateValide,marker:!!bari._mk}:'record non ricevuto');
+  return {...stats,renderedTorri,srdRendered};
+}
+
+function getNearestTowers(torre,limit=3){
+  if(!torre || !torre.coordinateValide) return [];
+  const sourceKey=normalizeIdentifier(torre.id||torre.nome);
+  return torri
+    .filter(t=>t.coordinateValide && normalizeIdentifier(t.id||t.nome)!==sourceKey)
+    .map(t=>({torre:t,distanzaKm:hav(torre.lat,torre.lon,t.lat,t.lon)}))
+    .sort((a,b)=>a.distanzaKm-b.distanzaKm)
+    .slice(0,limit);
+}
+
+function isVisibleConnection(connection){
+  const relationship=normalizeSearchText(connection?.tipo_relazione||'');
+  if(/visiv|visible|linea[ _-]*di[ _-]*vista|line[ _-]*of[ _-]*sight|sight/.test(relationship)) return true;
+  const explicit=normalizeSearchText(getField(connection||{},[
+    'visibile','visibilita','visibilità','linea_di_vista','connessione_visiva','visible'
+  ]));
+  return /^(si|sì|yes|true|1|x)$/.test(explicit) || /visiv|visible|vista|sight/.test(explicit);
+}
+
+function getVisibleInfrastructureConnections(torre){
+  if(!torre || !torre.coordinateValide) return [];
+  const towerKey=normalizeIdentifier(torre.id||torre.nome);
+  const result=[];
+  const seen=new Set();
+
+  connessioni
+    .filter(c=>normalizeIdentifier(c.id_torre)===towerKey && isVisibleConnection(c))
+    .forEach(c=>{
+      const targetKey=normalizeIdentifier(c.id_infrastruttura);
+      const infrastructure=infrastrutture.find(i=>
+        normalizeIdentifier(i.id)===targetKey || normalizeIdentifier(i.nome)===targetKey
+      );
+      if(!infrastructure || !infrastructure.coordinateValide) return;
+      const uniqueKey=normalizeIdentifier(infrastructure.id||infrastructure.nome);
+      if(seen.has(uniqueKey)) return;
+      seen.add(uniqueKey);
+      result.push({
+        infrastruttura:infrastructure,
+        connessione:c,
+        distanzaKm:hav(torre.lat,torre.lon,infrastructure.lat,infrastructure.lon)
+      });
+    });
+
+  return result.sort((a,b)=>a.distanzaKm-b.distanzaKm);
+}
+
+const CONNECTION_STYLES={
+  tower:{
+    base:{color:'#1769aa',weight:3,opacity:.72,dashArray:null},
+    hover:{color:'#004f9e',weight:6,opacity:1,dashArray:null}
+  },
+  infrastructure:{
+    base:{color:'#d4821a',weight:3,opacity:.72,dashArray:'9,6'},
+    hover:{color:'#c94a2a',weight:6,opacity:1,dashArray:'9,5'}
+  }
+};
+
+function addInteractiveDistanceLine({source,target,kind,label,distanceKm}){
+  const styles=CONNECTION_STYLES[kind];
+  const line=L.polyline(
+    [[source.lat,source.lon],[target.lat,target.lon]],
+    {pane:'connectionPane',interactive:true,...styles.base}
+  ).addTo(layerLines);
+
+  line.bindTooltip(
+    `<strong>${label}</strong><br><span>↔ ${distanceKm.toFixed(2)} km</span>`,
+    {sticky:true,direction:'top',opacity:.97,className:'distance-tooltip'}
+  );
+  line.on('mouseover',function(){
+    this.setStyle(styles.hover);
+    if(this.bringToFront) this.bringToFront();
+  });
+  line.on('mouseout',function(){ this.setStyle(styles.base); });
+  return line;
+}
+
+/* ── select torre ── */
+function selectTorre(torre){
+  if(activeTorre){
+    const previous=torri.find(t=>normalizeIdentifier(t.id)===normalizeIdentifier(activeTorre.id));
+    if(previous&&previous._mk) setTowerMarkerActive(previous,false);
+    document.querySelectorAll('.torre-item').forEach(e=>e.classList.remove('active'));
+  }
+
+  activeTorre=torre;
+  if(torre._mk) setTowerMarkerActive(torre,true);
+  const li=document.getElementById(safeDomId(torre.id||torre.nome));
+  if(li){li.classList.add('active');li.scrollIntoView({block:'nearest'});}
+
+  layerLines.clearLayers();
+  layerInfr.clearLayers();
+  infrastrutture.forEach(i=>{
+    if(!i.coordinateValide) return;
+    const marker=L.marker([i.lat,i.lon],{
+      icon:makeInfrIcon(i),opacity:.42,pane:'infrastructurePane'
+    }).addTo(layerInfr);
+    marker.bindTooltip(
+      `<strong>${i.nome||'?'}</strong><br><small>${infrastructureTypeLabel(i)} — ${i.localita||''}</small>`,
+      {direction:'top',offset:[0,-8]}
+    );
+    i._mk=marker;
+  });
+
+  const nearestTowers=getNearestTowers(torre,3);
+  nearestTowers.forEach(item=>{
+    addInteractiveDistanceLine({
+      source:torre,
+      target:item.torre,
+      kind:'tower',
+      label:`Torre vicina: ${item.torre.nome||item.torre.id||'?'}`,
+      distanceKm:item.distanzaKm
+    });
+  });
+
+  const visibleInfrastructure=getVisibleInfrastructureConnections(torre);
+  visibleInfrastructure.forEach(item=>{
+    addInteractiveDistanceLine({
+      source:torre,
+      target:item.infrastruttura,
+      kind:'infrastructure',
+      label:`Infrastruttura visibile: ${item.infrastruttura.nome||item.infrastruttura.id||'?'}`,
+      distanceKm:item.distanzaKm
+    });
+    if(item.infrastruttura._mk) item.infrastruttura._mk.setOpacity(1);
+  });
+
+  showDetail(torre,nearestTowers,visibleInfrastructure);
+
+  if(torre.coordinateValide){
+    const connectedCoordinates=[
+      [torre.lat,torre.lon],
+      ...nearestTowers.map(item=>[item.torre.lat,item.torre.lon]),
+      ...visibleInfrastructure.map(item=>[item.infrastruttura.lat,item.infrastruttura.lon])
+    ];
+    if(connectedCoordinates.length>1){
+      map.fitBounds(connectedCoordinates,{padding:[55,55],maxZoom:12,animate:true});
+    }else{
+      map.setView([torre.lat,torre.lon],12,{animate:true});
+    }
+  }
+}
+
+/* ── detail panel ── */
+function showDetail(torre,nearestTowers=[],visibleInfrastructure=[]){
+  const panel=document.getElementById('detail-panel');
+  panel.classList.add('visible');
+
+  const nome=torre.nome||'?';
+  const titleEl=document.getElementById('detail-title');
+  titleEl.innerHTML='';
+  const titleText=document.createElement('span');
+  titleText.textContent=nome+(torre.note_ricerca?' — '+torre.note_ricerca:'');
+  titleEl.appendChild(titleText);
+  const towerTypeBadge=document.createElement('span');
+  towerTypeBadge.textContent=towerTypeLabel(torre);
+  towerTypeBadge.style.cssText='display:inline-block;margin-left:6px;padding:1px 6px;border-radius:10px;background:#f0e4d4;color:#6d4428;font-size:9px;font-weight:600;vertical-align:middle;';
+  titleEl.appendChild(towerTypeBadge);
+
+  const asmsa=torre['scheda_ASMSa']||torre.scheda_ASMSa||'';
+  const existingBtn=document.getElementById('asmsa-btn');
+  if(existingBtn) existingBtn.remove();
+  if(asmsa&&asmsa.startsWith('http')){
+    const btn=document.createElement('a');
+    btn.id='asmsa-btn';
+    btn.href=asmsa; btn.target='_blank';
+    btn.textContent='→ Apri scheda ASMSa';
+    btn.style.cssText='display:block;margin-top:5px;font-size:10px;color:#1a6b9a;background:#eef6ff;border:1px solid #bdd5ee;border-radius:3px;padding:3px 8px;text-decoration:none;width:fit-content;';
+    titleEl.appendChild(btn);
+  }
+
+  const cd=document.getElementById('detail-connections');
+  cd.innerHTML='';
+
+  const nearestHeading=document.createElement('div');
+  nearestHeading.style.cssText='font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#1769aa;margin:3px 0;';
+  nearestHeading.textContent='Tre torri più vicine';
+  cd.appendChild(nearestHeading);
+
+  if(!nearestTowers.length){
+    cd.insertAdjacentHTML('beforeend','<div style="font-size:10px;color:#aaa;padding:4px 0">Nessun’altra torre con coordinate valide.</div>');
+  }else{
+    nearestTowers.forEach((item,index)=>{
+      const target=item.torre;
+      const row=document.createElement('div');
+      row.className='conn-item';
+      row.innerHTML=`<span class="conn-badge badge-torre">${index+1}ª torre</span>
+        <div class="conn-detail"><strong>${target.nome||target.id||'?'}</strong> · ${towerTypeLabel(target)} · ↔ ${item.distanzaKm.toFixed(2)} km
+        ${target.localita?`<br>${target.localita}`:''}</div>`;
+      cd.appendChild(row);
+    });
+  }
+
+  const visibleHeading=document.createElement('div');
+  visibleHeading.style.cssText='font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#d4821a;margin:8px 0 3px;';
+  visibleHeading.textContent='Infrastrutture con connessione visiva';
+  cd.appendChild(visibleHeading);
+
+  if(!visibleInfrastructure.length){
+    cd.insertAdjacentHTML('beforeend','<div style="font-size:10px;color:#aaa;padding:4px 0">Nessuna infrastruttura con relazione “visiva” registrata in connessioni.csv.</div>');
+  }else{
+    visibleInfrastructure.forEach(item=>{
+      const infrastructure=item.infrastruttura;
+      const connection=item.connessione;
+      const type=resolveInfrastructureType(infrastructure);
+      const row=document.createElement('div');
+      row.className='conn-item';
+      row.innerHTML=`<span class="conn-badge badge-${type}">${type}</span>
+        <div class="conn-detail"><strong>${infrastructure.nome||infrastructure.id||'?'}</strong> · ↔ ${item.distanzaKm.toFixed(2)} km
+        ${connection.certezza?` · <span class="cert-${connection.certezza}">${connection.certezza}</span>`:''}
+        ${connection.tipo_relazione?` · ${connection.tipo_relazione}`:''}
+        ${connection.fonti?`<br><em style="color:#bbb">${connection.fonti}</em>`:''}
+        ${connection.note?`<br>${connection.note}`:''}</div>`;
+      cd.appendChild(row);
+    });
+  }
+
+  // tab fonti
+  const fd=document.getElementById('detail-fonti');
+  fd.innerHTML='';
+  const tKey=torre.id||torre.nome||'';
+  const loc=torre.localita||'';
+
+  // cerca fonti per questa torre: match su localita o su riferimento esplicito
+  const fTorre=fonti.filter(f=>{
+    const fl=(f.localita||f['oc:location']||'').toLowerCase();
+    const ft=(f.titolo||f['dcterms:title']||'').toLowerCase();
+    const fd2=(f.descrizione||f['dcterms:description']||'').toLowerCase();
+    const l=loc.toLowerCase();
+    const n=(torre.nome||'').toLowerCase();
+    return (l&&fl.includes(l))||(n&&(ft.includes(n)||fd2.includes(n)))||f.id_torre===tKey;
+  });
+
+  if(!fTorre.length){
+    fd.innerHTML='<div style="font-size:10px;color:#aaa;padding:4px 0">Nessuna fonte o attacco associato.</div>';
+  } else {
+    fTorre.forEach(f=>{
+      const tipo=f.tipo||'fonte';
+      const titolo=f.titolo||f['dcterms:title']||'—';
+      const data=f.data||f['dcterms:date']||'';
+      const autore=f.autore||'';
+      const desc=f.descrizione||f['dcterms:description']||'';
+      const cit=f.citazione||f['dcterms:bibliographicCitation']||'';
+      const url=f.url||f['schema.org:contentUrl']||'';
+      const el=document.createElement('div');el.className='fonte-item';
+      el.innerHTML=`<span class="fonte-tipo ft-${tipo}">${tipo.replace('_',' ')}</span>
+        <div class="fonte-title">${titolo}</div>
+        <div class="fonte-meta">${[data,autore].filter(Boolean).join(' · ')}
+        ${desc?`<br>${desc}`:''}
+        ${cit?`<br><em style="color:#bbb">${cit}</em>`:''}
+        ${url?`<br><a href="${url}" target="_blank" style="color:#1a6b9a;font-size:9px">→ fonte</a>`:''}</div>`;
+      fd.appendChild(el);
+    });
+  }
+
+  // auto-switch al tab connessioni
+  switchDetailTab('conn');
+}
+
+// URL params pre-config
+const p=new URLSearchParams(window.location.search);
+if(p.get('sheets_id')){
+  cfg.id=p.get('sheets_id');
+  if(p.get('sheet_torri'))  cfg.sheetTorri=p.get('sheet_torri');
+  if(p.get('sheet_infr'))   cfg.sheetInfr =p.get('sheet_infr');
+  if(p.get('sheet_conn'))   cfg.sheetConn =p.get('sheet_conn');
+  if(p.get('sheet_fonti'))  cfg.sheetFonti=p.get('sheet_fonti');
+  document.getElementById('sheets-id').value=cfg.id;
+  loadFromSheets();
+}
+</script>
+</body>
+</html>
